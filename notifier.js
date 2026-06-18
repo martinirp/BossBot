@@ -28,7 +28,7 @@ export async function sendPushoverMessage(token, user, message, title = 'BossBot
       message,
       title,
       priority,
-      sound: 'spacealarm'
+      sound: 'siren'
     };
 
     if (priority === 2) {
