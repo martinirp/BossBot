@@ -45,6 +45,14 @@ export function initDb() {
           )
         `);
 
+        // Create global_settings table
+        db.run(`
+          CREATE TABLE IF NOT EXISTS global_settings (
+            key TEXT PRIMARY KEY,
+            value TEXT
+          )
+        `);
+
         // Create boss reports history table
         db.run(`
           CREATE TABLE IF NOT EXISTS boss_reports (
@@ -298,6 +306,32 @@ export function getAllowedGroups() {
       (err, rows) => {
         if (err) return reject(err);
         resolve(rows.map(r => r.jid));
+      }
+    );
+  });
+}
+export function setGlobalSetting(key, value) {
+  return new Promise((resolve, reject) => {
+    db.run(
+      `INSERT INTO global_settings (key, value) VALUES (?, ?) 
+       ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+      [key, String(value)],
+      function (err) {
+        if (err) return reject(err);
+        resolve(this.changes > 0);
+      }
+    );
+  });
+}
+
+export function getGlobalSetting(key) {
+  return new Promise((resolve, reject) => {
+    db.get(
+      'SELECT value FROM global_settings WHERE key = ?',
+      [key],
+      (err, row) => {
+        if (err) return reject(err);
+        resolve(row ? row.value : null);
       }
     );
   });

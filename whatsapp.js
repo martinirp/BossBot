@@ -348,7 +348,7 @@ export async function connectToWhatsApp() {
         }
 
         else if (parsed.type === 'alert_set') {
-          const success = await db.setUserAlertLevel(senderJid, parsed.level);
+          const success = await db.setGlobalSetting('global_alert_level', parsed.level);
           if (success) {
             let desc = '';
             if (parsed.level === 0) desc = 'Normal (Toca 1 vez, respeita silencioso)';
@@ -356,12 +356,12 @@ export async function connectToWhatsApp() {
             else if (parsed.level === 2) desc = 'Emergência (Fica repetindo, fura o silencioso e volume no máximo)';
             
             await sock.sendMessage(remoteJid, {
-              text: `✅ @${senderPhone}, seu nível de alerta no Pushover foi alterado para:\n*Nível ${parsed.level}:* ${desc}`,
+              text: `✅ Configuração Global do Bot atualizada!\nO nível de alerta para todos os envios no Pushover agora é:\n*Nível ${parsed.level}:* ${desc}`,
               mentions: [senderJid]
             }, { quoted: msg });
           } else {
             await sock.sendMessage(remoteJid, {
-              text: `⚠️ @${senderPhone}, ocorreu um erro ao salvar o nível de alerta. Certifique-se de que você já cadastrou uma chave Pushover primeiro usando o comando *!pushover <key>*.`,
+              text: `⚠️ @${senderPhone}, ocorreu um erro ao salvar o nível de alerta global.`,
               mentions: [senderJid]
             }, { quoted: msg });
           }

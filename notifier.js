@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import { jidNormalizedUser } from '@whiskeysockets/baileys';
-import { getPushoverKeysForSubscribers } from './database.js';
+import { getPushoverKeysForSubscribers, getGlobalSetting } from './database.js';
 dotenv.config();
 
 const SPAM_COUNT = parseInt(process.env.SPAM_COUNT || '4', 10);
@@ -88,8 +88,11 @@ async function processQueue() {
 
     if (globalToken) {
       if (globalUser) {
-        console.log(`[PUSHOVER] Enviando notificação global para o boss ${uppercaseBoss}`);
-        sendPushoverMessage(globalToken, globalUser, alertMessage, `BossBot: ${uppercaseBoss}`).catch(err => {
+        const globalLevelStr = await getGlobalSetting('global_alert_level');
+        const globalLevel = globalLevelStr !== null ? parseInt(globalLevelStr, 10) : 1;
+        
+        console.log(`[PUSHOVER] Enviando notificação global para o boss ${uppercaseBoss} (Priority: ${globalLevel})`);
+        sendPushoverMessage(globalToken, globalUser, alertMessage, `BossBot: ${uppercaseBoss}`, globalLevel).catch(err => {
           console.error('[PUSHOVER] Erro ao enviar notificação global:', err);
         });
       }
