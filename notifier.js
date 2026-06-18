@@ -33,7 +33,7 @@ export async function sendPushoverMessage(token, user, message, title = 'BossBot
 
     if (priority === 2) {
       bodyObj.retry = 30;
-      bodyObj.expire = 3600;
+      bodyObj.expire = 10800; // 3 horas (limite máximo do Pushover para tocar sem parar)
     }
 
     const response = await fetch('https://api.pushover.net/1/messages.json', {

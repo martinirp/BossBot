@@ -402,35 +402,37 @@ export async function connectToWhatsApp() {
           const helpText = `📋 *Comandos do BossBot:*
 
 1. *Inscrição em Bosses:*
-   - \`!<nome do boss>\`: Inscreve você para receber alertas do boss.
-     _Exemplo: \`!ferumbras\` ou \`!man in the cave\`_
+   - \`!boss <número ou nome>\`: Inscreve você para receber alertas do boss.
+     _Exemplo: \`!boss 1, 2, 3\` ou \`!boss ferumbras, zomba\`_
+   - \`!bosses todos\` ou \`!todos\`: Inscreve você em TODOS os bosses.
 
 2. *Remover Inscrição:*
-   - \`!remover <nome do boss>\` ou \`!limpar <nome do boss>\`: Cancela sua inscrição daquele boss.
-     _Exemplo: \`!remover ferumbras\` ou \`!limpar man in the cave\`_
+   - \`!remover <nome/número>\` ou \`!limpar <nome/número>\`: Cancela sua inscrição.
 
 3. *Listar Minhas Inscrições:*
    - \`!meusbosses\`: Mostra todos os bosses nos quais você está inscrito.
 
 4. *Limpar Todas as Inscrições:*
-   - \`!limparbosses\`: Cancela todas as suas inscrições de bosses de uma vez.
+   - \`!limparbosses\`: Cancela todas as suas inscrições de uma vez.
 
- 5. *Ver Todos os Bosses (Enquetes):*
-    - \`!bosses\` ou \`!enquete\`: Mostra os grupos de bosses disponíveis para votação.
-    - \`!bosses <número>\`: Envia a enquete para um grupo específico de bosses.
-    - \`!bosses todos\`: Envia todas as enquetes de uma vez.
+5. *Ver Menu de Bosses:*
+   - \`!bosses\`: Mostra a imagem com a lista enumerada de todos os bosses.
 
 6. *Confirmar Boss Vivo / Alerta:*
-   - \`!confirmar <nome do boss>\` ou \`!c <nome do boss>\`: Confirma que o boss nasceu e alerta os inscritos por mensagem privada (DM) e Pushover.
-   - Você também pode adicionar um comentário/localização após uma vírgula ou barra vertical.
-     _Exemplo: \`!confirmar ferumbras, sala do trono\` ou \`!c man in the cave | perto da escada\`_
+   - \`!confirmar <nome do boss>\` ou \`!c <nome do boss>\`: Confirma que o boss nasceu e alerta os inscritos por mensagem e Pushover.
+   - Você pode adicionar detalhes de localização após uma vírgula ou barra vertical.
+     _Exemplo: \`!c ferumbras | perto da escada\`_
 
 7. *Notificações Push (Pushover):*
-   - \`!pushover <chave>\`: Cadastra seu User Key pessoal do Pushover.
-   - \`!pushover remover\`: Remove seu User Key cadastrado.
-   - \`!pushover\`: Consulta a chave atual configurada.
+   - \`!pushover <chave>\`: Cadastra seu User Key pessoal.
+   - \`!pushover remover\`: Remove seu User Key.
 
-8. *Ajuda:*
+8. *Nível de Alerta Pushover (Global):*
+   - \`!alert 0\`: Normal (Toca 1 vez).
+   - \`!alert 1\`: Alto (Toca 1 vez, em destaque vermelho).
+   - \`!alert 2\`: Emergência (Sirene toca sem parar e fura o silencioso).
+
+9. *Ajuda:*
    - \`!help\` ou \`!ajuda\`: Mostra esta lista de comandos.`;
 
           await sock.sendMessage(remoteJid, {
