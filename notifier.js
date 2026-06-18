@@ -38,12 +38,16 @@ export async function sendPushoverMessage(token, user, message, title = 'BossBot
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(bodyObj)
     });
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error(`[PUSHOVER] Erro ao enviar mensagem para ${user}:`, errText);
-    } else {
-      console.log(`[PUSHOVER] Notificação enviada com sucesso para ${user}`);
+
+    const data = await response.json();
+
+    if (!response.ok || data.status !== 1) {
+      const errorMsg = data.errors ? data.errors.join(', ') : JSON.stringify(data);
+      throw new Error(`Pushover API Error: ${response.status} - ${errorMsg}`);
     }
+
+    console.log(`[PUSHOVER] Notificação enviada com sucesso para ${user}`);
+    return data;
   } catch (err) {
     console.error(`[PUSHOVER] Falha na requisição HTTP para ${user}:`, err);
   }
