@@ -19,7 +19,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
  * @param {string} message - The message body
  * @param {string} title - The title of the alert
  */
-export async function sendPushoverMessage(token, user, message, title = 'BossBot Alert', priority = 1) {
+export async function sendPushoverMessage(token, user, message, title = 'BossBot Alert', priority = 2) {
   if (!token || !user) return;
   try {
     const bodyObj = {
@@ -27,14 +27,11 @@ export async function sendPushoverMessage(token, user, message, title = 'BossBot
       user,
       message,
       title,
-      priority,
-      sound: 'siren'
+      priority: 2, // Forçando Nível 2 (Emergência) para todos os alertas
+      sound: 'siren',
+      retry: 30,
+      expire: 3600 // 1 hora de repetição
     };
-
-    if (priority === 2) {
-      bodyObj.retry = 30;
-      bodyObj.expire = 3600; // 1 hora de repeticao
-    }
 
     const response = await fetch('https://api.pushover.net/1/messages.json', {
       method: 'POST',
