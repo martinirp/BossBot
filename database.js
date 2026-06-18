@@ -33,6 +33,14 @@ export function initDb() {
           )
         `);
 
+        // Create allowed_groups table
+        db.run(`
+          CREATE TABLE IF NOT EXISTS allowed_groups (
+            jid TEXT PRIMARY KEY,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          )
+        `);
+
         // Create boss reports history table
         db.run(`
           CREATE TABLE IF NOT EXISTS boss_reports (
@@ -227,6 +235,45 @@ export function getPushoverKeysForSubscribers(jids) {
           mapping[row.jid] = row.pushover_key;
         }
         resolve(mapping);
+      }
+    );
+  });
+}
+
+export function addGroup(jid) {
+  return new Promise((resolve, reject) => {
+    db.run(
+      'INSERT OR IGNORE INTO allowed_groups (jid) VALUES (?)',
+      [jid],
+      function (err) {
+        if (err) return reject(err);
+        resolve(this.changes > 0);
+      }
+    );
+  });
+}
+
+export function removeGroup(jid) {
+  return new Promise((resolve, reject) => {
+    db.run(
+      'DELETE FROM allowed_groups WHERE jid = ?',
+      [jid],
+      function (err) {
+        if (err) return reject(err);
+        resolve(this.changes > 0);
+      }
+    );
+  });
+}
+
+export function getAllowedGroups() {
+  return new Promise((resolve, reject) => {
+    db.all(
+      'SELECT jid FROM allowed_groups',
+      [],
+      (err, rows) => {
+        if (err) return reject(err);
+        resolve(rows.map(r => r.jid));
       }
     );
   });

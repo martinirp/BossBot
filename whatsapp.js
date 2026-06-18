@@ -109,16 +109,6 @@ export async function connectToWhatsApp() {
       const remoteJid = msg.key.remoteJid;
       const isGroup = remoteJid.endsWith('@g.us');
 
-      // Restrict command parsing to groups only
-      if (!isGroup) {
-        continue;
-      }
-
-      // Restrict command parsing if group limit is set in .env
-      if (isGroup && ALLOWED_GROUP_JID && remoteJid !== ALLOWED_GROUP_JID) {
-        continue;
-      }
-
       const text = msg.message?.conversation || 
                    msg.message?.extendedTextMessage?.text || 
                    msg.message?.imageMessage?.caption || 
@@ -130,7 +120,99 @@ export async function connectToWhatsApp() {
       const senderJid = jidNormalizedUser(msg.key.participant || remoteJid);
       const senderPhone = senderJid.split('@')[0];
 
+      // Validação de Grupo ou DM
+      const allowedGroups = await db.getAllowedGroups();
+      let isAllowed = false;
+
+      if (isGroup) {
+        if (allowedGroups.includes(remoteJid)) {
+          isAllowed = true;
+        } else {
+          // Em grupos não cadastrados, só permite o !addgroup
+          if (parsed.type === 'addgroup') {
+            isAllowed = true;
+          }
+        }
+      } else {
+        // Se for DM, proíbe o comando de confirmar
+        if (parsed.type === 'confirm') {
+          await sock.sendMessage(remoteJid, {
+            text: `⚠️ O comando de confirmar o boss só pode ser usado no grupo oficial para alertar a todos!`
+          }, { quoted: msg });
+          continue;
+        }
+
+        if (allowedGroups.length > 0) {
+          try {
+            for (const groupJid of allowedGroups) {
+              const metadata = await sock.groupMetadata(groupJid);
+              const isMember = metadata.participants.some(p => p.id === senderJid);
+              if (isMember) {
+                isAllowed = true;
+                break;
+              }
+            }
+          } catch (err) {
+            console.error('Erro ao buscar metadados de grupos para validar DM:', err);
+          }
+
+          if (!isAllowed) {
+            await sock.sendMessage(remoteJid, {
+              text: `🚫 Acesso Negado! O BossBot é exclusivo para membros dos grupos oficiais.`
+            }, { quoted: msg });
+          }
+        }
+      }
+
+      if (!isAllowed) continue;
+
       try {
+        if (parsed.type === 'addgroup') {
+          if (!isGroup) {
+            await sock.sendMessage(remoteJid, { text: `⚠️ Este comando só funciona dentro de um grupo.` }, { quoted: msg });
+            continue;
+          }
+          const maxGroups = parseInt(process.env.MAX_ALLOWED_GROUPS || '1', 10);
+          if (allowedGroups.length >= maxGroups && !allowedGroups.includes(remoteJid)) {
+            await sock.sendMessage(remoteJid, { text: `⚠️ Não é possível vincular este grupo no momento.` }, { quoted: msg });
+            continue;
+          }
+          const success = await db.addGroup(remoteJid);
+          if (success || allowedGroups.includes(remoteJid)) {
+            await sock.sendMessage(remoteJid, { text: `✅ Bot vinculado a este grupo com sucesso!` }, { quoted: msg });
+          } else {
+            await sock.sendMessage(remoteJid, { text: `⚠️ Falha ao vincular o grupo.` }, { quoted: msg });
+          }
+          continue;
+        }
+
+        if (parsed.type === 'removegroup') {
+          if (!isGroup) {
+            await sock.sendMessage(remoteJid, { text: `⚠️ Este comando só funciona dentro de um grupo.` }, { quoted: msg });
+            continue;
+          }
+          const success = await db.removeGroup(remoteJid);
+          if (success) {
+            await sock.sendMessage(remoteJid, { text: `❌ Bot desvinculado deste grupo com sucesso.` }, { quoted: msg });
+          } else {
+            await sock.sendMessage(remoteJid, { text: `⚠️ Este grupo já não estava vinculado.` }, { quoted: msg });
+          }
+          continue;
+        }
+
+        if (parsed.type === 'group_id') {
+          if (isGroup) {
+            await sock.sendMessage(remoteJid, {
+              text: `ℹ️ O ID deste grupo é:\n*${remoteJid}*`
+            }, { quoted: msg });
+          } else {
+            await sock.sendMessage(remoteJid, {
+              text: `⚠️ Este comando só funciona se for enviado dentro de um grupo.`
+            }, { quoted: msg });
+          }
+          continue;
+        }
+
         let matchedBossName = null;
         let isCorrected = false;
 

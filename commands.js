@@ -8,7 +8,7 @@ export function normalizeBossName(name) {
     .replace(/\s+/g, ' '); // Collapse multiple spaces to a single space
 }
 
-const RESERVED_WORDS = new Set(['remover', 'confirmar', 'meusbosses', 'bosses', 'enquete', 'help', 'ajuda', 'c', 'reset', 'limpar', 'limparbosses', 'pushover']);
+const RESERVED_WORDS = new Set(['remover', 'confirmar', 'meusbosses', 'bosses', 'enquete', 'help', 'ajuda', 'c', 'reset', 'limpar', 'limparbosses', 'pushover', 'idgrupo', 'addgroup', 'removegroup']);
 
 export function parseMessage(text) {
   if (!text) return null;
@@ -20,6 +20,19 @@ export function parseMessage(text) {
   // 1. !help ou !ajuda
   if (lowerTrimmed === '!help' || lowerTrimmed === '!ajuda') {
     return { type: 'help' };
+  }
+
+  // 1.5. !idgrupo
+  if (lowerTrimmed === '!idgrupo') {
+    return { type: 'group_id' };
+  }
+
+  // 1.6. !addgroup / !removegroup
+  if (lowerTrimmed === '!addgroup') {
+    return { type: 'addgroup' };
+  }
+  if (lowerTrimmed === '!removegroup') {
+    return { type: 'removegroup' };
   }
 
   // 1.8. !reset
