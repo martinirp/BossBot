@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import { jidNormalizedUser } from '@whiskeysockets/baileys';
+import { getPushoverKeysForSubscribers } from './database.js';
 dotenv.config();
 
 const SPAM_COUNT = parseInt(process.env.SPAM_COUNT || '4', 10);
@@ -10,6 +11,38 @@ const jobQueue = [];
 let isProcessing = false;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Send a notification via Pushover API.
+ * @param {string} token - The Pushover application API token
+ * @param {string} user - The Pushover user/group key
+ * @param {string} message - The message body
+ * @param {string} title - The title of the alert
+ */
+export async function sendPushoverMessage(token, user, message, title = 'BossBot Alert') {
+  if (!token || !user) return;
+  try {
+    const response = await fetch('https://api.pushover.net/1/messages.json', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        token,
+        user,
+        message,
+        title,
+        priority: 1
+      })
+    });
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error(`[PUSHOVER] Erro ao enviar mensagem para ${user}:`, errText);
+    } else {
+      console.log(`[PUSHOVER] Notificação enviada com sucesso para ${user}`);
+    }
+  } catch (err) {
+    console.error(`[PUSHOVER] Falha na requisição HTTP para ${user}:`, err);
+  }
+}
 
 /**
  * Enqueue a notification job.
@@ -37,6 +70,36 @@ async function processQueue() {
       : `🚨🚨 ALERTA DE BOSS: ${uppercaseBoss} 🚨🚨`;
 
     console.log(`Starting notifications for boss ${uppercaseBoss} to ${subscribers.length} subscribers.`);
+
+    // 1. Process Pushover notifications in parallel immediately
+    const globalToken = process.env.PUSHOVER_TOKEN;
+    const globalUser = process.env.PUSHOVER_USER_KEY;
+
+    if (globalToken) {
+      if (globalUser) {
+        console.log(`[PUSHOVER] Enviando notificação global para o boss ${uppercaseBoss}`);
+        sendPushoverMessage(globalToken, globalUser, alertMessage, `BossBot: ${uppercaseBoss}`).catch(err => {
+          console.error('[PUSHOVER] Erro ao enviar notificação global:', err);
+        });
+      }
+
+      if (subscribers.length > 0) {
+        getPushoverKeysForSubscribers(subscribers).then(mapping => {
+          const promises = [];
+          for (const subscriber of subscribers) {
+            const cleanJid = jidNormalizedUser(subscriber);
+            const userKey = mapping[cleanJid];
+            if (userKey) {
+              console.log(`[PUSHOVER] Enviando notificação pessoal para ${cleanJid}`);
+              promises.push(sendPushoverMessage(globalToken, userKey, alertMessage, `BossBot: ${uppercaseBoss}`));
+            }
+          }
+          return Promise.all(promises);
+        }).catch(err => {
+          console.error('[PUSHOVER] Erro ao enviar notificações Pushover para assinantes:', err);
+        });
+      }
+    }
 
     for (let i = 0; i < subscribers.length; i++) {
       const jid = jidNormalizedUser(subscribers[i]);

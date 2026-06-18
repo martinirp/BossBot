@@ -24,6 +24,15 @@ export function initDb() {
           )
         `);
 
+        // Create user_pushover table
+        db.run(`
+          CREATE TABLE IF NOT EXISTS user_pushover (
+            jid TEXT PRIMARY KEY,
+            pushover_key TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          )
+        `);
+
         // Create boss reports history table
         db.run(`
           CREATE TABLE IF NOT EXISTS boss_reports (
@@ -160,6 +169,68 @@ export function addBossReport(bossName, extraText, reportedByJid, notifiedCount)
 }
 
 
+
+export function setUserPushoverKey(jid, key) {
+  const cleanJid = jidNormalizedUser(jid);
+  return new Promise((resolve, reject) => {
+    db.run(
+      `INSERT OR REPLACE INTO user_pushover (jid, pushover_key) VALUES (?, ?)`,
+      [cleanJid, key],
+      function (err) {
+        if (err) return reject(err);
+        resolve(this.changes > 0);
+      }
+    );
+  });
+}
+
+export function getUserPushoverKey(jid) {
+  const cleanJid = jidNormalizedUser(jid);
+  return new Promise((resolve, reject) => {
+    db.get(
+      `SELECT pushover_key FROM user_pushover WHERE jid = ?`,
+      [cleanJid],
+      (err, row) => {
+        if (err) return reject(err);
+        resolve(row ? row.pushover_key : null);
+      }
+    );
+  });
+}
+
+export function removeUserPushoverKey(jid) {
+  const cleanJid = jidNormalizedUser(jid);
+  return new Promise((resolve, reject) => {
+    db.run(
+      `DELETE FROM user_pushover WHERE jid = ?`,
+      [cleanJid],
+      function (err) {
+        if (err) return reject(err);
+        resolve(this.changes > 0);
+      }
+    );
+  });
+}
+
+export function getPushoverKeysForSubscribers(jids) {
+  if (!jids || jids.length === 0) return Promise.resolve({});
+  const cleanJids = jids.map(jid => jidNormalizedUser(jid));
+  const placeholders = cleanJids.map(() => '?').join(',');
+  return new Promise((resolve, reject) => {
+    db.all(
+      `SELECT jid, pushover_key FROM user_pushover WHERE jid IN (${placeholders})`,
+      cleanJids,
+      (err, rows) => {
+        if (err) return reject(err);
+        const mapping = {};
+        for (const row of rows) {
+          mapping[row.jid] = row.pushover_key;
+        }
+        resolve(mapping);
+      }
+    );
+  });
+}
 
 export function closeDb() {
   return new Promise((resolve, reject) => {

@@ -225,6 +225,52 @@ export async function connectToWhatsApp() {
             mentions: [senderJid]
           }, { quoted: msg });
         }
+
+        else if (parsed.type === 'pushover_set') {
+          const success = await db.setUserPushoverKey(senderJid, parsed.key);
+          if (success) {
+            await sock.sendMessage(remoteJid, {
+              text: `✅ @${senderPhone}, seu Pushover User Key foi cadastrado com sucesso!`,
+              mentions: [senderJid]
+            }, { quoted: msg });
+          } else {
+            await sock.sendMessage(remoteJid, {
+              text: `⚠️ @${senderPhone}, ocorreu um erro ao salvar seu Pushover User Key.`,
+              mentions: [senderJid]
+            }, { quoted: msg });
+          }
+        }
+
+        else if (parsed.type === 'pushover_remove') {
+          const success = await db.removeUserPushoverKey(senderJid);
+          if (success) {
+            await sock.sendMessage(remoteJid, {
+              text: `❌ @${senderPhone}, seu Pushover User Key foi removido com sucesso!`,
+              mentions: [senderJid]
+            }, { quoted: msg });
+          } else {
+            await sock.sendMessage(remoteJid, {
+              text: `⚠️ @${senderPhone}, você não possui uma chave do Pushover cadastrada.`,
+              mentions: [senderJid]
+            }, { quoted: msg });
+          }
+        }
+
+        else if (parsed.type === 'pushover_get') {
+          const key = await db.getUserPushoverKey(senderJid);
+          if (key) {
+            const maskedKey = key.substring(0, 4) + '...' + key.substring(key.length - 4);
+            await sock.sendMessage(remoteJid, {
+              text: `📋 @${senderPhone}, seu Pushover User Key cadastrado é: *${maskedKey}*`,
+              mentions: [senderJid]
+            }, { quoted: msg });
+          } else {
+            await sock.sendMessage(remoteJid, {
+              text: `📋 @${senderPhone}, você não possui nenhuma chave do Pushover cadastrada. Cadastre com *!pushover <sua_chave>*`,
+              mentions: [senderJid]
+            }, { quoted: msg });
+          }
+        }
         
         else if (parsed.type === 'help') {
           const helpText = `📋 *Comandos do BossBot:*
@@ -249,11 +295,16 @@ export async function connectToWhatsApp() {
     - \`!bosses todos\`: Envia todas as enquetes de uma vez.
 
 6. *Confirmar Boss Vivo / Alerta:*
-   - \`!confirmar <nome do boss>\` ou \`!c <nome do boss>\`: Confirma que o boss nasceu e alerta os inscritos por mensagem privada (DM).
+   - \`!confirmar <nome do boss>\` ou \`!c <nome do boss>\`: Confirma que o boss nasceu e alerta os inscritos por mensagem privada (DM) e Pushover.
    - Você também pode adicionar um comentário/localização após uma vírgula ou barra vertical.
      _Exemplo: \`!confirmar ferumbras, sala do trono\` ou \`!c man in the cave | perto da escada\`_
 
-7. *Ajuda:*
+7. *Notificações Push (Pushover):*
+   - \`!pushover <chave>\`: Cadastra seu User Key pessoal do Pushover.
+   - \`!pushover remover\`: Remove seu User Key cadastrado.
+   - \`!pushover\`: Consulta a chave atual configurada.
+
+8. *Ajuda:*
    - \`!help\` ou \`!ajuda\`: Mostra esta lista de comandos.`;
 
           await sock.sendMessage(remoteJid, {

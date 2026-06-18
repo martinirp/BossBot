@@ -9,7 +9,7 @@ if (fs.existsSync('test_bossbot.db')) {
 }
 
 // Dynamically import database and commands to ensure process.env.DB_FILE is set before initialization
-const { initDb, addSubscription, removeSubscription, getSubscribers, getBossSubscriptionsForJid, clearSubscriptionsForJid, savePollMessage, getPollMessage, getExpiredPollMessages, markPollDeletedFromWhatsapp, closeDb } = await import('./database.js');
+const { initDb, addSubscription, removeSubscription, getSubscribers, getBossSubscriptionsForJid, clearSubscriptionsForJid, savePollMessage, getPollMessage, getExpiredPollMessages, markPollDeletedFromWhatsapp, setUserPushoverKey, getUserPushoverKey, removeUserPushoverKey, getPushoverKeysForSubscribers, closeDb } = await import('./database.js');
 const { parseMessage, normalizeBossName, findBossMatch } = await import('./commands.js');
 
 async function runTests() {
@@ -137,6 +137,23 @@ async function runTests() {
   console.log(`"!limpar ferumbras" ->`, p14);
   if (p14?.type !== 'remove' || p14?.bossName !== 'ferumbras') throw new Error('Parser !limpar <boss> failed');
 
+  // Test !pushover parser
+  const p15 = parseMessage('!pushover');
+  console.log(`"!pushover" ->`, p15);
+  if (p15?.type !== 'pushover_get') throw new Error('Parser !pushover failed');
+
+  const p16 = parseMessage('!pushover u1234567890abcdef');
+  console.log(`"!pushover u1234567890abcdef" ->`, p16);
+  if (p16?.type !== 'pushover_set' || p16?.key !== 'u1234567890abcdef') throw new Error('Parser !pushover <key> failed');
+
+  const p17 = parseMessage('!pushover remover');
+  console.log(`"!pushover remover" ->`, p17);
+  if (p17?.type !== 'pushover_remove') throw new Error('Parser !pushover remover failed');
+
+  const p18 = parseMessage('!pushover limpar');
+  console.log(`"!pushover limpar" ->`, p18);
+  if (p18?.type !== 'pushover_remove') throw new Error('Parser !pushover limpar failed');
+
   // Test reserved words block
   const p_reserved = parseMessage('!remover');
   console.log(`"!remover" ->`, p_reserved);
@@ -218,7 +235,55 @@ async function runTests() {
   }
   console.log('clearSubscriptionsForJid test passed ✅');
 
+  // Test 3.5: Pushover Database Operations
+  console.log('--- Test 3.5: Pushover Database Operations ---');
+  const user1 = 'user1@s.whatsapp.net';
+  const user2 = 'user2@s.whatsapp.net';
 
+  // Initially, get key should be null
+  const key1 = await getUserPushoverKey(user1);
+  console.log(`getUserPushoverKey for user1: ${key1} (Expected: null)`);
+  if (key1 !== null) throw new Error('Initial Pushover key is not null');
+
+  // Set key for user1
+  const set1 = await setUserPushoverKey(user1, 'key123456');
+  console.log(`setUserPushoverKey for user1: ${set1} (Expected: true)`);
+  if (!set1) throw new Error('Failed to set Pushover key');
+
+  // Get key for user1
+  const key1_set = await getUserPushoverKey(user1);
+  console.log(`getUserPushoverKey for user1 after set: ${key1_set} (Expected: key123456)`);
+  if (key1_set !== 'key123456') throw new Error('Pushover key retrieved does not match');
+
+  // Replace key for user1
+  const set2 = await setUserPushoverKey(user1, 'key789abc');
+  console.log(`setUserPushoverKey for user1 update: ${set2} (Expected: true)`);
+  if (!set2) throw new Error('Failed to update Pushover key');
+
+  const key1_updated = await getUserPushoverKey(user1);
+  console.log(`getUserPushoverKey for user1 after update: ${key1_updated} (Expected: key789abc)`);
+  if (key1_updated !== 'key789abc') throw new Error('Pushover key update did not apply');
+
+  // Set key for user2
+  await setUserPushoverKey(user2, 'keyxyz');
+
+  // Test getPushoverKeysForSubscribers mapping
+  const mapping = await getPushoverKeysForSubscribers([user1, user2, 'unregistered@s.whatsapp.net']);
+  console.log(`getPushoverKeysForSubscribers mapping:`, mapping);
+  if (mapping[user1] !== 'key789abc' || mapping[user2] !== 'keyxyz' || mapping['unregistered@s.whatsapp.net'] !== undefined) {
+    throw new Error('getPushoverKeysForSubscribers mapping matches incorrectly');
+  }
+
+  // Remove key for user1
+  const remUser1 = await removeUserPushoverKey(user1);
+  console.log(`removeUserPushoverKey for user1: ${remUser1} (Expected: true)`);
+  if (!remUser1) throw new Error('Failed to remove Pushover key');
+
+  const key1_after_rem = await getUserPushoverKey(user1);
+  console.log(`getUserPushoverKey after removal: ${key1_after_rem} (Expected: null)`);
+  if (key1_after_rem !== null) throw new Error('Pushover key was not removed');
+
+  console.log('Pushover Database Operations test passed ✅');
 
   console.log('Database operations test passed ✅\n');
 

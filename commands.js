@@ -8,7 +8,7 @@ export function normalizeBossName(name) {
     .replace(/\s+/g, ' '); // Collapse multiple spaces to a single space
 }
 
-const RESERVED_WORDS = new Set(['remover', 'confirmar', 'meusbosses', 'bosses', 'enquete', 'help', 'ajuda', 'c', 'reset', 'limpar', 'limparbosses']);
+const RESERVED_WORDS = new Set(['remover', 'confirmar', 'meusbosses', 'bosses', 'enquete', 'help', 'ajuda', 'c', 'reset', 'limpar', 'limparbosses', 'pushover']);
 
 export function parseMessage(text) {
   if (!text) return null;
@@ -35,6 +35,18 @@ export function parseMessage(text) {
   // 2.5. !limparbosses (clears all)
   if (lowerTrimmed === '!limparbosses') {
     return { type: 'clear' };
+  }
+
+  // 2.7. !pushover
+  if (lowerTrimmed === '!pushover') {
+    return { type: 'pushover_get' };
+  }
+  if (lowerTrimmed.startsWith('!pushover ')) {
+    const key = trimmed.substring(10).trim();
+    if (key.toLowerCase() === 'remover' || key.toLowerCase() === 'limpar') {
+      return { type: 'pushover_remove' };
+    }
+    return { type: 'pushover_set', key };
   }
 
   // 2.6. !limpar (no arguments - clear_help)
