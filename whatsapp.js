@@ -530,15 +530,17 @@ export async function connectToWhatsApp() {
           
           await db.addBossReport(matchedBossName, parsed.extraText, senderJid, subscribers.length);
           const correctionNotice = isCorrected ? ` (corrigido de *${parsed.bossName}*)` : '';
+          const now = new Date();
+          const timeString = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
           if (subscribers.length === 0) {
             await sock.sendMessage(remoteJid, {
-              text: `📢 *BOSS CONFIRMADO!*\n⚔️ *Boss:* ${matchedBossName.toUpperCase()}${correctionNotice}\n👤 *Por:* @${senderPhone}\n📭 _Não há membros inscritos para notificação no momento._`,
+              text: `📢 *BOSS CONFIRMADO!*\n⚔️ *Boss:* ${matchedBossName.toUpperCase()}${correctionNotice}\n👤 *Por:* @${senderPhone}\n🕒 *Horário:* ${timeString}\n📭 _Não há membros inscritos para notificação no momento._`,
               mentions: [senderJid]
             }, { quoted: msg });
           } else {
             await sock.sendMessage(remoteJid, {
-              text: `📢 *BOSS CONFIRMADO!*\n⚔️ *Boss:* ${matchedBossName.toUpperCase()}${correctionNotice}\n👤 *Por:* @${senderPhone}\n🔔 Disparando notificações\n📋 ${subscribers.length} inscrito(s)`,
+              text: `📢 *BOSS CONFIRMADO!*\n⚔️ *Boss:* ${matchedBossName.toUpperCase()}${correctionNotice}\n👤 *Por:* @${senderPhone}\n🕒 *Horário:* ${timeString}\n🔔 Disparando notificações\n📋 ${subscribers.length} inscrito(s)`,
               mentions: [senderJid]
             }, { quoted: msg });
 

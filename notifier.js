@@ -66,9 +66,12 @@ async function processQueue() {
 
   try {
     const uppercaseBoss = bossName.toUpperCase();
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
     const alertMessage = extraText 
-      ? `🚨 *ALERTA DE BOSS* 🚨\n\n⚔️ *Boss:* ${uppercaseBoss}\n📍 *Detalhes:* ${extraText}`
-      : `🚨 *ALERTA DE BOSS* 🚨\n\n⚔️ *Boss:* ${uppercaseBoss}`;
+      ? `🚨 *ALERTA DE BOSS* 🚨\n\n⚔️ *Boss:* ${uppercaseBoss}\n🕒 *Horário:* ${timeString}\n📍 *Detalhes:* ${extraText}`
+      : `🚨 *ALERTA DE BOSS* 🚨\n\n⚔️ *Boss:* ${uppercaseBoss}\n🕒 *Horário:* ${timeString}`;
 
     console.log(`Starting notifications for boss ${uppercaseBoss} to ${subscribers.length} subscribers.`);
 
