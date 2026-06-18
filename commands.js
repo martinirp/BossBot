@@ -85,6 +85,9 @@ export function parseMessage(text) {
   if (lowerTrimmed.startsWith('!boss ')) {
     const prefixLen = 6;
     const arg = trimmed.substring(prefixLen).trim();
+    if (arg.toLowerCase() === 'todos') {
+      return { type: 'bosses_menu', arg: 'todos' };
+    }
     const bosses = arg.split(',').map(b => normalizeBossName(b)).filter(Boolean);
     if (bosses.length === 0) return null;
     return { type: 'subscribe_multiple', bosses };
@@ -129,6 +132,9 @@ export function parseMessage(text) {
 
   // 6. !<boss_list> (comma separated)
   const bossRaw = trimmed.substring(1).trim();
+  if (bossRaw.toLowerCase() === 'todos') {
+    return { type: 'bosses_menu', arg: 'todos' };
+  }
   const bosses = bossRaw.split(',').map(b => normalizeBossName(b)).filter(b => b && !RESERVED_WORDS.has(b));
   if (bosses.length === 0) return null;
   return { type: 'subscribe_multiple', bosses };
@@ -159,6 +165,13 @@ export function getLevenshteinDistance(a, b) {
 }
 
 export function findBossMatch(input, bossesList) {
+  if (input && /^\d+$/.test(input.trim())) {
+    const parsedNum = parseInt(input.trim(), 10);
+    if (parsedNum >= 1 && parsedNum <= bossesList.length) {
+      return { match: bossesList[parsedNum - 1], suggestions: [] };
+    }
+  }
+
   const normalizedInput = normalizeBossName(input);
   if (!normalizedInput) {
     return { match: null, suggestions: [] };
