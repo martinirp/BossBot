@@ -216,7 +216,7 @@ export async function connectToWhatsApp() {
         let matchedBossName = null;
         let isCorrected = false;
 
-        if (parsed.type === 'subscribe' || parsed.type === 'remove' || parsed.type === 'confirm') {
+        if (parsed.type === 'confirm') {
           const bossesList = loadBosses();
           const matchResult = findBossMatch(parsed.bossName, bossesList);
 
@@ -238,37 +238,61 @@ export async function connectToWhatsApp() {
           }
         }
 
-        if (parsed.type === 'subscribe') {
-          const success = await db.addSubscription(senderJid, matchedBossName);
-          const correctionNotice = isCorrected ? ` (corrigido de *${parsed.bossName}*)` : '';
-          if (success) {
-            await sock.sendMessage(remoteJid, {
-              text: `✅ @${senderPhone} inscrito no boss: *${matchedBossName}*${correctionNotice}`,
-              mentions: [senderJid]
-            }, { quoted: msg });
-          } else {
-            await sock.sendMessage(remoteJid, {
-              text: `ℹ️ @${senderPhone} já está inscrito no boss: *${matchedBossName}*${correctionNotice}`,
-              mentions: [senderJid]
-            }, { quoted: msg });
+        if (parsed.type === 'subscribe_multiple') {
+          const bossesList = loadBosses();
+          const successList = [];
+          const alreadyList = [];
+          const notFoundList = [];
+
+          for (const bossInput of parsed.bosses) {
+            const matchResult = findBossMatch(bossInput, bossesList);
+            if (matchResult.match) {
+              const success = await db.addSubscription(senderJid, matchResult.match);
+              if (success) successList.push(matchResult.match);
+              else alreadyList.push(matchResult.match);
+            } else {
+              notFoundList.push(bossInput);
+            }
           }
+
+          let responseText = ``;
+          if (successList.length > 0) responseText += `✅ Inscrito: ${successList.map(b => `*${b}*`).join(', ')}\n`;
+          if (alreadyList.length > 0) responseText += `ℹ️ Já inscrito: ${alreadyList.map(b => `*${b}*`).join(', ')}\n`;
+          if (notFoundList.length > 0) responseText += `❌ Não encontrado: ${notFoundList.map(b => `*${b}*`).join(', ')}\n`;
+          
+          await sock.sendMessage(remoteJid, {
+            text: `@${senderPhone}\n${responseText.trim()}`,
+            mentions: [senderJid]
+          }, { quoted: msg });
         } 
         
-        else if (parsed.type === 'remove') {
-          const success = await db.removeSubscription(senderJid, matchedBossName);
-          const correctionNotice = isCorrected ? ` (corrigido de *${parsed.bossName}*)` : '';
-          if (success) {
-            await sock.sendMessage(remoteJid, {
-              text: `❌ @${senderPhone} removido do boss: *${matchedBossName}*${correctionNotice}`,
-              mentions: [senderJid]
-            }, { quoted: msg });
-          } else {
-            await sock.sendMessage(remoteJid, {
-              text: `⚠️ @${senderPhone} não estava inscrito no boss: *${matchedBossName}*${correctionNotice}`,
-              mentions: [senderJid]
-            }, { quoted: msg });
+        else if (parsed.type === 'remove_multiple') {
+          const bossesList = loadBosses();
+          const successList = [];
+          const notSubbedList = [];
+          const notFoundList = [];
+
+          for (const bossInput of parsed.bosses) {
+            const matchResult = findBossMatch(bossInput, bossesList);
+            if (matchResult.match) {
+              const success = await db.removeSubscription(senderJid, matchResult.match);
+              if (success) successList.push(matchResult.match);
+              else notSubbedList.push(matchResult.match);
+            } else {
+              notFoundList.push(bossInput);
+            }
           }
-        } 
+
+          let responseText = ``;
+          if (successList.length > 0) responseText += `❌ Removido: ${successList.map(b => `*${b}*`).join(', ')}\n`;
+          if (notSubbedList.length > 0) responseText += `⚠️ Não estava inscrito: ${notSubbedList.map(b => `*${b}*`).join(', ')}\n`;
+          if (notFoundList.length > 0) responseText += `❌ Não encontrado: ${notFoundList.map(b => `*${b}*`).join(', ')}\n`;
+          
+          await sock.sendMessage(remoteJid, {
+            text: `@${senderPhone}\n${responseText.trim()}`,
+            mentions: [senderJid]
+          }, { quoted: msg });
+        }
         
         else if (parsed.type === 'list') {
           const list = await db.getBossSubscriptionsForJid(senderJid);

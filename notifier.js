@@ -30,8 +30,8 @@ export async function sendPushoverMessage(token, user, message, title = 'BossBot
         user,
         message,
         title,
-        priority: 0,        // Prioridade normal
-        sound: 'siren'      // Mantém o som de sirene
+        priority: 1,        // Prioridade Alta (mas não fura o silencioso se o celular não quiser)
+        sound: 'alien'      // Som de alien (mais perceptível)
       })
     });
     if (!response.ok) {

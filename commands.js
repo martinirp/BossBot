@@ -74,16 +74,29 @@ export function parseMessage(text) {
   if (lowerTrimmed.startsWith('!bosses ')) {
     const prefixLen = 8;
     const arg = trimmed.substring(prefixLen).trim().toLowerCase();
-    return { type: 'bosses_menu', arg: arg || null };
+    if (arg === 'todos') {
+      return { type: 'bosses_menu', arg: 'todos' };
+    }
+    const bosses = arg.split(',').map(b => normalizeBossName(b)).filter(Boolean);
+    if (bosses.length === 0) return null;
+    return { type: 'subscribe_multiple', bosses };
   }
 
-  // 4. !remover <boss> ou !limpar <boss> (removes one boss)
+  if (lowerTrimmed.startsWith('!boss ')) {
+    const prefixLen = 6;
+    const arg = trimmed.substring(prefixLen).trim();
+    const bosses = arg.split(',').map(b => normalizeBossName(b)).filter(Boolean);
+    if (bosses.length === 0) return null;
+    return { type: 'subscribe_multiple', bosses };
+  }
+
+  // 4. !remover <boss> ou !limpar <boss> (removes multiple bosses)
   if (lowerTrimmed.startsWith('!remover ') || lowerTrimmed.startsWith('!limpar ')) {
     const prefixLen = lowerTrimmed.startsWith('!remover ') ? 9 : 8;
     const bossRaw = trimmed.substring(prefixLen);
-    const bossName = normalizeBossName(bossRaw);
-    if (!bossName || RESERVED_WORDS.has(bossName)) return null;
-    return { type: 'remove', bossName };
+    const bosses = bossRaw.split(',').map(b => normalizeBossName(b)).filter(b => b && !RESERVED_WORDS.has(b));
+    if (bosses.length === 0) return null;
+    return { type: 'remove_multiple', bosses };
   }
 
   // 5. !confirmar <boss> [ | ou , extra text] ou !c <boss> [ | ou , extra text]
@@ -114,11 +127,11 @@ export function parseMessage(text) {
     return { type: 'confirm', bossName, extraText };
   }
 
-  // 6. !<boss> (can have spaces, e.g. !man in the cave)
+  // 6. !<boss_list> (comma separated)
   const bossRaw = trimmed.substring(1).trim();
-  const bossName = normalizeBossName(bossRaw);
-  if (!bossName || RESERVED_WORDS.has(bossName)) return null;
-  return { type: 'subscribe', bossName };
+  const bosses = bossRaw.split(',').map(b => normalizeBossName(b)).filter(b => b && !RESERVED_WORDS.has(b));
+  if (bosses.length === 0) return null;
+  return { type: 'subscribe_multiple', bosses };
 }
 
 export function getLevenshteinDistance(a, b) {
