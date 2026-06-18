@@ -284,13 +284,22 @@ export async function connectToWhatsApp() {
           const bossesList = loadBosses().sort((a, b) => a.localeCompare(b));
           
           if (!parsed.arg) {
-            let menuText = `📋 *Lista de Bosses disponíveis:*\n\n`;
-            bossesList.forEach((boss, idx) => {
-              menuText += `${idx + 1}. ${boss}\n`;
-            });
-            menuText += `\n👉 *Para se inscrever ou remover, digite:*\n*!bosses <números separados por vírgula>*\nExemplo: \`!bosses 1, 5, 12\`\n\n👉 *Para se inscrever em TODOS:*\n*!bosses todos*`;
+            const imagePath = path.resolve('assets', 'bosses_menu.jpg');
+            if (fs.existsSync(imagePath)) {
+              await sock.sendMessage(remoteJid, { 
+                image: fs.readFileSync(imagePath), 
+                caption: `👉 *Para se inscrever ou remover, digite:*\n*!bosses <números separados por vírgula>*\nExemplo: \`!bosses 1, 5, 12\`\n\n👉 *Para se inscrever em TODOS:*\n*!bosses todos*`
+              }, { quoted: msg });
+            } else {
+              // Fallback to text if image not found
+              let menuText = `📋 *Lista de Bosses disponíveis:*\n\n`;
+              bossesList.forEach((boss, idx) => {
+                menuText += `${idx + 1}. ${boss}\n`;
+              });
+              menuText += `\n👉 *Para se inscrever ou remover, digite:*\n*!bosses <números separados por vírgula>*\nExemplo: \`!bosses 1, 5, 12\`\n\n👉 *Para se inscrever em TODOS:*\n*!bosses todos*`;
 
-            await sock.sendMessage(remoteJid, { text: menuText }, { quoted: msg });
+              await sock.sendMessage(remoteJid, { text: menuText }, { quoted: msg });
+            }
             return;
           }
 
