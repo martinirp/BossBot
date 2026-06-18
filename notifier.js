@@ -30,7 +30,9 @@ export async function sendPushoverMessage(token, user, message, title = 'BossBot
         user,
         message,
         title,
-        priority: 1
+        priority: 2,
+        retry: 30,    // Repetir a notificação a cada 30 segundos
+        expire: 3600  // Parar de repetir após 1 hora (3600 segundos) se não for confirmada
       })
     });
     if (!response.ok) {
