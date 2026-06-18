@@ -554,12 +554,12 @@ export async function connectToWhatsApp() {
 
           if (subscribers.length === 0) {
             await sock.sendMessage(remoteJid, {
-              text: `📢 *BOSS CONFIRMADO!*\n⚔️ *Boss:* ${matchedBossName.toUpperCase()}${correctionNotice}\n👤 *Por:* @${senderPhone}\n🕒 *Horário:* ${timeString}\n📭 _Não há membros inscritos para notificação no momento._`,
+              text: `📢 *BOSS CONFIRMADO!*\n⚔️ ${matchedBossName.toUpperCase()}${correctionNotice}\n👤 *Por:* @${senderPhone}\n🕒 *Horário:* ${timeString}\n📭 _Não há membros inscritos para notificação no momento._`,
               mentions: [senderJid]
             }, { quoted: msg });
           } else {
             await sock.sendMessage(remoteJid, {
-              text: `📢 *BOSS CONFIRMADO!*\n⚔️ *Boss:* ${matchedBossName.toUpperCase()}${correctionNotice}\n👤 *Por:* @${senderPhone}\n🕒 *Horário:* ${timeString}\n🔔 Disparando notificações\n📋 ${subscribers.length} inscrito(s)`,
+              text: `📢 *BOSS CONFIRMADO!*\n⚔️ ${matchedBossName.toUpperCase()}${correctionNotice}\n👤 *Por:* @${senderPhone}\n🕒 *Horário:* ${timeString}\n🔔 Disparando notificações\n📋 ${subscribers.length} inscrito(s)`,
               mentions: [senderJid]
             }, { quoted: msg });
 
