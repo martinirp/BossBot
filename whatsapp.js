@@ -347,6 +347,7 @@ export async function connectToWhatsApp() {
           }
         }
 
+        /*
         else if (parsed.type === 'alert_set') {
           const success = await db.setGlobalSetting('global_alert_level', parsed.level);
           if (success) {
@@ -366,6 +367,7 @@ export async function connectToWhatsApp() {
             }, { quoted: msg });
           }
         }
+        */
 
         else if (parsed.type === 'pushover_remove') {
           const success = await db.removeUserPushoverKey(senderJid);
