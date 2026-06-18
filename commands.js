@@ -62,6 +62,15 @@ export function parseMessage(text) {
     return { type: 'pushover_set', key };
   }
 
+  // 2.8. !alert
+  if (lowerTrimmed.startsWith('!alert ')) {
+    const levelStr = trimmed.substring(7).trim();
+    const level = parseInt(levelStr, 10);
+    if (!isNaN(level) && level >= 0 && level <= 2) {
+      return { type: 'alert_set', level };
+    }
+  }
+
   // 2.6. !limpar (no arguments - clear_help)
   if (lowerTrimmed === '!limpar') {
     return { type: 'clear_help' };

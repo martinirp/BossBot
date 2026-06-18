@@ -347,6 +347,26 @@ export async function connectToWhatsApp() {
           }
         }
 
+        else if (parsed.type === 'alert_set') {
+          const success = await db.setUserAlertLevel(senderJid, parsed.level);
+          if (success) {
+            let desc = '';
+            if (parsed.level === 0) desc = 'Normal (Toca 1 vez, respeita silencioso)';
+            else if (parsed.level === 1) desc = 'Alta (Toca 1 vez, destaca em vermelho, respeita silencioso)';
+            else if (parsed.level === 2) desc = 'Emergência (Fica repetindo, fura o silencioso e volume no máximo)';
+            
+            await sock.sendMessage(remoteJid, {
+              text: `✅ @${senderPhone}, seu nível de alerta no Pushover foi alterado para:\n*Nível ${parsed.level}:* ${desc}`,
+              mentions: [senderJid]
+            }, { quoted: msg });
+          } else {
+            await sock.sendMessage(remoteJid, {
+              text: `⚠️ @${senderPhone}, ocorreu um erro ao salvar o nível de alerta. Certifique-se de que você já cadastrou uma chave Pushover primeiro usando o comando *!pushover <key>*.`,
+              mentions: [senderJid]
+            }, { quoted: msg });
+          }
+        }
+
         else if (parsed.type === 'pushover_remove') {
           const success = await db.removeUserPushoverKey(senderJid);
           if (success) {

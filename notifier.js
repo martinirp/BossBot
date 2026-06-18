@@ -19,20 +19,27 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
  * @param {string} message - The message body
  * @param {string} title - The title of the alert
  */
-export async function sendPushoverMessage(token, user, message, title = 'BossBot Alert') {
+export async function sendPushoverMessage(token, user, message, title = 'BossBot Alert', priority = 1) {
   if (!token || !user) return;
   try {
+    const bodyObj = {
+      token,
+      user,
+      message,
+      title,
+      priority,
+      sound: 'spacealarm'
+    };
+
+    if (priority === 2) {
+      bodyObj.retry = 30;
+      bodyObj.expire = 3600;
+    }
+
     const response = await fetch('https://api.pushover.net/1/messages.json', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        token,
-        user,
-        message,
-        title,
-        priority: 1,        // Prioridade Alta (mas não fura o silencioso se o celular não quiser)
-        sound: 'alien'      // Som de alien (mais perceptível)
-      })
+      body: JSON.stringify(bodyObj)
     });
     if (!response.ok) {
       const errText = await response.text();
@@ -92,10 +99,10 @@ async function processQueue() {
           const promises = [];
           for (const subscriber of subscribers) {
             const cleanJid = jidNormalizedUser(subscriber);
-            const userKey = mapping[cleanJid];
-            if (userKey) {
-              console.log(`[PUSHOVER] Enviando notificação pessoal para ${cleanJid}`);
-              promises.push(sendPushoverMessage(globalToken, userKey, alertMessage, `BossBot: ${uppercaseBoss}`));
+            const userPref = mapping[cleanJid];
+            if (userPref && userPref.key) {
+              console.log(`[PUSHOVER] Enviando notificação pessoal para ${cleanJid} (Priority: ${userPref.alert_level})`);
+              promises.push(sendPushoverMessage(globalToken, userPref.key, alertMessage, `BossBot: ${uppercaseBoss}`, userPref.alert_level));
             }
           }
           return Promise.all(promises);

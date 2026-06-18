@@ -29,9 +29,13 @@ export function initDb() {
           CREATE TABLE IF NOT EXISTS user_pushover (
             jid TEXT PRIMARY KEY,
             pushover_key TEXT NOT NULL,
+            alert_level INTEGER DEFAULT 1,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
           )
         `);
+        
+        // Migrate existing DBs (ignore error if column already exists)
+        db.run(`ALTER TABLE user_pushover ADD COLUMN alert_level INTEGER DEFAULT 1`, () => {});
 
         // Create allowed_groups table
         db.run(`
@@ -181,9 +185,26 @@ export function addBossReport(bossName, extraText, reportedByJid, notifiedCount)
 export function setUserPushoverKey(jid, key) {
   const cleanJid = jidNormalizedUser(jid);
   return new Promise((resolve, reject) => {
+    // We use INSERT ... ON CONFLICT UPDATE or similar. In sqlite < 3.24 INSERT OR REPLACE replaces the whole row.
+    // If we replace the row, alert_level is lost. We need to do an update or insert.
     db.run(
-      `INSERT OR REPLACE INTO user_pushover (jid, pushover_key) VALUES (?, ?)`,
+      `INSERT INTO user_pushover (jid, pushover_key) VALUES (?, ?) 
+       ON CONFLICT(jid) DO UPDATE SET pushover_key = excluded.pushover_key`,
       [cleanJid, key],
+      function (err) {
+        if (err) return reject(err);
+        resolve(this.changes > 0);
+      }
+    );
+  });
+}
+
+export function setUserAlertLevel(jid, level) {
+  const cleanJid = jidNormalizedUser(jid);
+  return new Promise((resolve, reject) => {
+    db.run(
+      `UPDATE user_pushover SET alert_level = ? WHERE jid = ?`,
+      [level, cleanJid],
       function (err) {
         if (err) return reject(err);
         resolve(this.changes > 0);
@@ -226,13 +247,16 @@ export function getPushoverKeysForSubscribers(jids) {
   const placeholders = cleanJids.map(() => '?').join(',');
   return new Promise((resolve, reject) => {
     db.all(
-      `SELECT jid, pushover_key FROM user_pushover WHERE jid IN (${placeholders})`,
+      `SELECT jid, pushover_key, alert_level FROM user_pushover WHERE jid IN (${placeholders})`,
       cleanJids,
       (err, rows) => {
         if (err) return reject(err);
         const mapping = {};
         for (const row of rows) {
-          mapping[row.jid] = row.pushover_key;
+          mapping[row.jid] = {
+            key: row.pushover_key,
+            alert_level: row.alert_level !== undefined && row.alert_level !== null ? row.alert_level : 1
+          };
         }
         resolve(mapping);
       }
