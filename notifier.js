@@ -68,8 +68,8 @@ async function processQueue() {
   try {
     const uppercaseBoss = bossName.toUpperCase();
     const alertMessage = extraText 
-      ? `🚨🚨 ALERTA DE BOSS: ${uppercaseBoss} 🚨🚨\nLocal/Detalhes: ${extraText}`
-      : `🚨🚨 ALERTA DE BOSS: ${uppercaseBoss} 🚨🚨`;
+      ? `🚨 *ALERTA DE BOSS* 🚨\n\n⚔️ *Boss:* ${uppercaseBoss}\n📍 *Detalhes:* ${extraText}\n\n_Prepare-se para a batalha!_`
+      : `🚨 *ALERTA DE BOSS* 🚨\n\n⚔️ *Boss:* ${uppercaseBoss}\n\n_Prepare-se para a batalha!_`;
 
     console.log(`Starting notifications for boss ${uppercaseBoss} to ${subscribers.length} subscribers.`);
 
