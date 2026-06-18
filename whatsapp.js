@@ -427,12 +427,12 @@ export async function connectToWhatsApp() {
 
           if (subscribers.length === 0) {
             await sock.sendMessage(remoteJid, {
-              text: `📢 *BOSS CONFIRMADO!*\n\n⚔️ *${matchedBossName.toUpperCase()}*${correctionNotice}\n👤 *Por:* @${senderPhone}\n\n_Não há membros inscritos para notificação no momento._`,
+              text: `📢 *BOSS CONFIRMADO!*\n\n⚔️ *Boss:* ${matchedBossName.toUpperCase()}${correctionNotice}\n👤 *Por:* @${senderPhone}\n\n_Não há membros inscritos para notificação no momento._`,
               mentions: [senderJid]
             }, { quoted: msg });
           } else {
             await sock.sendMessage(remoteJid, {
-              text: `📢 *BOSS CONFIRMADO!*\n\n⚔️ *${matchedBossName.toUpperCase()}*${correctionNotice}\n👤 *Por:* @${senderPhone}\n\n🔔 Disparando notificações\nX inscrito(s ) ${subscribers.length}`,
+              text: `📢 *BOSS CONFIRMADO!*\n\n⚔️ *Boss:* ${matchedBossName.toUpperCase()}${correctionNotice}\n👤 *Por:* @${senderPhone}\n\n🔔 Disparando notificações\nX ${subscribers.length} inscrito(s)`,
               mentions: [senderJid]
             }, { quoted: msg });
 
