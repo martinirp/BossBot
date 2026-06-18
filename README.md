@@ -36,6 +36,7 @@ Este projeto foi construído utilizando Node.js, `baileys` (para a conexão com 
 - `DB_FILE`: Nome do arquivo do banco SQLite (padrão: `bossbot.db`).
 - `PUSHOVER_TOKEN`: O token ("API Token/Key") do seu aplicativo criado no Pushover.
 - `PUSHOVER_USER_KEY`: Chave de usuário para onde a notificação "global" é enviada (opcional, pode ser substituída ou complementada pelos registros pessoais).
+- `PUSHOVER_RETRY`: Tempo de repetição em segundos para alertas de emergência (padrão: `30`).
 
 ---
 
