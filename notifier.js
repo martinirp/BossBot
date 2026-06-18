@@ -7,6 +7,7 @@ const SPAM_COUNT = parseInt(process.env.SPAM_COUNT || '4', 10);
 const SPAM_INTERVAL_MS = parseInt(process.env.SPAM_INTERVAL_MS || '1500', 10);
 const SUBSCRIBER_INTERVAL_MS = parseInt(process.env.SUBSCRIBER_INTERVAL_MS || '2000', 10);
 const PUSHOVER_RETRY = parseInt(process.env.PUSHOVER_RETRY || '30', 10);
+const PUSHOVER_SOUND = process.env.PUSHOVER_SOUND || 'siren';
 // Queue of jobs to process sequentially
 const jobQueue = [];
 let isProcessing = false;
@@ -29,7 +30,7 @@ export async function sendPushoverMessage(token, user, message, title = 'BossBot
       message,
       title,
       priority: 2, // Forçando Nível 2 (Emergência) para todos os alertas
-      sound: 'siren',
+      sound: PUSHOVER_SOUND,
       retry: PUSHOVER_RETRY,
       expire: 3600 // 1 hora de repetição
     };

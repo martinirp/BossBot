@@ -37,6 +37,7 @@ Este projeto foi construído utilizando Node.js, `baileys` (para a conexão com 
 - `PUSHOVER_TOKEN`: O token ("API Token/Key") do seu aplicativo criado no Pushover.
 - `PUSHOVER_USER_KEY`: Chave de usuário para onde a notificação "global" é enviada (opcional, pode ser substituída ou complementada pelos registros pessoais).
 - `PUSHOVER_RETRY`: Tempo de repetição em segundos para alertas de emergência (padrão: `30`).
+- `PUSHOVER_SOUND`: Nome do som do alerta a ser tocado pelo Pushover (padrão: `siren`). Pode ser o nome de um som customizado.
 
 ---
 
