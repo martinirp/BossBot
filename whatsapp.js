@@ -432,7 +432,7 @@ export async function connectToWhatsApp() {
             }, { quoted: msg });
           } else {
             await sock.sendMessage(remoteJid, {
-              text: `📢 *BOSS CONFIRMADO!*\n\n⚔️ *${matchedBossName.toUpperCase()}*${correctionNotice}\n👤 *Por:* @${senderPhone}\n\n🔔 _Disparando notificações (DM e Pushover) para ${subscribers.length} inscrito(s)..._`,
+              text: `📢 *BOSS CONFIRMADO!*\n\n⚔️ *${matchedBossName.toUpperCase()}*${correctionNotice}\n👤 *Por:* @${senderPhone}\n\n🔔 Disparando notificações\nX inscrito(s ) ${subscribers.length}`,
               mentions: [senderJid]
             }, { quoted: msg });
 
