@@ -427,12 +427,7 @@ export async function connectToWhatsApp() {
    - \`!pushover <chave>\`: Cadastra seu User Key pessoal.
    - \`!pushover remover\`: Remove seu User Key.
 
-8. *Nível de Alerta Pushover (Global):*
-   - \`!alert 0\`: Normal (Toca 1 vez).
-   - \`!alert 1\`: Alto (Toca 1 vez, em destaque vermelho).
-   - \`!alert 2\`: Emergência (Sirene toca sem parar e fura o silencioso).
-
-9. *Ajuda:*
+8. *Ajuda:*
    - \`!help\` ou \`!ajuda\`: Mostra esta lista de comandos.`;
 
           await sock.sendMessage(remoteJid, {
