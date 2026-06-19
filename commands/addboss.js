@@ -11,28 +11,11 @@ export default {
     const bossesList = loadBosses();
 
     if (args.length === 0) {
-      const imagePath = path.resolve('assets', 'bosses_menu.jpg');
-      if (fs.existsSync(imagePath)) {
-        await sock.sendMessage(remoteJid, {
-          image: fs.readFileSync(imagePath),
-          caption: `👉 *Para se inscrever ou remover, digite:*\n*${prefix}addboss <números separados por vírgula>*\nExemplo: \`${prefix}addboss 1, 5, 12\`\n\n👉 *Para se inscrever em TODOS:*\n*${prefix}addall*`
-        }, { quoted: msg });
-
-        if (bossesList.length > 96) {
-          let extraText = `📝 *Bosses adicionados que não constam na imagem:*\n`;
-          for (let i = 96; i < bossesList.length; i++) {
-            extraText += `*${i + 1}.* ${bossesList[i]}\n`;
-          }
-          await sock.sendMessage(remoteJid, { text: extraText.trim() }, { quoted: msg });
-        }
-      } else {
-        let menuText = `📋 *Lista de Bosses disponíveis:*\n\n`;
-        bossesList.forEach((boss, idx) => {
-          menuText += `${idx + 1}. ${boss}\n`;
-        });
-        menuText += `\n👉 *Para se inscrever ou remover, digite:*\n*${prefix}addboss <números separados por vírgula>*\nExemplo: \`${prefix}addboss 1, 5, 12\`\n\n👉 *Para se inscrever em TODOS:*\n*${prefix}addall*`;
-        await sock.sendMessage(remoteJid, { text: menuText }, { quoted: msg });
-      }
+      let menuText = `📋 *Lista de Bosses disponíveis:*\n\n`;
+      const inlineList = bossesList.map((boss, idx) => `*${idx + 1}.* ${boss}`).join(' | ');
+      menuText += inlineList;
+      menuText += `\n\n👉 *Para se inscrever ou remover, digite:*\n*${prefix}addboss <números separados por vírgula>*\nExemplo: \`${prefix}addboss 1, 5, 12\`\n\n👉 *Para se inscrever em TODOS:*\n*${prefix}addall*`;
+      await sock.sendMessage(remoteJid, { text: menuText }, { quoted: msg });
       return;
     }
 

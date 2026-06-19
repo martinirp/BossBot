@@ -6,7 +6,7 @@ export default {
       const helpText = `📋 *Comandos do BossBot:*
 
 1. *Menu e Inscrição em Bosses:*
-   - \`${prefix}addboss\` ou \`${prefix}adicionarboss\`: Envia a foto com a lista de bosses.
+   - \`${prefix}addboss\` ou \`${prefix}adicionarboss\`: Envia a lista de bosses.
    - \`${prefix}addboss <número/nome>\`: Inscreve você para receber alertas do boss.
      _Exemplo: \`${prefix}addboss 1, 2, 3\` ou \`${prefix}adicionarboss ferumbras, zomba\`_
    - \`${prefix}addall\` ou \`${prefix}todos\`: Inscreve você em TODOS os bosses.

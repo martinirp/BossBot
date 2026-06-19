@@ -54,7 +54,7 @@ Estes comandos podem ser chamados apenas nos grupos oficiais permitidos (ou na D
 - \`!boss <número ou nome>\`: Inscreve o seu número de WhatsApp para ser notificado sobre aquele boss específico. Você pode passar vários separados por vírgula.
   - _Exemplo: \`!boss 1, 2, 3\` ou \`!boss ferumbras, zomba\`_
 - \`!bosses todos\` ou \`!todos\`: Inscreve você em todos os bosses de uma única vez.
-- \`!bosses\`: Mostra a imagem do menu com a lista e os números de todos os bosses.
+- \`!bosses\`: Mostra a lista e os números de todos os bosses.
 - \`!meusbosses\`: Mostra em quais bosses você está inscrito.
 - \`!remover <nome/numero>\` ou \`!limpar <nome/numero>\`: Remove sua inscrição daquele boss específico.
 - \`!limparbosses\`: Remove todas as suas inscrições de todos os bosses.

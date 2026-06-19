@@ -3,7 +3,6 @@
   "Arachir The Ancient One",
   "Arthom The Hunter",
   "Bane Lord",
-  "Bank",
   "Barbaria",
   "Battlemaster Zunzu",
   "Big Boss Trolliver",
@@ -48,6 +47,7 @@
   "Mawhawk",
   "Midnight Panther",
   "Morgaroth",
+  "Mornenion",
   "Morshabaal",
   "Mr Punish",
   "Nimmersatt",
@@ -93,7 +93,5 @@
   "Zevelon Duskbringer",
   "Zomba",
   "Zulazza The Corruptor",
-  "Zushuka",
-  // Atenção: Adicionar novos bosses no final da lista
-  "Mornenion"
+  "Zushuka"
 ]
