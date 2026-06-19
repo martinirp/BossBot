@@ -53,6 +53,7 @@ export default {
 
     await db.addBossReport(matchedBossName, extraText, senderJid, subscribers.length);
     const now = new Date();
+    now.setHours(now.getHours() - 3);
     const timeString = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
     if (subscribers.length === 0) {

@@ -77,6 +77,7 @@ async function processQueue() {
   try {
     const uppercaseBoss = bossName.toUpperCase();
     const now = new Date();
+    now.setHours(now.getHours() - 3);
     const timeString = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
     const alertMessage = extraText 
