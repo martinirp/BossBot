@@ -1,3 +1,6 @@
+import fs from 'fs';
+import path from 'path';
+
 export function normalizeBossName(name) {
   if (!name) return '';
   return name
@@ -8,147 +11,26 @@ export function normalizeBossName(name) {
     .replace(/\s+/g, ' '); // Collapse multiple spaces to a single space
 }
 
-const RESERVED_WORDS = new Set(['remover', 'confirmar', 'meusbosses', 'bosses', 'enquete', 'help', 'ajuda', 'c', 'reset', 'limpar', 'limparbosses', 'pushover', 'idgrupo', 'addgroup', 'removegroup']);
-
-export function parseMessage(text) {
-  if (!text) return null;
-  const trimmed = text.trim();
-  if (!trimmed.startsWith('!')) return null;
-
-  const lowerTrimmed = trimmed.toLowerCase();
-
-  // 1. !help ou !ajuda
-  if (lowerTrimmed === '!help' || lowerTrimmed === '!ajuda') {
-    return { type: 'help' };
-  }
-
-  // 1.5. !idgrupo
-  if (lowerTrimmed === '!idgrupo') {
-    return { type: 'group_id' };
-  }
-
-  // 1.6. !addgroup / !removegroup
-  if (lowerTrimmed === '!addgroup') {
-    return { type: 'addgroup' };
-  }
-  if (lowerTrimmed === '!removegroup') {
-    return { type: 'removegroup' };
-  }
-
-  // 1.8. !reset
-  if (lowerTrimmed === '!reset') {
-    return { type: 'reset' };
-  }
-
-  // 2. !meusbosses
-  if (lowerTrimmed === '!meusbosses') {
-    return { type: 'list' };
-  }
-
-  // 2.5. !limparbosses (clears all)
-  if (lowerTrimmed === '!limparbosses') {
-    return { type: 'clear' };
-  }
-
-  // 2.7. !pushover
-  if (lowerTrimmed === '!pushover') {
-    return { type: 'pushover_get' };
-  }
-  if (lowerTrimmed.startsWith('!pushover ')) {
-    const key = trimmed.substring(10).trim();
-    if (key.toLowerCase() === 'remover' || key.toLowerCase() === 'limpar') {
-      return { type: 'pushover_remove' };
+export function loadBosses() {
+  const filePath = path.resolve('bosses.json');
+  if (!fs.existsSync(filePath)) {
+    const defaultBosses = [
+      "Ferumbras", "Ghazbaran", "Morgaroth", "Orshabaal", "Zushuka", 
+      "Chayenne", "Shlorg", "Munster", "Onyx", "Grand Mother Reapers"
+    ];
+    try {
+      fs.writeFileSync(filePath, JSON.stringify(defaultBosses, null, 2), 'utf-8');
+    } catch (e) {
+      console.error('Failed to create default bosses.json:', e);
     }
-    return { type: 'pushover_set', key };
+    return defaultBosses;
   }
-
-  /*
-  // 2.8. !alert
-  if (lowerTrimmed.startsWith('!alert ')) {
-    const levelStr = trimmed.substring(7).trim();
-    const level = parseInt(levelStr, 10);
-    if (!isNaN(level) && level >= 0 && level <= 2) {
-      return { type: 'alert_set', level };
-    }
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+  } catch (err) {
+    console.error('Error loading bosses.json, using defaults:', err);
+    return ["Ferumbras", "Ghazbaran", "Morgaroth", "Orshabaal", "Zushuka", "Munster"];
   }
-  */
-
-  // 2.6. !limpar (no arguments - clear_help)
-  if (lowerTrimmed === '!limpar') {
-    return { type: 'clear_help' };
-  }
-
-  // 3. !bosses <arg>
-  if (lowerTrimmed === '!bosses') {
-    return { type: 'bosses_menu', arg: null };
-  }
-  if (lowerTrimmed.startsWith('!bosses ')) {
-    const prefixLen = 8;
-    const arg = trimmed.substring(prefixLen).trim().toLowerCase();
-    if (arg === 'todos') {
-      return { type: 'bosses_menu', arg: 'todos' };
-    }
-    const bosses = arg.split(',').map(b => normalizeBossName(b)).filter(Boolean);
-    if (bosses.length === 0) return null;
-    return { type: 'subscribe_multiple', bosses };
-  }
-
-  if (lowerTrimmed.startsWith('!boss ')) {
-    const prefixLen = 6;
-    const arg = trimmed.substring(prefixLen).trim();
-    if (arg.toLowerCase() === 'todos') {
-      return { type: 'bosses_menu', arg: 'todos' };
-    }
-    const bosses = arg.split(',').map(b => normalizeBossName(b)).filter(Boolean);
-    if (bosses.length === 0) return null;
-    return { type: 'subscribe_multiple', bosses };
-  }
-
-  // 4. !remover <boss> ou !limpar <boss> (removes multiple bosses)
-  if (lowerTrimmed.startsWith('!remover ') || lowerTrimmed.startsWith('!limpar ')) {
-    const prefixLen = lowerTrimmed.startsWith('!remover ') ? 9 : 8;
-    const bossRaw = trimmed.substring(prefixLen);
-    const bosses = bossRaw.split(',').map(b => normalizeBossName(b)).filter(b => b && !RESERVED_WORDS.has(b));
-    if (bosses.length === 0) return null;
-    return { type: 'remove_multiple', bosses };
-  }
-
-  // 5. !confirmar <boss> [ | ou , extra text] ou !c <boss> [ | ou , extra text]
-  if (lowerTrimmed.startsWith('!confirmar ') || lowerTrimmed.startsWith('!c ')) {
-    const prefixLen = lowerTrimmed.startsWith('!confirmar ') ? 11 : 3;
-    const rest = trimmed.substring(prefixLen).trim();
-    if (!rest) return null;
-
-    let bossRaw = rest;
-    let extraText = '';
-
-    const commaIndex = rest.indexOf(',');
-    const pipeIndex = rest.indexOf('|');
-    let separatorIndex = -1;
-    if (commaIndex !== -1 && pipeIndex !== -1) {
-      separatorIndex = Math.min(commaIndex, pipeIndex);
-    } else {
-      separatorIndex = commaIndex !== -1 ? commaIndex : pipeIndex;
-    }
-
-    if (separatorIndex !== -1) {
-      bossRaw = rest.substring(0, separatorIndex).trim();
-      extraText = rest.substring(separatorIndex + 1).trim();
-    }
-
-    const bossName = normalizeBossName(bossRaw);
-    if (!bossName || RESERVED_WORDS.has(bossName)) return null;
-    return { type: 'confirm', bossName, extraText };
-  }
-
-  // 6. !<boss_list> (comma separated)
-  const bossRaw = trimmed.substring(1).trim();
-  if (bossRaw.toLowerCase() === 'todos') {
-    return { type: 'bosses_menu', arg: 'todos' };
-  }
-  const bosses = bossRaw.split(',').map(b => normalizeBossName(b)).filter(b => b && !RESERVED_WORDS.has(b));
-  if (bosses.length === 0) return null;
-  return { type: 'subscribe_multiple', bosses };
 }
 
 export function getLevenshteinDistance(a, b) {
@@ -188,19 +70,16 @@ export function findBossMatch(input, bossesList) {
     return { match: null, suggestions: [] };
   }
 
-  // Map each original boss name to its normalized version
   const mappedBosses = bossesList.map(original => ({
     original,
     normalized: normalizeBossName(original)
   }));
 
-  // 1. Exact match
   const exact = mappedBosses.find(b => b.normalized === normalizedInput);
   if (exact) {
     return { match: exact.original, suggestions: [] };
   }
 
-  // 2. Prefix / Substring match
   const partials = mappedBosses.filter(b => b.normalized.includes(normalizedInput));
   if (partials.length === 1) {
     return { match: partials[0].original, suggestions: [] };
@@ -208,7 +87,6 @@ export function findBossMatch(input, bossesList) {
     return { match: null, suggestions: partials.map(b => b.original) };
   }
 
-  // 3. Edit distance (Levenshtein)
   const distances = mappedBosses.map(b => ({
     boss: b,
     distance: getLevenshteinDistance(normalizedInput, b.normalized)
