@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import { jidNormalizedUser } from '@whiskeysockets/baileys';
-import { getPushoverKeysForSubscribers, getGlobalSetting } from './database.js';
+import * as db from './database.js';
 dotenv.config();
 
 const SPAM_COUNT = parseInt(process.env.SPAM_COUNT || '4', 10);
@@ -86,13 +86,30 @@ async function processQueue() {
 
     console.log(`Starting notifications for boss ${uppercaseBoss} to ${subscribers.length} subscribers.`);
 
+    const allowedGroups = await db.getAllowedGroups();
+    const activeMembersSet = new Set();
+    
+    for (const groupJid of allowedGroups) {
+      try {
+        const metadata = await sock.groupMetadata(groupJid);
+        for (const p of metadata.participants) {
+          activeMembersSet.add(jidNormalizedUser(p.id));
+        }
+      } catch (err) {
+        console.error(`Erro ao buscar metadados do grupo ${groupJid}:`, err);
+      }
+    }
+
+    const validSubscribers = subscribers.filter(sub => activeMembersSet.has(jidNormalizedUser(sub)));
+    console.log(`Filtered down to ${validSubscribers.length} valid subscribers (currently in allowed groups).`);
+
     // 1. Process Pushover notifications in parallel immediately
     const globalToken = process.env.PUSHOVER_TOKEN;
     const globalUser = process.env.PUSHOVER_USER_KEY;
 
     if (globalToken) {
       if (globalUser) {
-        const globalLevelStr = await getGlobalSetting('global_alert_level');
+        const globalLevelStr = await db.getGlobalSetting('global_alert_level');
         const globalLevel = globalLevelStr !== null ? parseInt(globalLevelStr, 10) : 1;
         
         console.log(`[PUSHOVER] Enviando notificação global para o boss ${uppercaseBoss} (Priority: ${globalLevel})`);
@@ -101,10 +118,10 @@ async function processQueue() {
         });
       }
 
-      if (subscribers.length > 0) {
-        getPushoverKeysForSubscribers(subscribers).then(mapping => {
+      if (validSubscribers.length > 0) {
+        db.getPushoverKeysForSubscribers(validSubscribers).then(mapping => {
           const promises = [];
-          for (const subscriber of subscribers) {
+          for (const subscriber of validSubscribers) {
             const cleanJid = jidNormalizedUser(subscriber);
             const userPref = mapping[cleanJid];
             if (userPref && userPref.key) {
@@ -119,9 +136,9 @@ async function processQueue() {
       }
     }
 
-    for (let i = 0; i < subscribers.length; i++) {
-      const jid = jidNormalizedUser(subscribers[i]);
-      console.log(`Notifying ${jid} (${i + 1}/${subscribers.length})`);
+    for (let i = 0; i < validSubscribers.length; i++) {
+      const jid = jidNormalizedUser(validSubscribers[i]);
+      console.log(`Notifying ${jid} (${i + 1}/${validSubscribers.length})`);
 
       for (let j = 0; j < SPAM_COUNT; j++) {
         try {
@@ -138,7 +155,7 @@ async function processQueue() {
       }
 
       // Wait between subscribers (except after the last subscriber)
-      if (i < subscribers.length - 1) {
+      if (i < validSubscribers.length - 1) {
         await sleep(SUBSCRIBER_INTERVAL_MS);
       }
     }
