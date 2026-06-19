@@ -48,23 +48,21 @@ export default {
     }
 
     const matchedBossName = matchResult.match;
-    const isCorrected = normalizeBossName(bossRaw) !== normalizeBossName(matchedBossName);
 
     const subscribers = await db.getSubscribers(matchedBossName);
 
     await db.addBossReport(matchedBossName, extraText, senderJid, subscribers.length);
-    const correctionNotice = isCorrected ? ` (corrigido de *${bossRaw}*)` : '';
     const now = new Date();
     const timeString = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
     if (subscribers.length === 0) {
       await sock.sendMessage(remoteJid, {
-        text: `📢 *BOSS CONFIRMADO!*\n⚔️ ${matchedBossName.toUpperCase()}${correctionNotice}\n👤 *Por:* @${senderPhone}\n🕒 *Horário:* ${timeString}\n📭 _Não há membros inscritos para notificação no momento._`,
+        text: `📢 BOSS CONFIRMADO!\n⚔️ *${matchedBossName.toUpperCase()}*\n👤 Por: @${senderPhone}\n🕒 Horário: ${timeString}\n📭 Não há membros inscritos para notificação no momento.`,
         mentions: [senderJid]
       }, { quoted: msg });
     } else {
       await sock.sendMessage(remoteJid, {
-        text: `📢 *BOSS CONFIRMADO!*\n⚔️ ${matchedBossName.toUpperCase()}${correctionNotice}\n👤 *Por:* @${senderPhone}\n🕒 *Horário:* ${timeString}\n🔔 Disparando notificações\n📋 ${subscribers.length} inscrito(s)`,
+        text: `📢 BOSS CONFIRMADO!\n⚔️ *${matchedBossName.toUpperCase()}*\n👤 Por: @${senderPhone}\n🕒 Horário: ${timeString}\n🔔 Disparando notificações\n📋 ${subscribers.length} inscrito(s)`,
         mentions: [senderJid]
       }, { quoted: msg });
 
