@@ -8,7 +8,7 @@ export default {
   aliases: ['adicionarboss'],
   execute: async (context, args) => {
     const { sock, msg, remoteJid, senderJid, senderPhone, prefix } = context;
-    const bossesList = loadBosses().sort((a, b) => a.localeCompare(b));
+    const bossesList = loadBosses();
 
     if (args.length === 0) {
       const imagePath = path.resolve('assets', 'bosses_menu.jpg');
@@ -17,6 +17,14 @@ export default {
           image: fs.readFileSync(imagePath),
           caption: `👉 *Para se inscrever ou remover, digite:*\n*${prefix}addboss <números separados por vírgula>*\nExemplo: \`${prefix}addboss 1, 5, 12\`\n\n👉 *Para se inscrever em TODOS:*\n*${prefix}addall*`
         }, { quoted: msg });
+
+        if (bossesList.length > 96) {
+          let extraText = `📝 *Bosses adicionados que não constam na imagem:*\n`;
+          for (let i = 96; i < bossesList.length; i++) {
+            extraText += `*${i + 1}.* ${bossesList[i]}\n`;
+          }
+          await sock.sendMessage(remoteJid, { text: extraText.trim() }, { quoted: msg });
+        }
       } else {
         let menuText = `📋 *Lista de Bosses disponíveis:*\n\n`;
         bossesList.forEach((boss, idx) => {
