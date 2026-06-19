@@ -5,7 +5,7 @@ import { normalizeBossName, findBossMatch, loadBosses } from '../commands.js';
 
 export default {
   name: 'addboss',
-  aliases: ['adicionarboss'],
+  aliases: ['adicionarboss', 'bosses'],
   execute: async (context, args) => {
     const { sock, msg, remoteJid, senderJid, senderPhone, prefix } = context;
     const bossesList = loadBosses();
