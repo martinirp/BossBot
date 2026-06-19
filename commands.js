@@ -26,7 +26,9 @@ export function loadBosses() {
     return defaultBosses;
   }
   try {
-    return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    const fileContent = fs.readFileSync(filePath, 'utf-8');
+    const cleanContent = fileContent.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, '$1');
+    return JSON.parse(cleanContent);
   } catch (err) {
     console.error('Error loading bosses.json, using defaults:', err);
     return ["Ferumbras", "Ghazbaran", "Morgaroth", "Orshabaal", "Zushuka", "Munster"];
