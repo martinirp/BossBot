@@ -30,23 +30,19 @@ export default {
    - \`${prefix}pushover remover\`: Remove seu User Key.
    - \`${prefix}test\` ou \`${prefix}teste\`: Envia uma notificação de teste para o seu Pushover.
 
-7. *Informações de Boss:*
-   - \`${prefix}last <boss>\` (Aliases: \`${prefix}historico\`): Mostra a última vez que o boss foi avistado.
-   - \`${prefix}check <boss>\`: Registra que você checou o spawn e o boss *não* estava lá.
-   - \`${prefix}lastcheck <boss>\` (Alias: \`${prefix}uc\`): Mostra o último check e o último avistamento do boss.
+7. *Histórico e Checagem de Bosses:*
+   - \`${prefix}last <boss>\` (Aliases: \`${prefix}historico\`): Exibe o registro da última vez que o boss foi confirmado vivo, mostrando a data, a hora e quem encontrou.
+   - \`${prefix}check <boss>\` (Aliases: \`${prefix}checar\`): Foi no respawn e o boss não estava? Use este comando para registrar a hora exata da sua checagem. Isso ajuda outros a saberem que o respawn está limpo recentemente!
+   - \`${prefix}lastcheck <boss>\` (Alias: \`${prefix}uc\`): Traz as informações combinadas: mostra a última pessoa que encontrou o boss vivo E também o último registro de quem foi lá checar e achou vazio.
 
-8. *Ranking:*
-   - \`${prefix}rank\` ou \`${prefix}ranking\`: Exibe o ranking mensal de quem mais encontrou bosses.
+8. *Competição / Ranking:*
+   - \`${prefix}rank\` ou \`${prefix}ranking\`: Exibe o Placar de Líderes do mês! Conta quantos bosses cada jogador confirmou no mês atual. O ranking é zerado automaticamente a cada virada de mês.
 
-9. *Comandos de Grupo (Admin):*
-   - \`${prefix}addgroup\`: Habilita o bot neste grupo.
-   - \`${prefix}removegroup\`: Desabilita o bot neste grupo.
-   - \`${prefix}groupid\` ou \`${prefix}idgrupo\`: Exibe o ID do grupo atual.
-   - \`${prefix}forceaddboss <boss>\`: Inscreve todos os membros do grupo em um boss específico.
+9. *Administração:*
+   - \`${prefix}adm\` ou \`${prefix}admin\`: Lista os comandos de uso gerencial e administração de grupos.
 
 10. *Sistema:*
-    - \`${prefix}help\` ou \`${prefix}ajuda\`: Mostra esta lista de comandos.
-    - \`${prefix}reset\`: Reinicia o bot.`;
+    - \`${prefix}help\` ou \`${prefix}ajuda\`: Mostra esta lista de comandos.`;
 
       await sock.sendMessage(remoteJid, { text: helpText }, { quoted: msg });
    }
