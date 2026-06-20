@@ -30,14 +30,23 @@ export default {
    - \`${prefix}pushover remover\`: Remove seu User Key.
    - \`${prefix}test\` ou \`${prefix}teste\`: Envia uma notificação de teste para o seu Pushover.
 
-7. *Comandos de Grupo:*
+7. *Informações de Boss:*
+   - \`${prefix}last <boss>\` (Aliases: \`${prefix}historico\`): Mostra a última vez que o boss foi avistado.
+   - \`${prefix}check <boss>\`: Registra que você checou o spawn e o boss *não* estava lá.
+   - \`${prefix}lastcheck <boss>\` (Alias: \`${prefix}uc\`): Mostra o último check e o último avistamento do boss.
+
+8. *Ranking:*
+   - \`${prefix}rank\` ou \`${prefix}ranking\`: Exibe o ranking mensal de quem mais encontrou bosses.
+
+9. *Comandos de Grupo (Admin):*
    - \`${prefix}addgroup\`: Habilita o bot neste grupo.
    - \`${prefix}removegroup\`: Desabilita o bot neste grupo.
    - \`${prefix}groupid\` ou \`${prefix}idgrupo\`: Exibe o ID do grupo atual.
+   - \`${prefix}forceaddboss <boss>\`: Inscreve todos os membros do grupo em um boss específico.
 
-8. *Sistema:*
-   - \`${prefix}help\` ou \`${prefix}ajuda\`: Mostra esta lista de comandos.
-   - \`${prefix}reset\`: Reinicia o bot.`;
+10. *Sistema:*
+    - \`${prefix}help\` ou \`${prefix}ajuda\`: Mostra esta lista de comandos.
+    - \`${prefix}reset\`: Reinicia o bot.`;
 
       await sock.sendMessage(remoteJid, { text: helpText }, { quoted: msg });
    }
