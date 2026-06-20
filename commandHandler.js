@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { pathToFileURL } from 'url';
-import { normalizeBossName, findBossMatch } from './commands.js';
+import { normalizeBossName, findBossMatch, loadBosses } from './commands.js';
 import * as db from './database.js';
 import { jidNormalizedUser } from '@whiskeysockets/baileys';
 
@@ -98,12 +98,32 @@ class CommandHandler {
        }
     }
 
-    const fallbackCmd = this.getCommand('addboss');
-    if (fallbackCmd) {
-      // Reconstroi os argumentos como se fosse "!addboss <boss_list>"
-      // O withoutPrefix inteiro é passado como argumento.
-      const fallbackArgs = withoutPrefix.split(',');
-      await this.executeCommand(fallbackCmd, fallbackArgs, context);
+    // Verifica se os termos digitados correspondem a pelo menos um boss válido
+    const bossesList = loadBosses();
+    const parts = withoutPrefix.split(/[,;\s]+/).filter(Boolean);
+    let hasAnyValidBoss = false;
+
+    for (const part of parts) {
+      const matchResult = findBossMatch(part, bossesList);
+      if (matchResult.match) {
+        hasAnyValidBoss = true;
+        break;
+      }
+    }
+
+    if (hasAnyValidBoss) {
+      const fallbackCmd = this.getCommand('addboss');
+      if (fallbackCmd) {
+        // Reconstroi os argumentos como se fosse "!addboss <boss_list>"
+        // O withoutPrefix inteiro é passado como argumento.
+        const fallbackArgs = withoutPrefix.split(',');
+        await this.executeCommand(fallbackCmd, fallbackArgs, context);
+      }
+    } else {
+      // Se não for comando válido nem corresponder a nenhum boss, exibe aviso
+      await sock.sendMessage(remoteJid, {
+        text: `⚠️ Comando ou boss *"${prefix}${cmdName}"* não reconhecido.\n👉 Digite *${prefix}help* para ver a lista de comandos disponíveis.`
+      }, { quoted: msg });
     }
   }
 

@@ -92,37 +92,24 @@ export function initDb() {
             checked_by TEXT NOT NULL,
             checked_at TEXT NOT NULL
           )
-        `);
-
-        // Create poll messages table
-        db.run(`
-          CREATE TABLE IF NOT EXISTS poll_messages (
-            id TEXT PRIMARY KEY,
-            message_json TEXT NOT NULL,
-            deleted_from_whatsapp INTEGER DEFAULT 0,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-          )
         `, (err) => {
           if (err) return reject(err);
           
-          // Alter table migration to ensure the column exists for existing databases
-          db.run(`ALTER TABLE poll_messages ADD COLUMN deleted_from_whatsapp INTEGER DEFAULT 0`, () => {
-            // Run migrations to normalize existing JIDs in the database (remove device suffixes)
-            db.serialize(() => {
-              db.run(`
-                UPDATE subscriptions 
-                SET jid = REPLACE(jid, SUBSTR(jid, INSTR(jid, ':'), INSTR(jid, '@') - INSTR(jid, ':')), '') 
-                WHERE jid LIKE '%:%'
-              `);
-              
-              db.run(`
-                UPDATE boss_reports 
-                SET reported_by_jid = REPLACE(reported_by_jid, SUBSTR(reported_by_jid, INSTR(reported_by_jid, ':'), INSTR(reported_by_jid, '@') - INSTR(reported_by_jid, ':')), '') 
-                WHERE reported_by_jid LIKE '%:%'
-              `, (migrationErr) => {
-                if (migrationErr) return reject(migrationErr);
-                resolve();
-              });
+          // Run migrations to normalize existing JIDs in the database (remove device suffixes)
+          db.serialize(() => {
+            db.run(`
+              UPDATE subscriptions 
+              SET jid = REPLACE(jid, SUBSTR(jid, INSTR(jid, ':'), INSTR(jid, '@') - INSTR(jid, ':')), '') 
+              WHERE jid LIKE '%:%'
+            `);
+            
+            db.run(`
+              UPDATE boss_reports 
+              SET reported_by_jid = REPLACE(reported_by_jid, SUBSTR(reported_by_jid, INSTR(reported_by_jid, ':'), INSTR(reported_by_jid, '@') - INSTR(reported_by_jid, ':')), '') 
+              WHERE reported_by_jid LIKE '%:%'
+            `, (migrationErr) => {
+              if (migrationErr) return reject(migrationErr);
+              resolve();
             });
           });
         });

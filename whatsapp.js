@@ -15,18 +15,7 @@ export async function connectToWhatsApp() {
   const sock = makeSocket({
     auth: state,
     printQRInTerminal: false,
-    logger: pino({ level: 'error' }),
-    getMessage: async (key) => {
-      console.log(`[POLL] getMessage chamado para ID: ${key.id}`);
-      try {
-        const msg = await db.getPollMessage(key.id);
-        console.log(`[POLL] getMessage retornou da DB para ID ${key.id}:`, msg ? 'ENCONTRADO' : 'NÃO ENCONTRADO');
-        return msg?.message || undefined;
-      } catch (err) {
-        console.error('[POLL] Erro no getMessage do Baileys:', err);
-        return undefined;
-      }
-    }
+    logger: pino({ level: 'error' })
   });
 
   sock.ev.on('connection.update', async (update) => {
