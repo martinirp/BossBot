@@ -54,6 +54,64 @@ class CommandHandler {
   async handleMessage(sock, msg, text) {
     if (!text) return;
     const trimmed = text.trim();
+
+    // Auto-calculador do Hive (Loot of a spidris elite / hive overseer)
+    const hiveRegex = /(?:^|\s)(\d{1,2}):(\d{2})(?::(\d{2}))?\s+Loot\s+of\s+a\s+(spidris\s+elite|hive\s+overseer):/i;
+    const match = trimmed.match(hiveRegex);
+    if (match) {
+      const remoteJid = msg.key.remoteJid;
+      const isGroup = remoteJid.endsWith('@g.us');
+      const senderJid = jidNormalizedUser(msg.key.participant || remoteJid);
+      const senderPhone = senderJid.split('@')[0];
+      const allowedGroups = await db.getAllowedGroups();
+
+      const context = {
+        sock, msg, text, trimmed,
+        remoteJid, isGroup, senderJid, senderPhone, allowedGroups
+      };
+
+      const allowed = await this.checkPermission(context);
+      if (!allowed) return;
+
+      const hours = parseInt(match[1], 10);
+      const minutes = parseInt(match[2], 10);
+      const seconds = match[3] !== undefined ? parseInt(match[3], 10) : 0;
+      const showSeconds = match[3] !== undefined;
+
+      const formatTime = (t) => {
+        const pad = (n) => String(n).padStart(2, '0');
+        if (showSeconds) {
+          return `${pad(t.h)}:${pad(t.m)}:${pad(t.s)}`;
+        } else {
+          return `${pad(t.h)}:${pad(t.m)}`;
+        }
+      };
+
+      const addMinutes = (h, m, s, minToAdd) => {
+        let totalSeconds = h * 3600 + m * 60 + s + minToAdd * 60;
+        totalSeconds = totalSeconds % 86400;
+        if (totalSeconds < 0) totalSeconds += 86400;
+        
+        const newH = Math.floor(totalSeconds / 3600);
+        const newM = Math.floor((totalSeconds % 3600) / 60);
+        const newS = totalSeconds % 60;
+        return { h: newH, m: newM, s: newS };
+      };
+
+      const inputTimeStr = formatTime({ h: hours, m: minutes, s: seconds });
+      const time16 = formatTime(addMinutes(hours, minutes, seconds, 16));
+      const time22 = formatTime(addMinutes(hours, minutes, seconds, 22));
+      const time28 = formatTime(addMinutes(hours, minutes, seconds, 28));
+
+      const response = `Último Hive: ${inputTimeStr}\n` +
+                       `Próxima aparição: (16-28 min)\n` +
+                       `20% → ${time16} (16m)\n` +
+                       `40% → ${time22} (22m)\n` +
+                       `40% → ${time28} (28m)`;
+
+      await sock.sendMessage(context.remoteJid, { text: response }, { quoted: msg });
+      return;
+    }
     
     // Suporte aos prefixos ! e /
     if (!trimmed.startsWith('!') && !trimmed.startsWith('/')) return;
@@ -96,7 +154,7 @@ class CommandHandler {
            await this.executeCommand(addallCmd, args, context);
            return;
        }
-    }
+     }
 
     // Verifica se os termos digitados correspondem a pelo menos um boss válido
     const bossesList = loadBosses();
@@ -127,29 +185,27 @@ class CommandHandler {
     }
   }
 
-  async executeCommand(command, args, context) {
-    // Validação de Permissão e DM
-    let isAllowed = false;
-
+  async checkPermission(context, commandName = null) {
     if (context.isGroup) {
       if (context.allowedGroups.includes(context.remoteJid)) {
-        isAllowed = true;
-      } else {
-        // Em grupos não cadastrados, só permite o addgroup
-        if (command.name === 'addgroup') {
-          isAllowed = true;
-        }
+        return true;
       }
+      // Em grupos não cadastrados, só permite o addgroup
+      if (commandName === 'addgroup') {
+        return true;
+      }
+      return false;
     } else {
       // Regras de DM
-      if (command.name === 'confirm') {
+      if (commandName === 'confirm') {
         await context.sock.sendMessage(context.remoteJid, {
           text: `⚠️ O comando de confirmar o boss só pode ser usado no grupo oficial para alertar a todos!`
         }, { quoted: context.msg });
-        return;
+        return false;
       }
 
       if (context.allowedGroups.length > 0) {
+        let isAllowed = false;
         try {
           for (const groupJid of context.allowedGroups) {
             const metadata = await context.sock.groupMetadata(groupJid);
@@ -167,11 +223,16 @@ class CommandHandler {
           await context.sock.sendMessage(context.remoteJid, {
             text: `🚫 Acesso Negado! O BossBot é exclusivo para membros dos grupos oficiais.`
           }, { quoted: context.msg });
-          return;
+          return false;
         }
+        return isAllowed;
       }
+      return false;
     }
+  }
 
+  async executeCommand(command, args, context) {
+    const isAllowed = await this.checkPermission(context, command.name);
     if (!isAllowed) return;
 
     try {

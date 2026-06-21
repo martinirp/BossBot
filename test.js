@@ -9,8 +9,9 @@ if (fs.existsSync('test_bossbot.db')) {
 }
 
 // Dynamically import database and commands to ensure process.env.DB_FILE is set before initialization
-const { initDb, addSubscription, removeSubscription, getSubscribers, getBossSubscriptionsForJid, clearSubscriptionsForJid, setUserPushoverKey, getUserPushoverKey, removeUserPushoverKey, getPushoverKeysForSubscribers, closeDb } = await import('./database.js');
+const { initDb, addSubscription, removeSubscription, getSubscribers, getBossSubscriptionsForJid, clearSubscriptionsForJid, setUserPushoverKey, getUserPushoverKey, removeUserPushoverKey, getPushoverKeysForSubscribers, closeDb, addGroup } = await import('./database.js');
 const { normalizeBossName, findBossMatch } = await import('./commands.js');
+const { commandHandler } = await import('./commandHandler.js');
 
 async function runTests() {
   console.log('Running BossBot Unit/Integration Tests...\n');
@@ -179,6 +180,55 @@ async function runTests() {
   console.log('Pushover Database Operations test passed ✅');
 
   console.log('Database operations test passed ✅\n');
+
+  // Test 4: Hive Loot Calculation
+  console.log('--- Test 4: Hive Loot Calculation ---');
+  let sentMessages = [];
+  const mockSock = {
+    sendMessage: async (jid, content, options) => {
+      sentMessages.push({ jid, content, options });
+    }
+  };
+
+  // Add mock allowed group
+  const groupJid = 'test_group@g.us';
+  await addGroup(groupJid);
+
+  // Test 4.1: HH:MM:SS format
+  const mockMsg1 = {
+    key: {
+      remoteJid: groupJid,
+      participant: '123@s.whatsapp.net'
+    }
+  };
+  
+  await commandHandler.loadCommands(); // Make sure commands are loaded or setup is done
+  await commandHandler.handleMessage(mockSock, mockMsg1, '00:50:44 Loot of a hive overseer:');
+  
+  console.log('Sent message text:', sentMessages[0]?.content?.text);
+  const expectedText1 = `Último Hive: 00:50:44\nPróxima aparição: (16-28 min)\n20% → 01:06:44 (16m)\n40% → 01:12:44 (22m)\n40% → 01:18:44 (28m)`;
+  
+  if (sentMessages[0]?.content?.text !== expectedText1) {
+    throw new Error(`Test 4.1 failed! Received: ${sentMessages[0]?.content?.text}`);
+  }
+  console.log('HH:MM:SS format test passed ✅');
+
+  // Test 4.2: HH:MM format
+  sentMessages = [];
+  const mockMsg2 = {
+    key: {
+      remoteJid: groupJid,
+      participant: '123@s.whatsapp.net'
+    }
+  };
+
+  await commandHandler.handleMessage(mockSock, mockMsg2, '11:13 Loot of a spidris elite: ');
+  console.log('Sent message text:', sentMessages[0]?.content?.text);
+  const expectedText2 = `Último Hive: 11:13\nPróxima aparição: (16-28 min)\n20% → 11:29 (16m)\n40% → 11:35 (22m)\n40% → 11:41 (28m)`;
+  if (sentMessages[0]?.content?.text !== expectedText2) {
+    throw new Error(`Test 4.2 failed! Received: ${sentMessages[0]?.content?.text}`);
+  }
+  console.log('HH:MM format test passed ✅\n');
 
   // Clean up
   await closeDb();
