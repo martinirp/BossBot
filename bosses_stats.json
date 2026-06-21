@@ -360,8 +360,8 @@
     "max_days": 0
   },
   "Zarabustor": {
-    "min_days": 0,
-    "max_days": 0
+    "min_days": 5,
+    "max_days": 24
   },
   "Zevelon Duskbringer": {
     "min_days": 0,
