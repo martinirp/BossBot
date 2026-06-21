@@ -230,6 +230,22 @@ async function runTests() {
   }
   console.log('HH:MM format test passed ✅\n');
 
+  // Test 4.3: !hive command execution
+  sentMessages = [];
+  const mockMsg3 = {
+    key: {
+      remoteJid: groupJid,
+      participant: '123@s.whatsapp.net'
+    }
+  };
+
+  await commandHandler.handleMessage(mockSock, mockMsg3, '!hive');
+  console.log('Sent !hive command message text:', sentMessages[0]?.content?.text);
+  if (!sentMessages[0]?.content?.text || !sentMessages[0]?.content?.text.includes('Último Hive: 11:13') || !sentMessages[0]?.content?.text.includes('👤 Enviado por: @123')) {
+    throw new Error(`Test 4.3 failed! Received: ${sentMessages[0]?.content?.text}`);
+  }
+  console.log('!hive command test passed ✅\n');
+
   // Clean up
   await closeDb();
   if (fs.existsSync('test_bossbot.db')) {

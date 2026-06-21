@@ -34,6 +34,7 @@ export default {
    - \`${prefix}last <boss>\` (Aliases: \`${prefix}historico\`): Exibe o registro da última vez que o boss foi confirmado vivo, mostrando a data, a hora e quem encontrou.
    - \`${prefix}check <boss>\` (Aliases: \`${prefix}checar\`): Foi no respawn e o boss não estava? Use este comando para registrar a hora exata da sua checagem. Isso ajuda outros a saberem que o respawn está limpo recentemente!
    - \`${prefix}lastcheck <boss>\` (Alias: \`${prefix}uc\`): Traz as informações combinadas: mostra a última pessoa que encontrou o boss vivo E também o último registro de quem foi lá checar e achou vazio.
+   - \`${prefix}hive\` (Alias: \`${prefix}lasthive\`): Retorna os horários e cálculos da última hive enviada.
 
 8. *Competição / Ranking:*
    - \`${prefix}rank\` ou \`${prefix}ranking\`: Exibe o Placar de Líderes do mês! Conta quantos bosses cada jogador confirmou no mês atual. O ranking é zerado automaticamente a cada virada de mês.

@@ -109,6 +109,20 @@ class CommandHandler {
                        `40% → ${time22} (22m)\n` +
                        `40% → ${time28} (28m)`;
 
+      try {
+        const now = new Date();
+        now.setHours(now.getHours() - 3); // UTC-3 Brazil
+        const savedAt = now.toISOString().replace('T', ' ').substring(0, 16);
+        const hiveData = {
+          response,
+          savedAt,
+          reportedBy: senderPhone
+        };
+        await db.setGlobalSetting('last_hive', JSON.stringify(hiveData));
+      } catch (err) {
+        console.error('[CommandHandler] Failed to save last hive to DB:', err);
+      }
+
       await sock.sendMessage(context.remoteJid, { text: response }, { quoted: msg });
       return;
     }
