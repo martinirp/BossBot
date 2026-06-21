@@ -1,5 +1,6 @@
 import { initDb } from './database.js';
 import { connectToWhatsApp } from './whatsapp.js';
+import { startSyncCron } from './syncTibiaData.js';
 
 async function main() {
   try {
@@ -9,6 +10,9 @@ async function main() {
 
     console.log('Connecting to WhatsApp...');
     await connectToWhatsApp();
+
+    console.log('Starting TibiaData Sync Cron Job...');
+    startSyncCron();
   } catch (err) {
     console.error('Fatal error during startup:', err);
     process.exit(1);

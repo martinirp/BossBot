@@ -393,6 +393,11 @@ export function updateBossLastSeen(bossName, jid) {
   const now = new Date();
   now.setHours(now.getHours() - 3); // UTC-3 Brazil
   const seenAt = now.toISOString().replace('T', ' ').substring(0, 16);
+  return setBossLastSeenDate(bossName, cleanJid, seenAt);
+}
+
+export function setBossLastSeenDate(bossName, jid, seenAt) {
+  const cleanJid = jidNormalizedUser(jid);
   return new Promise((resolve, reject) => {
     db.run(
       `INSERT INTO boss_last_seen (boss_name, confirmed_by, seen_at) VALUES (?, ?, ?)
