@@ -1,0 +1,382 @@
+{
+  "Albino Dragon": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Arachir The Ancient One": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Arthom The Hunter": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Bane Lord": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Barbaria": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Battlemaster Zunzu": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Big Boss Trolliver": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Burster": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Captain Jones": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Chizzoron The Distorter": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Countess Sorrow": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Crustacea Gigantica": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Cublarc The Plunderer": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Devovorga": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Dharalion": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Diblis The Fair": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Dire Penguin": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Dracola": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Draptor": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Dreadful Disruptor": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Dreadmaw": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Elf Overseer": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Elvira Hammerthrust": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Feroxa": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Ferumbras": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Flamecaller Zazrak": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Fleabringer": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Foreman Kneebiter": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Furyosa": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Gaz'haragoth": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "General Murius": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Ghazbaran": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Grand Mother Foulscale": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Grandfather Tridian": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Gravelord Oshuran": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Groam": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Grorlam": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Hairman The Huge": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Hatebreeder": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "High Templar Cobrass": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Hirintror": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Jesse The Wicked": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Mahatheb": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Man In The Cave": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Massacre": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Mawhawk": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Midnight Panther": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Morgaroth": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Mornenion": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Morshabaal": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Mr Punish": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Nimmersatt": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Ocyakao": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Omrafir": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Oodok Witchmaster": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Orshabaal": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Robby The Reckless": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Rotrender": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Rotworm Queen": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Rukor Zad": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Shlorg": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Sir Leopold": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Sir Valorcrest": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Smuggler Baron Silvertoe": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "The Abomination": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "The Big Bad One": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "The Blightfather": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "The Evil Eye": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "The Frog Prince": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "The Handmaiden": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "The Hungerer": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "The Imperor": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "The Manhunter": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "The Mean Masher": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "The Mutated Pumpkin": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "The Old Whopper": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "The Pale Count": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "The Plasmother": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "The Voice Of Ruin": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "The Welter": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Tyrn": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Tzumrah The Dazzler": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Undead Cavebear": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Warlord Ruzad": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "White Pale": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Willi Wasp": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Xenia": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Yachal": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Yaga The Crone": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Yeti": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Zarabustor": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Zevelon Duskbringer": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Zomba": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Zulazza The Corruptor": {
+    "min_days": 10,
+    "max_days": 20
+  },
+  "Zushuka": {
+    "min_days": 10,
+    "max_days": 20
+  }
+}

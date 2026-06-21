@@ -419,6 +419,19 @@ export function getBossLastSeen(bossName) {
   });
 }
 
+export function getAllBossesLastSeen() {
+  return new Promise((resolve, reject) => {
+    db.all(
+      `SELECT boss_name, confirmed_by, seen_at FROM boss_last_seen`,
+      [],
+      (err, rows) => {
+        if (err) return reject(err);
+        resolve(rows || []);
+      }
+    );
+  });
+}
+
 // ─── Boss Check (checked and NOT found) ─────────────────────────────────────
 
 export function updateBossCheck(bossName, jid) {
