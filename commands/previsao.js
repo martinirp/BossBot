@@ -33,41 +33,18 @@ export default {
 
       let textMsg = `📊 *Previsão de Bosses - ${world}*\n\n`;
 
-      const alta = [];
-      const media = [];
+      const altas = [];
 
-      // O tracker já retorna ordenado pelas maiores chances
       for (const b of bosses) {
-          if (b.chance_percent >= 90) alta.push(b);
-          else if (b.chance_percent >= 80) media.push(b);
+          if (b.chance_percent >= 80) altas.push(b);
       }
 
-      if (alta.length > 0) {
-         textMsg += `🔴 *Pode Nascer (>= 90%)*\n`;
-         for (const b of alta) {
+      if (altas.length > 0) {
+         for (const b of altas) {
             textMsg += `> 💀 *${b.name}* - ${b.chance_percent}%\n`;
          }
-         textMsg += `\n`;
-      }
-
-      if (media.length > 0) {
-         textMsg += `🟠 *Alta Chance (80% - 89%)*\n`;
-         for (const b of media) {
-            textMsg += `> 💀 *${b.name}* - ${b.chance_percent}%\n`;
-         }
-         textMsg += `\n`;
-      }
-
-      if (alta.length === 0 && media.length === 0) {
-         textMsg += `😴 Nenhum boss com alta chance no momento.\n\n`;
-         textMsg += `*Top 3 mais próximos:*\n`;
-         let count = 0;
-         for (const b of bosses) {
-             if (b.status !== 'Sem dados' && b.status !== 'Sincronizando média...' && count < 3) {
-                 textMsg += `> 💀 *${b.name}* - ${b.chance_percent}% (${b.days_since}/${b.expected_days} dias)\n`;
-                 count++;
-             }
-         }
+      } else {
+         textMsg += `😴 Nenhum boss com alta chance no momento.\n`;
       }
 
       await sock.sendMessage(remoteJid, {
