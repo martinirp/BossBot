@@ -1,10 +1,16 @@
 import cron from 'node-cron';
 import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
 import { getAllBossesLastSeen, setBossLastSeenDate } from './database.js';
 
 dotenv.config();
 
 const world = process.env.TIBIA_WORLD || 'Quelibra';
+
+// Carrega a lista oficial de bosses para não cadastrar monstros normais
+const validBossesRaw = JSON.parse(fs.readFileSync(path.resolve('bosses.json'), 'utf8'));
+const validBosses = validBossesRaw.map(b => b.toLowerCase());
 
 export async function syncKillStatistics() {
     console.log(`[SYNC] Iniciando sincronização com TibiaData para o mundo: ${world}`);
@@ -46,6 +52,12 @@ export async function syncKillStatistics() {
 
         for (const kill of killedYesterday) {
             const bossName = kill.race;
+            
+            // Pula se não for um boss mapeado (para não cadastrar "rat", "dragon", etc)
+            if (!validBosses.includes(bossName.toLowerCase())) {
+                continue;
+            }
+
             const localSeen = localMap[bossName.toLowerCase()];
             
             let needsUpdate = false;
