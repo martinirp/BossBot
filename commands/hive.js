@@ -9,7 +9,7 @@ export default {
     const lastHiveStr = await db.getGlobalSetting('last_hive');
     if (!lastHiveStr) {
       await sock.sendMessage(remoteJid, {
-        text: `🐝 *Hive*\n\nNenhuma hive registrada recentemente.`
+        text: `*Hive*\n\nNenhuma hive registrada recentemente.`
       }, { quoted: msg });
       return;
     }
