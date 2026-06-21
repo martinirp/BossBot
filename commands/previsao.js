@@ -36,7 +36,7 @@ export default {
       const altas = [];
 
       for (const b of bosses) {
-          if (b.chance_percent >= 80) altas.push(b);
+          if (b.chance_percent >= 80 && b.chance_percent <= 99) altas.push(b);
       }
 
       if (altas.length > 0) {
