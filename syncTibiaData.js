@@ -54,10 +54,15 @@ export async function syncWorldKillStatistics(targetWorld) {
             localMap[r.boss_name.toLowerCase()] = r.seen_at;
         });
 
-        // O TibiaData atualiza o killstatistics por volta das 22h BRT com os dados do "dia anterior".
-        // O cron roda às 06:30 BRT — a API já está atualizada, refletindo as mortes de ontem (D-1).
-        // Portanto, daysAgo é sempre 1: o que a API chama de "yesterday" é o dia de ontem em relação a hoje.
-        const daysAgo = 1;
+        // A página Kill Statistics do Tibia é atualizada uma vez por dia, e o TibiaData a espelha:
+        //   - ~23:15 BRT quando a Alemanha está sem horário de verão (UTC+1)
+        //   - ~22:15 BRT durante o horário de verão europeu (UTC+2)
+        //
+        // O cron roda às 06:30 BRT do dia D. Nesse momento a API já atualizou (às ~23:15 do dia D-1).
+        // Os dados publicados refletem o "dia do servidor" que encerrou no Server Save de D-1 (06:00 BRT),
+        // ou seja, as mortes ocorridas entre 06:00 BRT de D-2 e 06:00 BRT de D-1.
+        // Portanto, daysAgo = 2: o registro deve apontar para o dia D-2 de calendário.
+        const daysAgo = 2;
 
         const targetDate = new Date();
         // Converte para horário de Brasília (UTC-3)
@@ -68,7 +73,7 @@ export async function syncWorldKillStatistics(targetWorld) {
         const month = String(targetDate.getUTCMonth() + 1).padStart(2, '0');
         const day = String(targetDate.getUTCDate()).padStart(2, '0');
         
-        // Registra como 23:59 do dia de ontem (fim do dia do servidor)
+        // Registra como 23:59 do dia D-2 (fim do dia do servidor onde a morte ocorreu)
         const fallbackDate = `${year}-${month}-${day} 23:59`;
         const fallbackDayStr = `${year}-${month}-${day}`;
 
