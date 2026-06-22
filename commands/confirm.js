@@ -59,11 +59,15 @@ function calcTrackingDay(utcNow) {
   const apiUpdatedTonight = (brtHour > apiTime.hour) ||
                             (brtHour === apiTime.hour && brtMin >= apiTime.minute);
 
-  // Dia de rastreamento: D (antes da atualização) ou D+1 (depois da atualização)
+  // Regra: a API atualiza com os dados do dia ANTERIOR.
+  // Kills ANTES da atualizacao (~22:15 ou ~23:15 BRT) pertencem ao ciclo anterior → dia D-1.
+  // Kills APOS a atualizacao pertencem ao ciclo atual → dia D.
   const trackingDate = new Date(brtNow);
-  if (apiUpdatedTonight) {
-    trackingDate.setUTCDate(trackingDate.getUTCDate() + 1);
+  if (!apiUpdatedTonight) {
+    // Kill esta no ciclo anterior da API: dia de rastreamento = ontem (D-1)
+    trackingDate.setUTCDate(trackingDate.getUTCDate() - 1);
   }
+  // Se a API ja atualizou: kill esta no ciclo atual → dia de rastreamento = hoje (D)
 
   const pad = (n) => String(n).padStart(2, '0');
   const trackingDateStr = `${trackingDate.getUTCFullYear()}-${pad(trackingDate.getUTCMonth() + 1)}-${pad(trackingDate.getUTCDate())}`;
