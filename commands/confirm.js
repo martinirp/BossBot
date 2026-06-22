@@ -56,8 +56,8 @@ export default {
     await db.incrementRank(senderJid);
     await db.updateBossLastSeen(matchedBossName, senderJid, world);
     const now = new Date();
-    now.setHours(now.getHours() - 3);
-    const timeString = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    now.setUTCHours(now.getUTCHours() - 3);
+    const timeString = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
 
     if (subscribers.length === 0) {
       await sock.sendMessage(remoteJid, {

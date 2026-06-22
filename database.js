@@ -451,7 +451,7 @@ export function getMonthlyRank(month, year) {
 export function updateBossLastSeen(bossName, jid, world = 'Quelibra') {
   const cleanJid = jidNormalizedUser(jid);
   const now = new Date();
-  now.setHours(now.getHours() - 3); // UTC-3 Brazil
+  now.setUTCHours(now.getUTCHours() - 3); // Converte UTC -> BRT (UTC-3)
   const seenAt = now.toISOString().replace('T', ' ').substring(0, 16);
   return setBossLastSeenDate(bossName, cleanJid, seenAt, world);
 }
@@ -502,7 +502,7 @@ export function getAllBossesLastSeen(world = 'Quelibra') {
 export function updateBossCheck(bossName, jid, world = 'Quelibra') {
   const cleanJid = jidNormalizedUser(jid);
   const now = new Date();
-  now.setHours(now.getHours() - 3); // UTC-3 Brazil
+  now.setUTCHours(now.getUTCHours() - 3); // Converte UTC -> BRT (UTC-3)
   const checkedAt = now.toISOString().replace('T', ' ').substring(0, 16);
   return new Promise((resolve, reject) => {
     db.run(
