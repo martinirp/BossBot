@@ -73,8 +73,10 @@ export async function syncWorldKillStatistics(targetWorld) {
         const month = String(targetDate.getUTCMonth() + 1).padStart(2, '0');
         const day = String(targetDate.getUTCDate()).padStart(2, '0');
         
-        // Registra como 23:59 do dia D-2 (fim do dia do servidor onde a morte ocorreu)
-        const fallbackDate = `${year}-${month}-${day} 23:59`;
+        // Registra como 00:00 do dia D-2: a API informa apenas a DATA da morte, não a hora exata.
+        // A CipSoft atualiza o Kill Statistics uma vez por dia (~23:15 BRT / ~22:15 BRT no horário de verão europeu),
+        // contabilizando todas as mortes do dia anterior. A hora 00:00 deixa claro que é data sem hora conhecida.
+        const fallbackDate = `${year}-${month}-${day} 00:00`;
         const fallbackDayStr = `${year}-${month}-${day}`;
 
         let syncCount = 0;

@@ -48,7 +48,12 @@ export default {
          const maxDays = stats[bName].max_days || 0;
          if (minDays === 0 || maxDays === 0) continue;
 
-         const seenDate = new Date(record.seen_at.replace(' ', 'T') + ':00Z');
+         // O seen_at está armazenado em BRT (ex: "2026-06-22 23:30").
+         // Para calcular a janela de spawn (que é em DIAS, nao horas), usamos apenas a DATA,
+         // zerando o horario para evitar distorcoes. A hora exata de morte nao afeta o calculo diario.
+         // Referencia: Kill Statistics atualiza ~22:15 BRT (verao europeu) ou ~23:15 BRT (inverno europeu).
+         const datePart = record.seen_at.split(' ')[0]; // "YYYY-MM-DD"
+         const seenDate = new Date(datePart + 'T03:00:00Z'); // 03:00 UTC = 00:00 BRT (inicio do dia em BRT)
          const minDate = new Date(seenDate.getTime() + minDays * 24 * 60 * 60 * 1000);
          const maxDate = new Date(seenDate.getTime() + maxDays * 24 * 60 * 60 * 1000);
 
