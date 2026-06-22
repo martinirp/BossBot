@@ -316,6 +316,56 @@ async function runTests() {
     }
   }
 
+  // Test 6: addboss with and without image
+  console.log('--- Test 6: addboss with and without image ---');
+  const imagePath = 'assets/bosses.png';
+  const tempImagePath = 'assets/bosses_temp.png';
+
+  try {
+    // 6.1 Test with image
+    let createdDummy = false;
+    if (!fs.existsSync(imagePath)) {
+      if (!fs.existsSync('assets')) {
+        fs.mkdirSync('assets');
+      }
+      fs.writeFileSync(imagePath, 'dummy image content');
+      createdDummy = true;
+    }
+
+    sentMessages = [];
+    await commandHandler.handleMessage(mockSock, mockMsg3, '!addboss');
+    console.log('addboss with image content keys:', Object.keys(sentMessages[0]?.content || {}));
+    if (!sentMessages[0]?.content?.image || !sentMessages[0]?.content?.caption) {
+      throw new Error('addboss should have sent an image and a caption');
+    }
+    if (!sentMessages[0]?.content?.caption.includes('Para se inscrever ou remover')) {
+      throw new Error('Caption of image does not contain correct instructions');
+    }
+    console.log('addboss with image test passed ✅');
+
+    // 6.2 Test without image (fallback to text)
+    fs.renameSync(imagePath, tempImagePath);
+
+    sentMessages = [];
+    await commandHandler.handleMessage(mockSock, mockMsg3, '!addboss');
+    console.log('addboss fallback response:', sentMessages[0]?.content?.text);
+    if (!sentMessages[0]?.content?.text || !sentMessages[0]?.content?.text.includes('Lista de Bosses disponíveis')) {
+      throw new Error('addboss fallback to text failed');
+    }
+    console.log('addboss fallback to text test passed ✅\n');
+
+    // Restore
+    fs.renameSync(tempImagePath, imagePath);
+    if (createdDummy) {
+      fs.unlinkSync(imagePath);
+    }
+  } catch (err) {
+    if (fs.existsSync(tempImagePath)) {
+      fs.renameSync(tempImagePath, imagePath);
+    }
+    throw err;
+  }
+
   // Clean up
   await closeDb();
   if (fs.existsSync('test_bossbot.db')) {

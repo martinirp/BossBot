@@ -11,11 +11,21 @@ export default {
     const bossesList = loadBosses();
 
     if (args.length === 0) {
-      let menuText = `📋 *Lista de Bosses disponíveis:*\n\n`;
-      const inlineList = bossesList.map((boss, idx) => `*${idx + 1}.* ${boss}`).join(' | ');
-      menuText += inlineList;
-      menuText += `\n\n👉 *Para se inscrever ou remover, digite:*\n*${prefix}addboss <números separados por vírgula>*\nExemplo: \`${prefix}addboss 1, 5, 12\`\n\n👉 *Para se inscrever em TODOS:*\n*${prefix}addall*`;
-      await sock.sendMessage(remoteJid, { text: menuText }, { quoted: msg });
+      const imagePath = path.resolve('assets/bosses.png');
+      let captionText = `👉 *Para se inscrever ou remover, digite:*\n*${prefix}addboss <números separados por vírgula>*\nExemplo: \`${prefix}addboss 1, 5, 12\`\n\n👉 *Para se inscrever em TODOS:*\n*${prefix}addall*`;
+
+      if (fs.existsSync(imagePath)) {
+        await sock.sendMessage(remoteJid, {
+          image: fs.readFileSync(imagePath),
+          caption: captionText
+        }, { quoted: msg });
+      } else {
+        let menuText = `📋 *Lista de Bosses disponíveis:*\n\n`;
+        const inlineList = bossesList.map((boss, idx) => `*${idx + 1}.* ${boss}`).join(' | ');
+        menuText += inlineList;
+        menuText += `\n\n` + captionText;
+        await sock.sendMessage(remoteJid, { text: menuText }, { quoted: msg });
+      }
       return;
     }
 
