@@ -77,11 +77,11 @@ export default {
       // Sort alphabetically by boss name
       bossList.sort((a, b) => a.name.localeCompare(b.name));
 
-      let responseText = `📋 *Bosses Registrados*\n\n`;
+      let responseText = `*Bosses Registrados*\n\n`;
       for (const b of bossList) {
-        responseText += `💀 *${b.name}*\n`;
-        responseText += `🕒 Último avistamento: ${b.lastSeenFormatted}\n`;
-        responseText += `🔮 Previsão: ${b.prediction}\n\n`;
+        responseText += `*${b.name}*\n`;
+        responseText += `Último avistamento: ${b.lastSeenFormatted}\n`;
+        responseText += `Previsão: ${b.prediction}\n\n`;
       }
 
       await sock.sendMessage(remoteJid, {
