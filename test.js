@@ -366,8 +366,8 @@ async function runTests() {
     throw err;
   }
 
-  // Test 7: registrados command
-  console.log('--- Test 7: registrados command ---');
+  // Test 7: previsao and confirmados commands
+  console.log('--- Test 7: previsao and confirmados commands ---');
   const statsPath = 'bosses_stats.json';
   let statsBackup = null;
   if (fs.existsSync(statsPath)) {
@@ -384,39 +384,76 @@ async function runTests() {
     fs.writeFileSync(statsPath, JSON.stringify(testStats, null, 2), 'utf-8');
 
     // Seed last seen dates
-    await dbModule.setBossLastSeenDate('Zarabustor', '123@s.whatsapp.net', '2026-06-15 12:00');
+    // 1. Zarabustor: Has active prediction, confirmed by TibiaData_API (should be PERDIDO in confirmados)
+    await dbModule.setBossLastSeenDate('Zarabustor', 'TibiaData_API', '2026-06-15 12:00');
+    // 2. Ferumbras: No prediction, confirmed by user 123@s.whatsapp.net (should show confirmer in confirmados)
     await dbModule.setBossLastSeenDate('Ferumbras', '123@s.whatsapp.net', '2026-06-20 10:30');
 
+    // --- A. Test previsao command ---
     sentMessages = [];
-    await commandHandler.handleMessage(mockSock, mockMsg3, '!registrados');
+    await commandHandler.handleMessage(mockSock, mockMsg3, '!previsao');
 
-    const response = sentMessages[0]?.content?.text;
-    console.log('registrados response:\n', response);
+    const previsaoResponse = sentMessages[0]?.content?.text;
+    console.log('previsao response:\n', previsaoResponse);
 
-    if (!response) {
-      throw new Error('No response from !registrados command');
+    if (!previsaoResponse) {
+      throw new Error('No response from !previsao command');
     }
 
-    if (!response.includes('Ferumbras') || !response.includes('Zarabustor')) {
-      throw new Error('Expected bosses not found in response');
+    if (previsaoResponse.includes('Ferumbras')) {
+      throw new Error('Ferumbras has no prediction config but was listed in !previsao');
     }
 
-    if (!response.includes('Último avistamento: 20/06/2026 10:30') || !response.includes('Previsão: Sem previsão')) {
-      throw new Error('Ferumbras formatting or prediction is incorrect');
+    if (!previsaoResponse.includes('Zarabustor')) {
+      throw new Error('Zarabustor has active prediction but was not listed in !previsao');
     }
 
-    if (!response.includes('Último avistamento: 15/06/2026 12:00') || !response.includes('Previsão: Entre 21/06/2026 12:00 e 23/06/2026 12:00')) {
-      throw new Error('Zarabustor formatting or prediction is incorrect');
+    if (!previsaoResponse.includes('Último avistamento: 15/06/2026 12:00') || !previsaoResponse.includes('Previsão: Entre 21/06/2026 12:00 e 23/06/2026 12:00')) {
+      throw new Error('Zarabustor formatting or prediction in !previsao is incorrect');
     }
 
-    // Check sorting: Ferumbras (F) should come before Zarabustor (Z)
-    const indexF = response.indexOf('Ferumbras');
-    const indexZ = response.indexOf('Zarabustor');
+    console.log('previsao command test passed ✅');
+
+    // --- B. Test confirmados command ---
+    sentMessages = [];
+    await commandHandler.handleMessage(mockSock, mockMsg3, '!confirmados');
+
+    const confirmadosResponse = sentMessages[0]?.content?.text;
+    const mentions = sentMessages[0]?.content?.mentions || [];
+    console.log('confirmados response:\n', confirmadosResponse);
+    console.log('confirmados mentions:', mentions);
+
+    if (!confirmadosResponse) {
+      throw new Error('No response from !confirmados command');
+    }
+
+    if (!confirmadosResponse.includes('Ferumbras') || !confirmadosResponse.includes('Zarabustor')) {
+      throw new Error('Expected bosses not found in !confirmados response');
+    }
+
+    // Ferumbras was confirmed by a user
+    if (!confirmadosResponse.includes('Confirmado por: @123') || !confirmadosResponse.includes('Último avistamento: 20/06/2026 10:30')) {
+      throw new Error('Ferumbras details in !confirmados are incorrect');
+    }
+
+    // Zarabustor was confirmed by TibiaData_API -> PERDIDO
+    if (!confirmadosResponse.includes('Status: PERDIDO') || !confirmadosResponse.includes('Último avistamento: 15/06/2026 12:00')) {
+      throw new Error('Zarabustor details in !confirmados should be marked as PERDIDO');
+    }
+
+    // Mentions check: Should contain '123@s.whatsapp.net' and NOT 'TibiaData_API'
+    if (mentions.length !== 1 || mentions[0] !== '123@s.whatsapp.net') {
+      throw new Error('Mentions in !confirmados are incorrect');
+    }
+
+    // Check alphabetical sorting
+    const indexF = confirmadosResponse.indexOf('Ferumbras');
+    const indexZ = confirmadosResponse.indexOf('Zarabustor');
     if (indexF > indexZ) {
-      throw new Error('Bosses are not sorted alphabetically');
+      throw new Error('Bosses in !confirmados are not sorted alphabetically');
     }
 
-    console.log('registrados command test passed ✅\n');
+    console.log('confirmados command test passed ✅\n');
   } finally {
     if (statsBackup !== null) {
       fs.writeFileSync(statsPath, statsBackup, 'utf-8');

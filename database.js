@@ -397,7 +397,7 @@ export function updateBossLastSeen(bossName, jid) {
 }
 
 export function setBossLastSeenDate(bossName, jid, seenAt) {
-  const cleanJid = jidNormalizedUser(jid);
+  const cleanJid = (jid && jid.includes('@')) ? jidNormalizedUser(jid) : jid;
   return new Promise((resolve, reject) => {
     db.run(
       `INSERT INTO boss_last_seen (boss_name, confirmed_by, seen_at) VALUES (?, ?, ?)

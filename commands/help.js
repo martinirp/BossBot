@@ -31,7 +31,8 @@ export default {
    - \`${prefix}test\` ou \`${prefix}teste\`: Envia uma notificação de teste para o seu Pushover.
 
 7. *Histórico e Checagem de Bosses:*
-   - \`${prefix}registrados\` (Aliases: \`${prefix}bossesregistrados\`, \`${prefix}confirmados\`, \`${prefix}nascimentos\`): Mostra todos os bosses registrados pelo comando \`${prefix}boss\` com a previsão do próximo nascimento.
+   - \`${prefix}previsao\` (Aliases: \`${prefix}chances\`, \`${prefix}tracker\`): Lista os bosses que possuem previsão de nascimento pronta.
+   - \`${prefix}confirmados\` (Aliases: \`${prefix}registrados\`, \`${prefix}nascimentos\`): Lista os bosses confirmados pelo grupo (com dia e hora) e os identificados pela API (mostrando como PERDIDO se não registrados no grupo).
    - \`${prefix}last <boss>\` (Aliases: \`${prefix}historico\`): Exibe o registro da última vez que o boss foi confirmado vivo, mostrando a data, a hora e quem encontrou.
    - \`${prefix}check <boss>\` (Aliases: \`${prefix}checar\`): Foi no respawn e o boss não estava? Use este comando para registrar a hora exata da sua checagem. Isso ajuda outros a saberem que o respawn está limpo recentemente!
    - \`${prefix}lastcheck <boss>\` (Alias: \`${prefix}uc\`): Traz as informações combinadas: mostra a última pessoa que encontrou o boss vivo E também o último registro de quem foi lá checar e achou vazio.

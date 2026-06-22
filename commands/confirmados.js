@@ -1,0 +1,67 @@
+import * as db from '../database.js';
+
+export default {
+  name: 'confirmados',
+  aliases: ['registrados', 'bossesregistrados', 'nascimentos'],
+  execute: async (context, args) => {
+    const { sock, msg, remoteJid } = context;
+
+    try {
+      const allSeen = await db.getAllBossesLastSeen();
+
+      if (allSeen.length === 0) {
+        await sock.sendMessage(remoteJid, {
+          text: `Nenhum boss foi registrado até o momento.`
+        }, { quoted: msg });
+        return;
+      }
+
+      // Helper to format seen_at timestamp from "YYYY-MM-DD HH:mm" to "DD/MM/YYYY HH:mm"
+      const formatSeenAt = (seenAtStr) => {
+        const parts = seenAtStr.split(' ');
+        if (parts.length !== 2) return seenAtStr;
+        const dateParts = parts[0].split('-');
+        if (dateParts.length !== 3) return seenAtStr;
+        return `${dateParts[2]}/${dateParts[1]}/${dateParts[0]} ${parts[1]}`;
+      };
+
+      // Sort alphabetically by boss name
+      allSeen.sort((a, b) => a.boss_name.localeCompare(b.boss_name));
+
+      let responseText = `*Bosses Confirmados*\n\n`;
+      const mentions = [];
+
+      for (const record of allSeen) {
+        const bName = record.boss_name;
+        const seenAtFormatted = formatSeenAt(record.seen_at);
+        const confirmer = record.confirmed_by;
+
+        const isApi = !confirmer || confirmer === 'TibiaData_API' || !confirmer.includes('@');
+
+        responseText += `*${bName}*\n`;
+        if (isApi) {
+          responseText += `Status: PERDIDO\n`;
+        } else {
+          const phone = confirmer.split('@')[0];
+          responseText += `Confirmado por: @${phone}\n`;
+          mentions.push(confirmer);
+        }
+        responseText += `Último avistamento: ${seenAtFormatted}\n\n`;
+      }
+
+      // Deduplicate mentions
+      const uniqueMentions = [...new Set(mentions)];
+
+      await sock.sendMessage(remoteJid, {
+        text: responseText.trim(),
+        mentions: uniqueMentions
+      }, { quoted: msg });
+
+    } catch (err) {
+      console.error('[confirmados] Error:', err);
+      await sock.sendMessage(remoteJid, {
+        text: `⚠️ Erro interno ao listar os bosses confirmados.`
+      }, { quoted: msg });
+    }
+  }
+};

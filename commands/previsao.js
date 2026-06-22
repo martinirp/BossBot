@@ -6,11 +6,7 @@ export default {
   name: 'previsao',
   aliases: ['chances', 'tracker'],
   execute: async (context, args) => {
-    const { sock, msg, remoteJid, prefix } = context;
-
-    await sock.sendMessage(remoteJid, {
-        text: `🔍 Calculando previsões de bosses...`
-    });
+    const { sock, msg, remoteJid } = context;
 
     try {
       const statsPath = path.resolve('bosses_stats.json');
@@ -21,7 +17,27 @@ export default {
 
       const allSeen = await db.getAllBossesLastSeen();
       
-      let bosses = [];
+      const bossesWithPrediction = [];
+
+      // Helper to format seen_at timestamp from "YYYY-MM-DD HH:mm" to "DD/MM/YYYY HH:mm"
+      const formatSeenAt = (seenAtStr) => {
+        const parts = seenAtStr.split(' ');
+        if (parts.length !== 2) return seenAtStr;
+        const dateParts = parts[0].split('-');
+        if (dateParts.length !== 3) return seenAtStr;
+        return `${dateParts[2]}/${dateParts[1]}/${dateParts[0]} ${parts[1]}`;
+      };
+
+      // Helper to format Date in "fake UTC" (matching Brazil timezone digits) to "DD/MM/YYYY HH:mm"
+      const formatFakeUtcDate = (date) => {
+        const pad = (n) => String(n).padStart(2, '0');
+        const day = pad(date.getUTCDate());
+        const month = pad(date.getUTCMonth() + 1);
+        const year = date.getUTCFullYear();
+        const hours = pad(date.getUTCHours());
+        const minutes = pad(date.getUTCMinutes());
+        return `${day}/${month}/${year} ${hours}:${minutes}`;
+      };
 
       for (const record of allSeen) {
          const bName = record.boss_name;
@@ -31,57 +47,32 @@ export default {
          const maxDays = stats[bName].max_days || 0;
          if (minDays === 0 || maxDays === 0) continue;
 
-         const minHours = minDays * 24;
-         const maxHours = maxDays * 24;
-
-         // A data no banco "seen_at" está em formato "YYYY-MM-DD HH:mm" no UTC-3
          const seenDate = new Date(record.seen_at.replace(' ', 'T') + ':00Z');
-         
-         const nowUtc3 = new Date();
-         nowUtc3.setHours(nowUtc3.getHours() - 3);
-         const nowFakeUtc = new Date(nowUtc3.toISOString().replace('T', ' ').substring(0, 19).replace(' ', 'T') + 'Z');
-         
-         const diffHours = (nowFakeUtc - seenDate) / (1000 * 60 * 60);
+         const minDate = new Date(seenDate.getTime() + minDays * 24 * 60 * 60 * 1000);
+         const maxDate = new Date(seenDate.getTime() + maxDays * 24 * 60 * 60 * 1000);
 
-         let chance = 0;
-         if (diffHours < minHours) {
-            chance = 0;
-         } else if (diffHours >= maxHours) {
-            chance = 100;
-         } else {
-            chance = Math.floor(((diffHours - minHours) / (maxHours - minHours)) * 100);
-         }
-
-         bosses.push({
+         bossesWithPrediction.push({
             name: bName,
-            chance_percent: chance,
-            diff_hours: Math.floor(diffHours)
+            lastSeenFormatted: formatSeenAt(record.seen_at),
+            prediction: `Entre ${formatFakeUtcDate(minDate)} e ${formatFakeUtcDate(maxDate)}`
          });
       }
 
-      if (bosses.length === 0) {
+      if (bossesWithPrediction.length === 0) {
          await sock.sendMessage(remoteJid, {
-            text: `⚠️ Nenhuma previsão possível. Nenhum boss foi registrado ou configurado com mínimo/máximo de dias.`
+            text: `Nenhuma previsão disponível no momento.`
          }, { quoted: msg });
          return;
       }
 
-      // Ordena pelas maiores chances
-      bosses.sort((a, b) => b.chance_percent - a.chance_percent);
+      // Sort alphabetically
+      bossesWithPrediction.sort((a, b) => a.name.localeCompare(b.name));
 
-      let textMsg = `📊 *Previsão de Bosses*\n\n`;
-
-      const altas = [];
-      for (const b of bosses) {
-          if (b.chance_percent >= 60 && b.chance_percent <= 99) altas.push(b);
-      }
-
-      if (altas.length > 0) {
-         for (const b of altas) {
-            textMsg += `> 💀 *${b.name}* - ${b.chance_percent}%\n`;
-         }
-      } else {
-         textMsg += `😴 Nenhum boss com chance entre 60% e 99% no momento.\n`;
+      let textMsg = `*Previsão de Bosses*\n\n`;
+      for (const b of bossesWithPrediction) {
+          textMsg += `*${b.name}*\n`;
+          textMsg += `Último avistamento: ${b.lastSeenFormatted}\n`;
+          textMsg += `Previsão: ${b.prediction}\n\n`;
       }
 
       await sock.sendMessage(remoteJid, {
