@@ -50,7 +50,8 @@ export default {
           responseText += `Confirmado por: @${phone}\n`;
           mentions.push(confirmer);
         }
-        responseText += `Último avistamento: ${seenAtFormatted}\n\n`;
+        const label = isLost ? 'Último morto' : 'Último avistamento';
+        responseText += `${label}: ${seenAtFormatted}\n\n`;
       }
 
       // Deduplicate mentions

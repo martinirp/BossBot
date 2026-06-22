@@ -54,26 +54,22 @@ export async function syncWorldKillStatistics(targetWorld) {
             localMap[r.boss_name.toLowerCase()] = r.seen_at;
         });
 
-        // O killstatistics reflete as mortes do "dia anterior" do servidor.
-        // Se a sincronização rodar ANTES do Server Save do dia atual (06:00 BRT),
-        // a API ainda estará exibindo os dados de 2 dias atrás.
-        // Se rodar DEPOIS, exibirá os dados de ontem (1 dia atrás).
-        const now = new Date();
-        const nowBrHour = (now.getUTCHours() - 3 + 24) % 24;
-        let daysAgo = 1;
-        if (nowBrHour < 6) {
-            daysAgo = 2;
-        }
+        // O TibiaData atualiza o killstatistics por volta das 22h BRT com os dados do "dia anterior".
+        // O cron roda às 06:30 BRT — a API já está atualizada, refletindo as mortes de ontem (D-1).
+        // Portanto, daysAgo é sempre 1: o que a API chama de "yesterday" é o dia de ontem em relação a hoje.
+        const daysAgo = 1;
 
         const targetDate = new Date();
-        targetDate.setHours(targetDate.getHours() - 3); // Ajusta para hora de Brasília
-        targetDate.setDate(targetDate.getDate() - daysAgo);
+        // Converte para horário de Brasília (UTC-3)
+        targetDate.setUTCHours(targetDate.getUTCHours() - 3);
+        targetDate.setUTCDate(targetDate.getUTCDate() - daysAgo);
         
         const year = targetDate.getUTCFullYear();
         const month = String(targetDate.getUTCMonth() + 1).padStart(2, '0');
         const day = String(targetDate.getUTCDate()).padStart(2, '0');
         
-        const fallbackDate = `${year}-${month}-${day} 12:00`;
+        // Registra como 23:59 do dia de ontem (fim do dia do servidor)
+        const fallbackDate = `${year}-${month}-${day} 23:59`;
         const fallbackDayStr = `${year}-${month}-${day}`;
 
         let syncCount = 0;
@@ -103,7 +99,7 @@ export async function syncWorldKillStatistics(targetWorld) {
             }
 
             if (needsUpdate) {
-                console.log(`[SYNC] ⚠️ Equipe perdeu o boss em ${targetWorld}: ${bossName}. Sincronizando para: ${fallbackDate}`);
+                console.log(`[SYNC] Boss perdido em ${targetWorld}: ${bossName}. Registrando morte em: ${fallbackDate}`);
                 const finalBossName = bossName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
                 await setBossLastSeenDate(finalBossName, 'TibiaData_API', fallbackDate, targetWorld);
