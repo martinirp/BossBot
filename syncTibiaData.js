@@ -49,9 +49,10 @@ export async function syncWorldKillStatistics(targetWorld) {
         }
 
         const allLocal = await getAllBossesLastSeen(targetWorld);
+        // Guarda tanto a data quanto quem confirmou, para proteger registros de usuários reais
         const localMap = {};
         allLocal.forEach(r => {
-            localMap[r.boss_name.toLowerCase()] = r.seen_at;
+            localMap[r.boss_name.toLowerCase()] = { seen_at: r.seen_at, confirmed_by: r.confirmed_by };
         });
 
         // A página Kill Statistics do Tibia é atualizada uma vez por dia, e o TibiaData a espelha:
@@ -89,19 +90,26 @@ export async function syncWorldKillStatistics(targetWorld) {
                 continue;
             }
 
-            const localSeen = localMap[bossName.toLowerCase()];
+            const localRecord = localMap[bossName.toLowerCase()];
             
             let needsUpdate = false;
 
-            if (!localSeen) {
+            if (!localRecord) {
                 needsUpdate = true; // Bot nunca viu esse boss
             } else {
-                const localDayStr = localSeen.split(' ')[0]; // Ex: 2026-06-15
-                
-                // Se a data que a nossa equipe matou for ANTES da data que o TibiaData está avisando que morreu,
-                // significa que eles mataram ontem, mas nós só temos registro do mês passado/semana passada!
-                if (localDayStr < fallbackDayStr) {
-                    needsUpdate = true;
+                // PROTEÇÃO: jamais sobrescrever registro confirmado por um usuário real com dado da API.
+                // A API só substitui registros que ela mesma criou anteriormente (TibiaData_API / system_adjust).
+                const confirmedByApi = localRecord.confirmed_by === 'TibiaData_API' || localRecord.confirmed_by === 'system_adjust';
+
+                if (confirmedByApi) {
+                    const localDayStr = localRecord.seen_at.split(' ')[0]; // Ex: 2026-06-15
+                    // Se o registro da API é mais antigo do que a nova data da API, atualiza.
+                    if (localDayStr < fallbackDayStr) {
+                        needsUpdate = true;
+                    }
+                } else {
+                    // Registro confirmado por humano: API nunca sobrescreve.
+                    console.log(`[SYNC] ${targetWorld}: ${bossName} confirmado por usuário (${localRecord.confirmed_by}), ignorando dado da API.`);
                 }
             }
 
