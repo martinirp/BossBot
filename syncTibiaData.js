@@ -55,15 +55,16 @@ export async function syncWorldKillStatistics(targetWorld) {
             localMap[r.boss_name.toLowerCase()] = { seen_at: r.seen_at, confirmed_by: r.confirmed_by };
         });
 
-        // A página Kill Statistics do Tibia é atualizada uma vez por dia, e o TibiaData a espelha:
-        //   - ~23:15 BRT quando a Alemanha está sem horário de verão (UTC+1)
-        //   - ~22:15 BRT durante o horário de verão europeu (UTC+2)
+        // O TibiaData atualiza Kill Statistics uma vez por dia:
+        //   - ~22:15 BRT durante o horário de verão europeu (CEST = UTC+2)
+        //   - ~23:15 BRT no horário padrão europeu (CET = UTC+1)
         //
-        // O cron roda às 06:30 BRT do dia D. Nesse momento a API já atualizou (às ~23:15 do dia D-1).
-        // Os dados publicados refletem o "dia do servidor" que encerrou no Server Save de D-1 (06:00 BRT),
-        // ou seja, as mortes ocorridas entre 06:00 BRT de D-2 e 06:00 BRT de D-1.
-        // Portanto, daysAgo = 2: o registro deve apontar para o dia D-2 de calendário.
-        const daysAgo = 2;
+        // O cron roda às 06:30 BRT do dia D+1. A API foi atualizada às ~22:15/23:15 do dia D.
+        // Os dados na API representam o "dia de rastreamento D": tudo que foi morto
+        // no ciclo [22:15/23:15 de D-1, 22:15/23:15 de D].
+        // O servidor save (06:00 BRT) não interfere nesta contagem.
+        // Portanto, daysAgo = 1: o registro deve apontar para o dia D (ontem).
+        const daysAgo = 1;
 
         const targetDate = new Date();
         // Converte para horário de Brasília (UTC-3)
@@ -74,9 +75,7 @@ export async function syncWorldKillStatistics(targetWorld) {
         const month = String(targetDate.getUTCMonth() + 1).padStart(2, '0');
         const day = String(targetDate.getUTCDate()).padStart(2, '0');
         
-        // Registra como 00:00 do dia D-2: a API informa apenas a DATA da morte, não a hora exata.
-        // A CipSoft atualiza o Kill Statistics uma vez por dia (~23:15 BRT / ~22:15 BRT no horário de verão europeu),
-        // contabilizando todas as mortes do dia anterior. A hora 00:00 deixa claro que é data sem hora conhecida.
+        // Registra como 00:00 do dia D (ontem): a API informa apenas a DATA do ciclo, não a hora exata.
         const fallbackDate = `${year}-${month}-${day} 00:00`;
         const fallbackDayStr = `${year}-${month}-${day}`;
 
