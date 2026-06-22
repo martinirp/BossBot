@@ -49,11 +49,24 @@ export default {
          if (minDays === 0 || maxDays === 0) continue;
 
          // O seen_at está armazenado em BRT (ex: "2026-06-22 23:30").
-         // Para calcular a janela de spawn (que é em DIAS, nao horas), usamos apenas a DATA,
-         // zerando o horario para evitar distorcoes. A hora exata de morte nao afeta o calculo diario.
-         // Referencia: Kill Statistics atualiza ~22:15 BRT (verao europeu) ou ~23:15 BRT (inverno europeu).
+         // Para calcular a janela de spawn usamos a DATA DO SERVIDOR TIBIA, que começa
+         // no Server Save (~06:00 BRT). Bosses vistos entre 00:00 e 05:59 BRT ainda pertencem
+         // ao dia do servidor anterior (ex: visto às 02:00 BRT de dia 23 = dia do servidor 22).
+         // Registros da API (TibiaData_API / system_adjust) já têm a data do servidor correta,
+         // portanto não recebem esta correção.
          const datePart = record.seen_at.split(' ')[0]; // "YYYY-MM-DD"
-         const seenDate = new Date(datePart + 'T03:00:00Z'); // 03:00 UTC = 00:00 BRT (inicio do dia em BRT)
+         const timePart = record.seen_at.split(' ')[1] || '00:00'; // "HH:mm" em BRT
+         const brtHour = parseInt(timePart.split(':')[0], 10);
+         const isApiRecord = record.confirmed_by === 'TibiaData_API' || record.confirmed_by === 'system_adjust';
+
+         // Base do dia: 03:00 UTC = 00:00 BRT
+         let seenDate = new Date(datePart + 'T03:00:00Z');
+
+         // Correção de Server Save: confirmado por usuário antes das 06:00 BRT = dia do servidor anterior
+         if (!isApiRecord && brtHour < 6) {
+             seenDate = new Date(seenDate.getTime() - 24 * 60 * 60 * 1000);
+         }
+
          const minDate = new Date(seenDate.getTime() + minDays * 24 * 60 * 60 * 1000);
          const maxDate = new Date(seenDate.getTime() + maxDays * 24 * 60 * 60 * 1000);
 
