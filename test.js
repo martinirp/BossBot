@@ -411,7 +411,7 @@ async function runTests() {
       throw new Error('Zarabustor is on Antica but was not listed in !previsao');
     }
 
-    if (!previsaoResponse.includes('Último avistamento: 15/06/2026 12:00') || !previsaoResponse.includes('Previsão: Entre 21/06/2026 12:00 e 23/06/2026 12:00')) {
+    if (!previsaoResponse.includes('Último avistamento: 15/06/2026 12:00') || !previsaoResponse.includes('Previsão: Entre 21/06/2026 03:00 e 23/06/2026 03:00')) {
       throw new Error('Zarabustor formatting or prediction in !previsao is incorrect');
     }
 
@@ -436,7 +436,7 @@ async function runTests() {
       throw new Error('Zarabustor is on Antica but did not appear in !confirmados');
     }
 
-    if (!confirmadosResponse.includes('Status: PERDIDO') || !confirmadosResponse.includes('Último avistamento: 15/06/2026 12:00')) {
+    if (!confirmadosResponse.includes('Status: PERDIDO') || !confirmadosResponse.includes('Último morto: 15/06/2026 12:00')) {
       throw new Error('Zarabustor details in !confirmados on Antica are incorrect');
     }
 
