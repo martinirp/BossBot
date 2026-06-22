@@ -36,14 +36,24 @@ export async function syncKillStatistics() {
             localMap[r.boss_name.toLowerCase()] = r.seen_at;
         });
 
-        // O killstatistics reflete as mortes de *ontem*.
-        // Vamos registrar essas perdas de boss como "Ontem às 12:00".
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
+        // O killstatistics reflete as mortes do "dia anterior" do servidor.
+        // Se a sincronização rodar ANTES do Server Save do dia atual (06:00 BRT),
+        // a API ainda estará exibindo os dados de 2 dias atrás.
+        // Se rodar DEPOIS, exibirá os dados de ontem (1 dia atrás).
+        const now = new Date();
+        const nowBrHour = (now.getUTCHours() - 3 + 24) % 24;
+        let daysAgo = 1;
+        if (nowBrHour < 6) {
+            daysAgo = 2;
+        }
+
+        const targetDate = new Date();
+        targetDate.setHours(targetDate.getHours() - 3); // Ajusta para hora de Brasília
+        targetDate.setDate(targetDate.getDate() - daysAgo);
         
-        const year = yesterday.getFullYear();
-        const month = String(yesterday.getMonth() + 1).padStart(2, '0');
-        const day = String(yesterday.getDate()).padStart(2, '0');
+        const year = targetDate.getUTCFullYear();
+        const month = String(targetDate.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(targetDate.getUTCDate()).padStart(2, '0');
         
         const fallbackDate = `${year}-${month}-${day} 12:00`;
         const fallbackDayStr = `${year}-${month}-${day}`;

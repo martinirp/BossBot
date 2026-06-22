@@ -36,11 +36,14 @@ export default {
         const seenAtFormatted = formatSeenAt(record.seen_at);
         const confirmer = record.confirmed_by;
 
-        const isApi = !confirmer || confirmer === 'TibiaData_API' || !confirmer.includes('@');
+        const isLost = !confirmer || confirmer === 'TibiaData_API';
+        const isSystem = confirmer === 'system_adjust';
 
         responseText += `*${bName}*\n`;
-        if (isApi) {
+        if (isLost) {
           responseText += `Status: PERDIDO\n`;
+        } else if (isSystem) {
+          responseText += `Confirmado por: Sistema\n`;
         } else {
           const phone = confirmer.split('@')[0];
           responseText += `Confirmado por: @${phone}\n`;
