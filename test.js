@@ -366,6 +366,65 @@ async function runTests() {
     throw err;
   }
 
+  // Test 7: registrados command
+  console.log('--- Test 7: registrados command ---');
+  const statsPath = 'bosses_stats.json';
+  let statsBackup = null;
+  if (fs.existsSync(statsPath)) {
+    statsBackup = fs.readFileSync(statsPath, 'utf-8');
+  }
+
+  try {
+    const dbModule = await import('./database.js');
+    // Set test stats
+    const testStats = {
+      "Ferumbras": { "min_days": 0, "max_days": 0 },
+      "Zarabustor": { "min_days": 6, "max_days": 8 }
+    };
+    fs.writeFileSync(statsPath, JSON.stringify(testStats, null, 2), 'utf-8');
+
+    // Seed last seen dates
+    await dbModule.setBossLastSeenDate('Zarabustor', '123@s.whatsapp.net', '2026-06-15 12:00');
+    await dbModule.setBossLastSeenDate('Ferumbras', '123@s.whatsapp.net', '2026-06-20 10:30');
+
+    sentMessages = [];
+    await commandHandler.handleMessage(mockSock, mockMsg3, '!registrados');
+
+    const response = sentMessages[0]?.content?.text;
+    console.log('registrados response:\n', response);
+
+    if (!response) {
+      throw new Error('No response from !registrados command');
+    }
+
+    if (!response.includes('Ferumbras') || !response.includes('Zarabustor')) {
+      throw new Error('Expected bosses not found in response');
+    }
+
+    if (!response.includes('Último avistamento: 20/06/2026 10:30') || !response.includes('Previsão: Sem previsão')) {
+      throw new Error('Ferumbras formatting or prediction is incorrect');
+    }
+
+    if (!response.includes('Último avistamento: 15/06/2026 12:00') || !response.includes('Previsão: Entre 21/06/2026 12:00 e 23/06/2026 12:00')) {
+      throw new Error('Zarabustor formatting or prediction is incorrect');
+    }
+
+    // Check sorting: Ferumbras (F) should come before Zarabustor (Z)
+    const indexF = response.indexOf('Ferumbras');
+    const indexZ = response.indexOf('Zarabustor');
+    if (indexF > indexZ) {
+      throw new Error('Bosses are not sorted alphabetically');
+    }
+
+    console.log('registrados command test passed ✅\n');
+  } finally {
+    if (statsBackup !== null) {
+      fs.writeFileSync(statsPath, statsBackup, 'utf-8');
+    } else if (fs.existsSync(statsPath)) {
+      fs.unlinkSync(statsPath);
+    }
+  }
+
   // Clean up
   await closeDb();
   if (fs.existsSync('test_bossbot.db')) {
