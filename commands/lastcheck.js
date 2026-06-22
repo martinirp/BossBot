@@ -33,10 +33,11 @@ export default {
     }
 
     const bossName = matchResult.match;
+    const world = await db.getGroupWorld(remoteJid);
 
     const [checkRecord, lastSeenRecord] = await Promise.all([
-      db.getBossCheck(bossName),
-      db.getBossLastSeen(bossName)
+      db.getBossCheck(bossName, world),
+      db.getBossLastSeen(bossName, world)
     ]);
 
     let text = `🔍 *${bossName}*\n\n`;

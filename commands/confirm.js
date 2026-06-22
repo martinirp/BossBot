@@ -50,10 +50,11 @@ export default {
     const matchedBossName = matchResult.match;
 
     const subscribers = await db.getSubscribers(matchedBossName);
+    const world = await db.getGroupWorld(remoteJid);
 
     await db.addBossReport(matchedBossName, extraText, senderJid, subscribers.length);
     await db.incrementRank(senderJid);
-    await db.updateBossLastSeen(matchedBossName, senderJid);
+    await db.updateBossLastSeen(matchedBossName, senderJid, world);
     const now = new Date();
     now.setHours(now.getHours() - 3);
     const timeString = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -69,7 +70,7 @@ export default {
         mentions: [senderJid]
       }, { quoted: msg });
 
-      enqueueNotification(sock, subscribers, matchedBossName, extraText);
+      enqueueNotification(sock, subscribers, matchedBossName, extraText, world);
     }
   }
 }

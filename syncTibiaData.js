@@ -2,7 +2,7 @@ import cron from 'node-cron';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
-import { getAllBossesLastSeen, setBossLastSeenDate } from './database.js';
+import { getAllBossesLastSeen, setBossLastSeenDate, getUniqueWorlds } from './database.js';
 
 dotenv.config();
 
@@ -13,11 +13,29 @@ const validBossesRaw = JSON.parse(fs.readFileSync(path.resolve('bosses.json'), '
 const validBosses = validBossesRaw.map(b => b.toLowerCase());
 
 export async function syncKillStatistics() {
-    console.log(`[SYNC] Iniciando sincronização com TibiaData para o mundo: ${world}`);
+    console.log(`[SYNC] Iniciando sincronização multimundos com TibiaData...`);
     try {
-        const res = await fetch(`https://api.tibiadata.com/v4/killstatistics/${world}`);
+        const worlds = await getUniqueWorlds();
+        
+        // Se nenhum grupo estiver cadastrado ainda, sincroniza pelo menos o mundo padrão do .env
+        const defaultWorld = process.env.TIBIA_WORLD || 'Quelibra';
+        const worldsToSync = worlds.length > 0 ? worlds : [defaultWorld];
+        
+        for (const targetWorld of worldsToSync) {
+            await syncWorldKillStatistics(targetWorld);
+        }
+        console.log(`[SYNC] Sincronização multimundos finalizada.`);
+    } catch (err) {
+        console.error('[SYNC] Falha geral na sincronização multimundos:', err);
+    }
+}
+
+export async function syncWorldKillStatistics(targetWorld) {
+    console.log(`[SYNC] Sincronizando mundo: ${targetWorld}`);
+    try {
+        const res = await fetch(`https://api.tibiadata.com/v4/killstatistics/${targetWorld}`);
         if (!res.ok) {
-            throw new Error(`Erro HTTP: ${res.status}`);
+            throw new Error(`Erro HTTP ao buscar ${targetWorld}: ${res.status}`);
         }
         const data = await res.json();
         const entries = data.killstatistics?.entries || [];
@@ -26,11 +44,11 @@ export async function syncKillStatistics() {
         const killedYesterday = entries.filter(e => e.last_day_killed > 0);
 
         if (killedYesterday.length === 0) {
-            console.log('[SYNC] Nenhum boss reportado no dia anterior pelo TibiaData.');
+            console.log(`[SYNC] Nenhum boss reportado no dia anterior pelo TibiaData para ${targetWorld}.`);
             return;
         }
 
-        const allLocal = await getAllBossesLastSeen();
+        const allLocal = await getAllBossesLastSeen(targetWorld);
         const localMap = {};
         allLocal.forEach(r => {
             localMap[r.boss_name.toLowerCase()] = r.seen_at;
@@ -85,29 +103,16 @@ export async function syncKillStatistics() {
             }
 
             if (needsUpdate) {
-                console.log(`[SYNC] ⚠️ Equipe perdeu o boss: ${bossName}. Sincronizando do site para: ${fallbackDate}`);
-                // Procura o nome original exato na lista (já que kill.race pode ter capitalização zoada, 
-                // mas a tabela salva como a string original, ex: "The Frog Prince"). 
-                // No entanto, get/set são sensíveis a maiúsculas no BD. Precisamos arrumar a capitalização.
-                const originalName = Object.keys(localMap).find(k => k === bossName.toLowerCase()) || bossName;
-                
-                // Para não cagar o BD caso o boss não exista no localMap, faremos um capitalizer simples se não tiver
-                let finalBossName = bossName;
-                if (!localMap[bossName.toLowerCase()]) {
-                   finalBossName = bossName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-                } else {
-                   // Achar o nome exato case-sensitive dos cadastros locais não dá pelo localMap (tudo lowercase chave).
-                   // Vamos deixar o DB inserir como finalBossName e o !previsao faz lower.
-                   finalBossName = bossName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-                }
+                console.log(`[SYNC] ⚠️ Equipe perdeu o boss em ${targetWorld}: ${bossName}. Sincronizando para: ${fallbackDate}`);
+                const finalBossName = bossName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
-                await setBossLastSeenDate(finalBossName, 'TibiaData_API', fallbackDate);
+                await setBossLastSeenDate(finalBossName, 'TibiaData_API', fallbackDate, targetWorld);
                 syncCount++;
             }
         }
-        console.log(`[SYNC] Sincronização finalizada. ${syncCount} bosses recuperados.`);
+        console.log(`[SYNC] Sincronização de ${targetWorld} finalizada. ${syncCount} bosses recuperados.`);
     } catch (err) {
-        console.error('[SYNC] Falha na sincronização:', err);
+        console.error(`[SYNC] Falha na sincronização do mundo ${targetWorld}:`, err);
     }
 }
 

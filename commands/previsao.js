@@ -15,7 +15,8 @@ export default {
         stats = JSON.parse(fs.readFileSync(statsPath, 'utf8'));
       }
 
-      const allSeen = await db.getAllBossesLastSeen();
+      const world = await db.getGroupWorld(remoteJid);
+      const allSeen = await db.getAllBossesLastSeen(world);
       
       const bossesWithPrediction = [];
 

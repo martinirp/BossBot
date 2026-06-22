@@ -7,7 +7,8 @@ export default {
     const { sock, msg, remoteJid } = context;
 
     try {
-      const allSeen = await db.getAllBossesLastSeen();
+      const world = await db.getGroupWorld(remoteJid);
+      const allSeen = await db.getAllBossesLastSeen(world);
 
       if (allSeen.length === 0) {
         await sock.sendMessage(remoteJid, {

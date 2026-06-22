@@ -33,7 +33,8 @@ export default {
     }
 
     const bossName = matchResult.match;
-    await db.updateBossCheck(bossName, senderJid);
+    const world = await db.getGroupWorld(remoteJid);
+    await db.updateBossCheck(bossName, senderJid, world);
 
     const now = new Date();
     now.setHours(now.getHours() - 3);

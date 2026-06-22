@@ -62,8 +62,8 @@ export async function sendPushoverMessage(token, user, message, title = 'BossBot
  * @param {string} bossName - Name of the boss
  * @param {string} extraText - Localization/details text
  */
-export function enqueueNotification(sock, subscribers, bossName, extraText) {
-  jobQueue.push({ sock, subscribers, bossName, extraText });
+export function enqueueNotification(sock, subscribers, bossName, extraText, world = 'Quelibra') {
+  jobQueue.push({ sock, subscribers, bossName, extraText, world });
   processQueue();
 }
 
@@ -72,7 +72,7 @@ async function processQueue() {
   if (jobQueue.length === 0) return;
 
   isProcessing = true;
-  const { sock, subscribers, bossName, extraText } = jobQueue.shift();
+  const { sock, subscribers, bossName, extraText, world } = jobQueue.shift();
 
   try {
     const uppercaseBoss = bossName.toUpperCase();
@@ -84,19 +84,22 @@ async function processQueue() {
       ? `🚨 *ALERTA DE BOSS* 🚨\n\n⚔️ *Boss:* ${uppercaseBoss}\n🕒 *Horário:* ${timeString}\n📍 *Detalhes:* ${extraText}`
       : `🚨 *ALERTA DE BOSS* 🚨\n\n⚔️ *Boss:* ${uppercaseBoss}\n🕒 *Horário:* ${timeString}`;
 
-    console.log(`Starting notifications for boss ${uppercaseBoss} to ${subscribers.length} subscribers.`);
+    console.log(`Starting notifications for boss ${uppercaseBoss} on world ${world} to ${subscribers.length} subscribers.`);
 
     const allowedGroups = await db.getAllowedGroups();
     const activeMembersSet = new Set();
     
     for (const groupJid of allowedGroups) {
-      try {
-        const metadata = await sock.groupMetadata(groupJid);
-        for (const p of metadata.participants) {
-          activeMembersSet.add(jidNormalizedUser(p.id));
+      const groupWorld = await db.getGroupWorld(groupJid);
+      if (groupWorld === world) {
+        try {
+          const metadata = await sock.groupMetadata(groupJid);
+          for (const p of metadata.participants) {
+            activeMembersSet.add(jidNormalizedUser(p.id));
+          }
+        } catch (err) {
+          console.error(`Erro ao buscar metadados do grupo ${groupJid} no mundo ${world}:`, err);
         }
-      } catch (err) {
-        console.error(`Erro ao buscar metadados do grupo ${groupJid}:`, err);
       }
     }
 

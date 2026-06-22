@@ -33,7 +33,8 @@ export default {
     }
 
     const bossName = matchResult.match;
-    const record = await db.getBossLastSeen(bossName);
+    const world = await db.getGroupWorld(remoteJid);
+    const record = await db.getBossLastSeen(bossName, world);
 
     if (!record) {
       await sock.sendMessage(remoteJid, {

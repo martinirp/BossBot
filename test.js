@@ -366,8 +366,8 @@ async function runTests() {
     throw err;
   }
 
-  // Test 7: previsao and confirmados commands
-  console.log('--- Test 7: previsao and confirmados commands ---');
+  // Test 7: previsao and confirmados commands (Multi-world version)
+  console.log('--- Test 7: previsao and confirmados commands (Multi-world) ---');
   const statsPath = 'bosses_stats.json';
   let statsBackup = null;
   if (fs.existsSync(statsPath)) {
@@ -383,77 +383,106 @@ async function runTests() {
     };
     fs.writeFileSync(statsPath, JSON.stringify(testStats, null, 2), 'utf-8');
 
-    // Seed last seen dates
-    // 1. Zarabustor: Has active prediction, confirmed by TibiaData_API (should be PERDIDO in confirmados)
-    await dbModule.setBossLastSeenDate('Zarabustor', 'TibiaData_API', '2026-06-15 12:00');
-    // 2. Ferumbras: No prediction, confirmed by user 123@s.whatsapp.net (should show confirmer in confirmados)
-    await dbModule.setBossLastSeenDate('Ferumbras', '123@s.whatsapp.net', '2026-06-20 10:30');
+    // 1. Configure the group test_group@g.us to track Antica
+    await dbModule.setGroupWorld('test_group@g.us', 'Antica');
 
-    // --- A. Test previsao command ---
+    // 2. Seed last seen dates on different worlds
+    // Zarabustor: Has active prediction on Antica
+    await dbModule.setBossLastSeenDate('Zarabustor', 'TibiaData_API', '2026-06-15 12:00', 'Antica');
+    // Ferumbras: No prediction on Quelibra
+    await dbModule.setBossLastSeenDate('Ferumbras', '123@s.whatsapp.net', '2026-06-20 10:30', 'Quelibra');
+
+    // --- A. Test previsao command (on Antica) ---
     sentMessages = [];
     await commandHandler.handleMessage(mockSock, mockMsg3, '!previsao');
 
     const previsaoResponse = sentMessages[0]?.content?.text;
-    console.log('previsao response:\n', previsaoResponse);
+    console.log('previsao response (Antica):\n', previsaoResponse);
 
     if (!previsaoResponse) {
       throw new Error('No response from !previsao command');
     }
 
     if (previsaoResponse.includes('Ferumbras')) {
-      throw new Error('Ferumbras has no prediction config but was listed in !previsao');
+      throw new Error('Ferumbras is on Quelibra but was listed in !previsao on Antica');
     }
 
     if (!previsaoResponse.includes('Zarabustor')) {
-      throw new Error('Zarabustor has active prediction but was not listed in !previsao');
+      throw new Error('Zarabustor is on Antica but was not listed in !previsao');
     }
 
     if (!previsaoResponse.includes('Último avistamento: 15/06/2026 12:00') || !previsaoResponse.includes('Previsão: Entre 21/06/2026 12:00 e 23/06/2026 12:00')) {
       throw new Error('Zarabustor formatting or prediction in !previsao is incorrect');
     }
 
-    console.log('previsao command test passed ✅');
+    console.log('previsao command (Antica) test passed ✅');
 
-    // --- B. Test confirmados command ---
+    // --- B. Test confirmados command (on Antica) ---
     sentMessages = [];
     await commandHandler.handleMessage(mockSock, mockMsg3, '!confirmados');
 
     const confirmadosResponse = sentMessages[0]?.content?.text;
-    const mentions = sentMessages[0]?.content?.mentions || [];
-    console.log('confirmados response:\n', confirmadosResponse);
-    console.log('confirmados mentions:', mentions);
+    console.log('confirmados response (Antica):\n', confirmadosResponse);
 
     if (!confirmadosResponse) {
       throw new Error('No response from !confirmados command');
     }
 
-    if (!confirmadosResponse.includes('Ferumbras') || !confirmadosResponse.includes('Zarabustor')) {
-      throw new Error('Expected bosses not found in !confirmados response');
+    if (confirmadosResponse.includes('Ferumbras')) {
+      throw new Error('Ferumbras is on Quelibra but appeared in !confirmados on Antica');
     }
 
-    // Ferumbras was confirmed by a user
-    if (!confirmadosResponse.includes('Confirmado por: @123') || !confirmadosResponse.includes('Último avistamento: 20/06/2026 10:30')) {
-      throw new Error('Ferumbras details in !confirmados are incorrect');
+    if (!confirmadosResponse.includes('Zarabustor')) {
+      throw new Error('Zarabustor is on Antica but did not appear in !confirmados');
     }
 
-    // Zarabustor was confirmed by TibiaData_API -> PERDIDO
     if (!confirmadosResponse.includes('Status: PERDIDO') || !confirmadosResponse.includes('Último avistamento: 15/06/2026 12:00')) {
-      throw new Error('Zarabustor details in !confirmados should be marked as PERDIDO');
+      throw new Error('Zarabustor details in !confirmados on Antica are incorrect');
     }
 
-    // Mentions check: Should contain '123@s.whatsapp.net' and NOT 'TibiaData_API'
-    if (mentions.length !== 1 || mentions[0] !== '123@s.whatsapp.net') {
-      throw new Error('Mentions in !confirmados are incorrect');
+    console.log('confirmados command (Antica) test passed ✅');
+
+    // --- C. Test setworld command ---
+    sentMessages = [];
+    await commandHandler.handleMessage(mockSock, mockMsg3, '!setworld Quelibra');
+    console.log('setworld response:', sentMessages[0]?.content?.text);
+
+    if (!sentMessages[0]?.content?.text || !sentMessages[0]?.content?.text.includes('configurado para rastrear o mundo: *Quelibra*')) {
+      throw new Error('setworld command failed to execute or return correct message');
     }
 
-    // Check alphabetical sorting
-    const indexF = confirmadosResponse.indexOf('Ferumbras');
-    const indexZ = confirmadosResponse.indexOf('Zarabustor');
-    if (indexF > indexZ) {
-      throw new Error('Bosses in !confirmados are not sorted alphabetically');
+    const updatedWorld = await dbModule.getGroupWorld('test_group@g.us');
+    if (updatedWorld !== 'Quelibra') {
+      throw new Error('setworld did not update group world in DB');
+    }
+    console.log('setworld command test passed ✅');
+
+    // --- D. Test confirmados command (on Quelibra) ---
+    sentMessages = [];
+    await commandHandler.handleMessage(mockSock, mockMsg3, '!confirmados');
+
+    const confirmadosResponseQuelibra = sentMessages[0]?.content?.text;
+    const mentionsQuelibra = sentMessages[0]?.content?.mentions || [];
+    console.log('confirmados response (Quelibra):\n', confirmadosResponseQuelibra);
+    console.log('confirmados mentions (Quelibra):', mentionsQuelibra);
+
+    if (confirmadosResponseQuelibra.includes('Zarabustor')) {
+      throw new Error('Zarabustor is on Antica but appeared in !confirmados on Quelibra');
     }
 
-    console.log('confirmados command test passed ✅\n');
+    if (!confirmadosResponseQuelibra.includes('Ferumbras')) {
+      throw new Error('Ferumbras is on Quelibra but did not appear in !confirmados');
+    }
+
+    if (!confirmadosResponseQuelibra.includes('Confirmado por: @123') || !confirmadosResponseQuelibra.includes('Último avistamento: 20/06/2026 10:30')) {
+      throw new Error('Ferumbras details in !confirmados on Quelibra are incorrect');
+    }
+
+    if (mentionsQuelibra.length !== 1 || mentionsQuelibra[0] !== '123@s.whatsapp.net') {
+      throw new Error('Mentions in !confirmados on Quelibra are incorrect');
+    }
+
+    console.log('confirmados command (Quelibra) test passed ✅\n');
   } finally {
     if (statsBackup !== null) {
       fs.writeFileSync(statsPath, statsBackup, 'utf-8');
