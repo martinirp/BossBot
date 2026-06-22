@@ -246,6 +246,76 @@ async function runTests() {
   }
   console.log('!hive command test passed ✅\n');
 
+  // Test 5: addnewboss and removenewboss commands
+  console.log('--- Test 5: addnewboss and removenewboss ---');
+  const bossesJsonPath = 'bosses.json';
+  let bossesBackup = null;
+  if (fs.existsSync(bossesJsonPath)) {
+    bossesBackup = fs.readFileSync(bossesJsonPath, 'utf-8');
+  }
+
+  try {
+    // 5.1 Test addnewboss command
+    sentMessages = [];
+    await commandHandler.handleMessage(mockSock, mockMsg3, '!addnewboss TestBossXYZ');
+    console.log('addnewboss response:', sentMessages[0]?.content?.text);
+    if (!sentMessages[0]?.content?.text || !sentMessages[0]?.content?.text.includes('adicionado com sucesso')) {
+      throw new Error('Failed to add new boss');
+    }
+    
+    // Read and verify file updated
+    const listAfterAdd = JSON.parse(fs.readFileSync(bossesJsonPath, 'utf-8'));
+    if (!listAfterAdd.includes('TestBossXYZ')) {
+      throw new Error('TestBossXYZ was not found in bosses.json');
+    }
+    console.log('addnewboss success test passed ✅');
+
+    // 5.2 Test addnewboss duplicate
+    sentMessages = [];
+    await commandHandler.handleMessage(mockSock, mockMsg3, '!addnewboss TestBossXYZ');
+    console.log('addnewboss duplicate response:', sentMessages[0]?.content?.text);
+    if (!sentMessages[0]?.content?.text || !sentMessages[0]?.content?.text.includes('já existe na lista')) {
+      throw new Error('Duplicate check failed');
+    }
+    console.log('addnewboss duplicate check passed ✅');
+
+    // 5.3 Test removenewboss suggestion
+    // Add another boss starting with TestBossXYZ to make TestBossXY match both (ambiguous partial)
+    await commandHandler.handleMessage(mockSock, mockMsg3, '!addnewboss TestBossXYZOther');
+    
+    sentMessages = [];
+    await commandHandler.handleMessage(mockSock, mockMsg3, '!removenewboss TestBossXY');
+    console.log('removenewboss suggestions response:', sentMessages[0]?.content?.text);
+    if (!sentMessages[0]?.content?.text || !sentMessages[0]?.content?.text.includes('Você quis dizer:')) {
+      throw new Error('Fuzzy suggestion on removal failed');
+    }
+    console.log('removenewboss suggestions check passed ✅');
+
+    // 5.4 Test removenewboss exact remove
+    sentMessages = [];
+    await commandHandler.handleMessage(mockSock, mockMsg3, '!removenewboss TestBossXYZ');
+    if (!sentMessages[0]?.content?.text || !sentMessages[0]?.content?.text.includes('removido com sucesso')) {
+      throw new Error('Failed to remove TestBossXYZ');
+    }
+    
+    sentMessages = [];
+    await commandHandler.handleMessage(mockSock, mockMsg3, '!removenewboss TestBossXYZOther');
+    if (!sentMessages[0]?.content?.text || !sentMessages[0]?.content?.text.includes('removido com sucesso')) {
+      throw new Error('Failed to remove TestBossXYZOther');
+    }
+
+    const listAfterRemove = JSON.parse(fs.readFileSync(bossesJsonPath, 'utf-8'));
+    if (listAfterRemove.includes('TestBossXYZ') || listAfterRemove.includes('TestBossXYZOther')) {
+      throw new Error('Bosses were not removed from bosses.json');
+    }
+    console.log('removenewboss success test passed ✅\n');
+
+  } finally {
+    if (bossesBackup !== null) {
+      fs.writeFileSync(bossesJsonPath, bossesBackup, 'utf-8');
+    }
+  }
+
   // Clean up
   await closeDb();
   if (fs.existsSync('test_bossbot.db')) {
