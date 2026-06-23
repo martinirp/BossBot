@@ -59,11 +59,10 @@ export async function syncWorldKillStatistics(targetWorld) {
         //   - ~22:15 BRT durante o horário de verão europeu (CEST = UTC+2)
         //   - ~23:15 BRT no horário padrão europeu (CET = UTC+1)
         //
-        // A API traz os dados do dia ANTERIOR à atualização.
         // O cron roda às 06:30 BRT do dia D+1. A API foi atualizada às ~22:15/23:15 do dia D,
-        // trazendo os dados referentes aos kills do dia D-1.
-        // Portanto, daysAgo = 2: o registro deve apontar para o dia D-1.
-        const daysAgo = 2;
+        // trazendo os dados referentes ao ciclo de rastreamento D.
+        // Portanto, daysAgo = 1: o registro deve apontar para o dia D.
+        const daysAgo = 1;
 
         const targetDate = new Date();
         // Converte para horário de Brasília (UTC-3)
@@ -74,7 +73,7 @@ export async function syncWorldKillStatistics(targetWorld) {
         const month = String(targetDate.getUTCMonth() + 1).padStart(2, '0');
         const day = String(targetDate.getUTCDate()).padStart(2, '0');
         
-        // Registra como 00:00 do dia D-1: a API informa apenas a DATA do ciclo, não a hora exata.
+        // Registra como 00:00 do dia D: a API informa apenas a DATA do ciclo, não a hora exata.
         const fallbackDate = `${year}-${month}-${day} 00:00`;
         const fallbackDayStr = `${year}-${month}-${day}`;
 
