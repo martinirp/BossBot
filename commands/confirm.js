@@ -174,6 +174,8 @@ export default {
     await db.incrementRank(senderJid);
 
     // Nota informativa se a API já atualizou esta noite
+    const brtNow = new Date(utcNow);
+    brtNow.setUTCHours(brtNow.getUTCHours() - 3);
     const todayStr = `${String(brtNow.getUTCDate()).padStart(2, '0')}/${String(brtNow.getUTCMonth() + 1).padStart(2, '0')}`;
     const apiNote = apiUpdatedTonight
       ? `\n⚠️ Morto dia ${todayStr}, mas salvo dia ${trackingDateDisplay} para manter coerência com a API.`
