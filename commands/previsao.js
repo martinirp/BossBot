@@ -71,6 +71,9 @@ export default {
                extraStr = " (Atrasado / Alta chance)";
            } else if (today >= minDate) {
                extraStr = " (Pode nascer)";
+           } else {
+               // Ainda não está na faixa que pode nascer, então pulamos
+               continue;
            }
          }
 
