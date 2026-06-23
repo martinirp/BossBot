@@ -43,9 +43,10 @@ function getApiUpdateTimeBRT(utcNow) {
  * Tudo morto DEPOIS aparece no ciclo seguinte (dia D+1).
  *
  * @param {Date} utcNow - data/hora UTC atual
+ * @param {string} world - O mundo do Tibia (ex: Antica)
  * @returns {{ seenAt: string, trackingDateStr: string, apiUpdatedTonight: boolean, brtTimeStr: string }}
  */
-function calcTrackingDay(utcNow) {
+async function calcTrackingDay(utcNow, world) {
   // Converte para BRT (UTC-3)
   const brtNow = new Date(utcNow);
   brtNow.setUTCHours(brtNow.getUTCHours() - 3);
@@ -53,11 +54,49 @@ function calcTrackingDay(utcNow) {
   const brtHour = brtNow.getUTCHours();
   const brtMin  = brtNow.getUTCMinutes();
   const brtTimeStr = `${String(brtHour).padStart(2, '0')}:${String(brtMin).padStart(2, '0')}`;
+  
+  const pad = (n) => String(n).padStart(2, '0');
+  const todayStr = `${brtNow.getUTCFullYear()}-${pad(brtNow.getUTCMonth() + 1)}-${pad(brtNow.getUTCDate())}`;
 
-  // Horário de atualização da API em BRT (depende do horário de verão alemão)
-  const apiTime = getApiUpdateTimeBRT(utcNow);
-  const apiUpdatedTonight = (brtHour > apiTime.hour) ||
-                            (brtHour === apiTime.hour && brtMin >= apiTime.minute);
+  let apiUpdatedTonight = false;
+
+  // Só tentamos checar a API dinamicamente se estivermos na janela onde a CipSoft costuma atualizar (21:00 às 23:59)
+  if (brtHour >= 21) {
+    const flippedDate = await db.getGlobalSetting(`tibiadata_flipped_date_${world}`);
+    
+    if (flippedDate === todayStr) {
+      // Já sabemos que atualizou hoje
+      apiUpdatedTonight = true;
+    } else {
+      try {
+        const res = await fetch(`https://api.tibiadata.com/v4/killstatistics/${world}`);
+        if (res.ok) {
+          const data = await res.json();
+          const entries = data.killstatistics?.entries || [];
+          let currentSum = 0;
+          entries.forEach(e => { currentSum += e.last_day_killed; });
+          
+          const savedSumStr = await db.getGlobalSetting(`tibiadata_checksum_${world}`);
+          const savedSum = parseInt(savedSumStr, 10);
+          
+          if (savedSum && currentSum !== savedSum) {
+            // A soma mudou! A API virou.
+            apiUpdatedTonight = true;
+            await db.setGlobalSetting(`tibiadata_flipped_date_${world}`, todayStr);
+            await db.setGlobalSetting(`tibiadata_checksum_${world}`, currentSum); // Atualiza pra não acusar falsa mudança
+          }
+        }
+      } catch (err) {
+        console.error('[confirm.js] Falha ao checar checksum da API:', err);
+      }
+    }
+  }
+
+  // Fallback caso a API falhe ou a soma não exista (primeiro dia)
+  if (!apiUpdatedTonight && brtHour >= 21) {
+    const apiTime = getApiUpdateTimeBRT(utcNow);
+    apiUpdatedTonight = (brtHour > apiTime.hour) || (brtHour === apiTime.hour && brtMin >= apiTime.minute);
+  }
 
   // Regra:
   // Kills ANTES da atualizacao (~22:15 ou ~23:15 BRT) pertencem ao ciclo atual → dia D.
@@ -67,7 +106,6 @@ function calcTrackingDay(utcNow) {
     trackingDate.setUTCDate(trackingDate.getUTCDate() + 1);
   }
 
-  const pad = (n) => String(n).padStart(2, '0');
   const trackingDateStr = `${trackingDate.getUTCFullYear()}-${pad(trackingDate.getUTCMonth() + 1)}-${pad(trackingDate.getUTCDate())}`;
   const seenAt = `${trackingDateStr} ${brtTimeStr}`;
 
@@ -125,7 +163,7 @@ export default {
 
     // ── 1. Calcular dia de rastreamento ANTES de salvar ────────────────────
     const utcNow = new Date();
-    const { seenAt, trackingDateStr, apiUpdatedTonight, brtTimeStr } = calcTrackingDay(utcNow);
+    const { seenAt, trackingDateStr, apiUpdatedTonight, brtTimeStr } = await calcTrackingDay(utcNow, world);
 
     // Formata a data de rastreamento para exibição (DD/MM/YYYY)
     const [tYear, tMonth, tDay] = trackingDateStr.split('-');

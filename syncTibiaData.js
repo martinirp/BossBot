@@ -2,7 +2,7 @@ import cron from 'node-cron';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
-import { getAllBossesLastSeen, setBossLastSeenDate, getUniqueWorlds } from './database.js';
+import { getAllBossesLastSeen, setBossLastSeenDate, getUniqueWorlds, setGlobalSetting } from './database.js';
 
 dotenv.config();
 
@@ -39,6 +39,11 @@ export async function syncWorldKillStatistics(targetWorld) {
         }
         const data = await res.json();
         const entries = data.killstatistics?.entries || [];
+
+        // Calcula e salva o checksum do dia para o comando !boss comparar mais tarde
+        let currentSum = 0;
+        entries.forEach(e => { currentSum += e.last_day_killed; });
+        await setGlobalSetting(`tibiadata_checksum_${targetWorld}`, currentSum);
 
         // Filtra apenas os que morreram no dia anterior
         const killedYesterday = entries.filter(e => e.last_day_killed > 0);
