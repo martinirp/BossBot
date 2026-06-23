@@ -1,0 +1,475 @@
+export const bossIntervals = {
+  "Albino Dragon": {
+    "fixedDaysFrequency": {
+      "min": 0,
+      "max": 2
+    },
+    "spawnCount": 5
+  },
+  "Apprentice Sheng": {
+    "fixedDaysFrequency": {
+      "min": 0,
+      "max": 9
+    }
+  },
+  "Arachir the Ancient One": {
+    "fixedDaysFrequency": {
+      "min": 5,
+      "max": 9
+    }
+  },
+  "Arthom The Hunter": {
+    "fixedDaysFrequency": {
+      "min": 0,
+      "max": 5
+    }
+  },
+  "Barbaria": {
+    "fixedDaysFrequency": {
+      "min": 7,
+      "max": 13
+    }
+  },
+  "Battlemaster Zunzu": {
+    "fixedDaysFrequency": {
+      "min": 5,
+      "max": 9
+    },
+    "spawnCount": 2
+  },
+  "Big Boss Trolliver": {
+    "fixedDaysFrequency": {
+      "min": 2,
+      "max": 6
+    }
+  },
+  "Captain Jones": {
+    "fixedDaysFrequency": {
+      "min": 5,
+      "max": 9
+    }
+  },
+  "Chizzoron the Distorter": {
+    "fixedDaysFrequency": {
+      "min": 6,
+      "max": 20
+    }
+  },
+  "Countess Sorrow": {
+    "fixedDaysFrequency": {
+      "min": 13,
+      "max": 21
+    }
+  },
+  "Cublarc the Plunderer": {
+    "fixedDaysFrequency": {
+      "min": 0,
+      "max": 8
+    }
+  },
+  "Dharalion": {
+    "fixedDaysFrequency": {
+      "min": 5,
+      "max": 9
+    }
+  },
+  "Diblis the Fair": {
+    "fixedDaysFrequency": {
+      "min": 9,
+      "max": 16
+    }
+  },
+  "Dracola": {
+    "fixedDaysFrequency": {
+      "min": 13,
+      "max": 21
+    }
+  },
+  "Draptor": {
+    "fixedDaysFrequency": {
+      "min": 0,
+      "max": 10
+    }
+  },
+  "Dreadmaw": {
+    "fixedDaysFrequency": {
+      "min": 11,
+      "max": 25
+    },
+    "spawnCount": 2
+  },
+  "Fernfang": {
+    "fixedDaysFrequency": {
+      "min": 19,
+      "max": 28
+    }
+  },
+  "Ferumbras": {
+    "fixedDaysFrequency": {
+      "min": 161,
+      "max": 175
+    }
+  },
+  "Flamecaller Zazrak": {
+    "fixedDaysFrequency": {
+      "min": 5,
+      "max": 20
+    },
+    "spawnCount": 2
+  },
+  "Fleabringer": {
+    "fixedDaysFrequency": {
+      "min": 0,
+      "max": 4
+    },
+    "spawnCount": 3
+  },
+  "Foreman Kneebiter": {
+    "fixedDaysFrequency": {
+      "min": 2,
+      "max": 7
+    }
+  },
+  "Furyosa": {
+    "fixedDaysFrequency": {
+      "min": 13,
+      "max": 29
+    }
+  },
+  "Gaz'haragoth": {
+    "fixedDaysFrequency": {
+      "min": 13,
+      "max": 28
+    }
+  },
+  "General Murius": {
+    "fixedDaysFrequency": {
+      "min": 5,
+      "max": 9
+    }
+  },
+  "Ghazbaran": {
+    "fixedDaysFrequency": {
+      "min": 161,
+      "max": 175
+    }
+  },
+  "Grand Mother Foulscale": {
+    "fixedDaysFrequency": {
+      "min": 4,
+      "max": 10
+    }
+  },
+  "Grandfather Tridian": {
+    "fixedDaysFrequency": {
+      "min": 5,
+      "max": 9
+    }
+  },
+  "Gravelord Oshuran": {
+    "fixedDaysFrequency": {
+      "min": 6,
+      "max": 12
+    }
+  },
+  "Hairman the Huge": {
+    "fixedDaysFrequency": {
+      "min": 5,
+      "max": 10
+    }
+  },
+  "Hatebreeder": {
+    "fixedDaysFrequency": {
+      "min": 5,
+      "max": 9
+    }
+  },
+  "High Templar Cobrass": {
+    "fixedDaysFrequency": {
+      "min": 5,
+      "max": 9
+    }
+  },
+  "Hirintror": {
+    "fixedDaysFrequency": {
+      "min": 9,
+      "max": 30
+    },
+    "spawnCount": 2
+  },
+  "Man in the Cave": {
+    "fixedDaysFrequency": {
+      "min": 12,
+      "max": 16
+    }
+  },
+  "Massacre": {
+    "fixedDaysFrequency": {
+      "min": 13,
+      "max": 21
+    }
+  },
+  "Midnight Panther": {
+    "fixedDaysFrequency": {
+      "min": 2,
+      "max": 4
+    }
+  },
+  "Morgaroth": {
+    "fixedDaysFrequency": {
+      "min": 167,
+      "max": 175
+    }
+  },
+  "Morshabaal": {
+    "fixedDaysFrequency": {
+      "min": 153,
+      "max": 175
+    }
+  },
+  "Mr. Punish": {
+    "fixedDaysFrequency": {
+      "min": 13,
+      "max": 21
+    }
+  },
+  "Munster": {
+    "fixedDaysFrequency": {
+      "min": 0,
+      "max": 7
+    }
+  },
+  "Ocyakao": {
+    "fixedDaysFrequency": {
+      "min": 15,
+      "max": 26
+    }
+  },
+  "Omrafir": {
+    "fixedDaysFrequency": {
+      "min": 13,
+      "max": 28
+    }
+  },
+  "Oodok Witchmaster": {
+    "fixedDaysFrequency": {
+      "min": 0,
+      "max": 5
+    }
+  },
+  "Orshabaal": {
+    "fixedDaysFrequency": {
+      "min": 153,
+      "max": 175
+    }
+  },
+  "Rotrender": {
+    "fixedDaysFrequency": {
+      "min": 161,
+      "max": 175
+    }
+  },
+  "Rottie the Rotworm": {
+    "fixedDaysFrequency": {
+      "min": 1,
+      "max": 3
+    },
+    "spawnCount": 2
+  },
+  "Rotworm Queen": {
+    "fixedDaysFrequency": {
+      "min": 11,
+      "max": 16
+    },
+    "spawnCount": 4
+  },
+  "Rukor Zad": {
+    "fixedDaysFrequency": {
+      "min": 5,
+      "max": 10
+    }
+  },
+  "Shlorg": {
+    "fixedDaysFrequency": {
+      "min": 13,
+      "max": 29
+    }
+  },
+  "Sir Valorcrest": {
+    "fixedDaysFrequency": {
+      "min": 4,
+      "max": 9
+    }
+  },
+  "Smuggler Baron Silvertoe": {
+    "fixedDaysFrequency": {
+      "min": 7,
+      "max": 15
+    }
+  },
+  "Teleskor": {
+    "fixedDaysFrequency": {
+      "min": 0,
+      "max": 4
+    }
+  },
+  "The Abomination": {
+    "fixedDaysFrequency": {
+      "min": 153,
+      "max": 175
+    }
+  },
+  "The Big Bad One": {
+    "fixedDaysFrequency": {
+      "min": 5,
+      "max": 11
+    }
+  },
+  "The Blightfather": {
+    "fixedDaysFrequency": {
+      "min": 4,
+      "max": 10
+    }
+  },
+  "The Evil Eye": {
+    "fixedDaysFrequency": {
+      "min": 5,
+      "max": 12
+    }
+  },
+  "The Frog Prince": {
+    "fixedDaysFrequency": {
+      "min": 11,
+      "max": 19
+    }
+  },
+  "The Handmaiden": {
+    "fixedDaysFrequency": {
+      "min": 13,
+      "max": 21
+    }
+  },
+  "The Imperor": {
+    "fixedDaysFrequency": {
+      "min": 13,
+      "max": 21
+    }
+  },
+  "The Old Whopper": {
+    "fixedDaysFrequency": {
+      "min": 4,
+      "max": 10
+    }
+  },
+  "The Pale Count": {
+    "fixedDaysFrequency": {
+      "min": 15,
+      "max": 30
+    }
+  },
+  "The Plasmother": {
+    "fixedDaysFrequency": {
+      "min": 13,
+      "max": 21
+    }
+  },
+  "The Voice Of Ruin": {
+    "fixedDaysFrequency": {
+      "min": 5,
+      "max": 10
+    },
+    "spawnCount": 2
+  },
+  "The Welter": {
+    "fixedDaysFrequency": {
+      "min": 15,
+      "max": 29
+    }
+  },
+  "Tyrn": {
+    "fixedDaysFrequency": {
+      "min": 11,
+      "max": 29
+    },
+    "spawnCount": 2
+  },
+  "Tzumrah The Dazzler": {
+    "fixedDaysFrequency": {
+      "min": 19,
+      "max": 29
+    }
+  },
+  "Undead Cavebear": {
+    "fixedDaysFrequency": {
+      "min": 1,
+      "max": 4
+    }
+  },
+  "Warlord Ruzad": {
+    "fixedDaysFrequency": {
+      "min": 5,
+      "max": 9
+    }
+  },
+  "White Pale": {
+    "fixedDaysFrequency": {
+      "min": 14,
+      "max": 29
+    },
+    "spawnCount": 3
+  },
+  "Willi Wasp": {
+    "fixedDaysFrequency": {
+      "min": 4,
+      "max": 10
+    }
+  },
+  "Xenia": {
+    "fixedDaysFrequency": {
+      "min": 6,
+      "max": 14
+    }
+  },
+  "Yaga the Crone": {
+    "fixedDaysFrequency": {
+      "min": 4,
+      "max": 8
+    }
+  },
+  "Yeti": {
+    "fixedDaysFrequency": {
+      "min": 17,
+      "max": 25
+    }
+  },
+  "Zarabustor": {
+    "fixedDaysFrequency": {
+      "min": 5,
+      "max": 9
+    }
+  },
+  "Zevelon Duskbringer": {
+    "fixedDaysFrequency": {
+      "min": 5,
+      "max": 10
+    }
+  },
+  "Zomba": {
+    "fixedDaysFrequency": {
+      "min": 2,
+      "max": 9
+    }
+  },
+  "Zulazza the Corruptor": {
+    "fixedDaysFrequency": {
+      "min": 6,
+      "max": 20
+    }
+  },
+  "Zushuka": {
+    "fixedDaysFrequency": {
+      "min": 18,
+      "max": 29
+    }
+  }
+};

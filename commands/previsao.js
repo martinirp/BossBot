@@ -1,6 +1,7 @@
 import * as db from '../database.js';
 import fs from 'fs';
 import path from 'path';
+import { bossIntervals } from '../bossIntervals.js';
 
 export default {
   name: 'previsao',
@@ -9,11 +10,6 @@ export default {
     const { sock, msg, remoteJid } = context;
 
     try {
-      const statsPath = path.resolve('bosses_stats.json');
-      let stats = {};
-      if (fs.existsSync(statsPath)) {
-        stats = JSON.parse(fs.readFileSync(statsPath, 'utf8'));
-      }
 
       const world = await db.getGroupWorld(remoteJid);
       const allSeen = await db.getAllBossesLastSeen(world);
@@ -40,32 +36,48 @@ export default {
         return `${day}/${month}/${year} ${hours}:${minutes}`;
       };
 
+      const today = new Date();
       for (const record of allSeen) {
          const bName = record.boss_name;
-         if (!stats[bName]) continue;
+         if (!bossIntervals[bName]) continue;
+         
+         const stats = bossIntervals[bName];
+         if (!stats.fixedDaysFrequency) continue;
 
-         const minDays = stats[bName].min_days || 0;
-         const maxDays = stats[bName].max_days || 0;
-         if (minDays === 0 || maxDays === 0) continue;
+         const minDays = stats.fixedDaysFrequency.min;
+         const maxDays = stats.fixedDaysFrequency.max;
 
-         // O seen_at armazena o "dia de rastreamento" do TibiaData:
-         //   - Kills ANTES da atualizacao (~22:15 ou ~23:15 BRT): gravados com a data do dia atual.
-         //   - Kills APOS a atualizacao: gravados com a data do dia seguinte.
-         // Portanto usamos a parte da data diretamente, sem correcoes adicionais.
-         // Registros da API (TibiaData_API / system_adjust) tambem ja trazem a data do ciclo correta.
+         // O seen_at armazena o "dia de rastreamento" do TibiaData
          const datePart = record.seen_at.split(' ')[0]; // "YYYY-MM-DD"
-         const isApiRecord = record.confirmed_by === 'TibiaData_API' || record.confirmed_by === 'system_adjust';
-
-         // Base do dia: 03:00 UTC = 00:00 BRT
          const seenDate = new Date(datePart + 'T03:00:00Z');
 
          const minDate = new Date(seenDate.getTime() + minDays * 24 * 60 * 60 * 1000);
          const maxDate = new Date(seenDate.getTime() + maxDays * 24 * 60 * 60 * 1000);
+         
+         // Calcula dias decorridos
+         const diffTime = Math.abs(today - seenDate);
+         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) - 1; // Ajuste pra "dias desde a morte"
+
+         let predictionStr = "";
+         if (minDays === maxDays) {
+           predictionStr = `A cada ${minDays} dia(s)`;
+         } else {
+           predictionStr = `Entre ${formatFakeUtcDate(minDate)} e ${formatFakeUtcDate(maxDate)}`;
+         }
+         
+         let extraStr = "";
+         if (minDays !== maxDays) {
+           if (today >= maxDate) {
+               extraStr = " (Atrasado / Alta chance)";
+           } else if (today >= minDate) {
+               extraStr = " (Pode nascer)";
+           }
+         }
 
          bossesWithPrediction.push({
             name: bName,
             lastSeenFormatted: formatSeenAt(record.seen_at),
-            prediction: `Entre ${formatFakeUtcDate(minDate)} e ${formatFakeUtcDate(maxDate)}`
+            prediction: predictionStr + extraStr
          });
       }
 
