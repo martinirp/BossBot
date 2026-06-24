@@ -1,5 +1,5 @@
 import * as db from '../database.js';
-import { findBossMatch, normalizeBossName, loadBosses, getBossCities } from '../commands.js';
+import { findBossMatch, normalizeBossName, loadBosses, getBossCities, CITY_ALIASES } from '../commands.js';
 import { enqueueNotification } from '../notifier.js';
 
 /**
@@ -176,12 +176,25 @@ export default {
       const normalizedExtra = normalizeBossName(extraText);
       for (const city of validCities) {
         const normalizedCity = normalizeBossName(city);
-        if (normalizedExtra.startsWith(normalizedCity)) {
-          const hasBoundary = normalizedExtra.length === normalizedCity.length || 
-                              !/^[a-z0-9]$/i.test(normalizedExtra[normalizedCity.length]);
+        const aliases = Object.keys(CITY_ALIASES).filter(key => CITY_ALIASES[key] === city);
+        const candidates = [normalizedCity, ...aliases];
+        
+        let matched = false;
+        let matchedPrefix = null;
+        for (const candidate of candidates) {
+          if (normalizedExtra.startsWith(candidate)) {
+            matched = true;
+            matchedPrefix = candidate;
+            break;
+          }
+        }
+
+        if (matched) {
+          const hasBoundary = normalizedExtra.length === matchedPrefix.length || 
+                              !/^[a-z0-9]$/i.test(normalizedExtra[matchedPrefix.length]);
           if (hasBoundary) {
             matchedCity = city;
-            const cityLen = normalizedCity.length;
+            const cityLen = matchedPrefix.length;
             let remaining = extraText.substring(cityLen).trim();
             if (remaining.startsWith('-') || remaining.startsWith(',') || remaining.startsWith('|')) {
               remaining = remaining.substring(1).trim();

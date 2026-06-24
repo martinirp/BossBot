@@ -573,6 +573,64 @@ async function runTests() {
 
     console.log('Multi-city and Fake Boss Oculta tests passed ✅\n');
 
+    // Test 9: Rotworm Queen and City Aliases
+    console.log('--- Test 9: Rotworm Queen and City Aliases ---');
+
+    // 9.1 Test that confirm command fails without city for Rotworm Queen
+    sentMessages = [];
+    await commandHandler.handleMessage(mockSock, mockMsg3, '!boss rotworm queen');
+    console.log('!boss rotworm queen response:', sentMessages[0]?.content?.text);
+    if (!sentMessages[0]?.content?.text || !sentMessages[0]?.content?.text.includes('nasce em várias cidades. Por favor, especifique a cidade')) {
+      throw new Error('Rotworm Queen confirm without city did not fail properly');
+    }
+    console.log('Rotworm Queen confirm without city check passed ✅');
+
+    // 9.2 Test confirm succeeds with city alias 'lb'
+    sentMessages = [];
+    await commandHandler.handleMessage(mockSock, mockMsg3, '!boss rotworm queen, lb');
+    console.log('!boss rotworm queen, lb response:', sentMessages[0]?.content?.text);
+    if (!sentMessages[0]?.content?.text || !sentMessages[0]?.content?.text.includes('BOSS CONFIRMADO!') || !sentMessages[0]?.content?.text.includes('(Liberty Bay)')) {
+      throw new Error('Rotworm Queen confirm with alias lb failed');
+    }
+    console.log('Rotworm Queen confirm with alias lb passed ✅');
+
+    // 9.3 Verify database record for Rotworm Queen (Liberty Bay)
+    const rqSeenRecord1 = await dbModule.getBossLastSeen('Rotworm Queen (Liberty Bay)', 'Quelibra');
+    console.log('Rotworm Queen (Liberty Bay) DB seen record:', rqSeenRecord1);
+    if (!rqSeenRecord1 || rqSeenRecord1.city !== 'Liberty Bay') {
+      throw new Error('Last seen record for Rotworm Queen (Liberty Bay) was not stored correctly');
+    }
+    console.log('Database verification for Liberty Bay passed ✅');
+
+    // 9.4 Test check succeeds with city alias 'dara'
+    sentMessages = [];
+    await commandHandler.handleMessage(mockSock, mockMsg3, '!check rotworm queen, dara');
+    console.log('!check rotworm queen, dara response:', sentMessages[0]?.content?.text);
+    if (!sentMessages[0]?.content?.text || !sentMessages[0]?.content?.text.includes('Rotworm Queen') || !sentMessages[0]?.content?.text.includes('(Darashia)') || !sentMessages[0]?.content?.text.includes('Check registrado')) {
+      throw new Error('Rotworm Queen check with alias dara failed');
+    }
+    console.log('Rotworm Queen check with alias dara passed ✅');
+
+    // 9.5 Verify database check record for Rotworm Queen (Darashia)
+    const rqCheckRecord = await dbModule.getBossCheck('Rotworm Queen (Darashia)', 'Quelibra');
+    console.log('Rotworm Queen (Darashia) DB check record:', rqCheckRecord);
+    if (!rqCheckRecord || rqCheckRecord.city !== 'Darashia') {
+      throw new Error('Check record for Rotworm Queen (Darashia) was not stored correctly');
+    }
+    console.log('Database verification for Darashia check passed ✅');
+
+    // 9.6 Test last command displays status for all 4 cities of Rotworm Queen
+    sentMessages = [];
+    await commandHandler.handleMessage(mockSock, mockMsg3, '!last rotworm queen');
+    console.log('!last rotworm queen response:\n', sentMessages[0]?.content?.text);
+    const rqLastOutput = sentMessages[0]?.content?.text;
+    if (!rqLastOutput || !rqLastOutput.includes("Ab'Dendriel") || !rqLastOutput.includes('Darashia') || !rqLastOutput.includes('Edron') || !rqLastOutput.includes('Liberty Bay')) {
+      throw new Error('Last command did not display status for all 4 cities of Rotworm Queen');
+    }
+    console.log('Last command grouped by city for Rotworm Queen passed ✅');
+
+    console.log('Rotworm Queen and City Aliases tests passed ✅\n');
+
   } finally {
     if (statsBackup !== null) {
       fs.writeFileSync(statsPath, statsBackup, 'utf-8');

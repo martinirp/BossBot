@@ -294,10 +294,31 @@ export const bossIntervals = {
     },
     "spawnCount": 2
   },
-  "Rotworm Queen": {
+  "Rotworm Queen (Ab'Dendriel)": {
     "fixedDaysFrequency": {
-      "min": 11,
-      "max": 16
+      "min": 12,
+      "max": 15
+    },
+    "spawnCount": 4
+  },
+  "Rotworm Queen (Darashia)": {
+    "fixedDaysFrequency": {
+      "min": 12,
+      "max": 15
+    },
+    "spawnCount": 4
+  },
+  "Rotworm Queen (Edron)": {
+    "fixedDaysFrequency": {
+      "min": 12,
+      "max": 15
+    },
+    "spawnCount": 4
+  },
+  "Rotworm Queen (Liberty Bay)": {
+    "fixedDaysFrequency": {
+      "min": 12,
+      "max": 15
     },
     "spawnCount": 4
   },
