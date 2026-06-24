@@ -1,5 +1,5 @@
 import * as db from '../database.js';
-import { findBossMatch, normalizeBossName, loadBosses } from '../commands.js';
+import { findBossMatch, normalizeBossName, loadBosses, getBossCities } from '../commands.js';
 import { enqueueNotification } from '../notifier.js';
 
 /**
@@ -158,6 +158,50 @@ export default {
     }
 
     const matchedBossName = matchResult.match;
+
+    // Checagem de boss multi-cidades
+    const validCities = getBossCities(matchedBossName);
+    let matchedCity = null;
+    let finalExtraText = extraText;
+    let cityBossName = matchedBossName;
+
+    if (validCities) {
+      if (!extraText.trim()) {
+        await sock.sendMessage(remoteJid, {
+          text: `⚠️ O boss *${matchedBossName}* nasce em várias cidades. Por favor, especifique a cidade como argumento.\nExemplo: \`${context.prefix}boss ${matchedBossName}, Ankrahmun\`\nCidades válidas: ${validCities.join(', ')}`
+        }, { quoted: msg });
+        return;
+      }
+
+      const normalizedExtra = normalizeBossName(extraText);
+      for (const city of validCities) {
+        const normalizedCity = normalizeBossName(city);
+        if (normalizedExtra.startsWith(normalizedCity)) {
+          const hasBoundary = normalizedExtra.length === normalizedCity.length || 
+                              !/^[a-z0-9]$/i.test(normalizedExtra[normalizedCity.length]);
+          if (hasBoundary) {
+            matchedCity = city;
+            const cityLen = normalizedCity.length;
+            let remaining = extraText.substring(cityLen).trim();
+            if (remaining.startsWith('-') || remaining.startsWith(',') || remaining.startsWith('|')) {
+              remaining = remaining.substring(1).trim();
+            }
+            finalExtraText = remaining;
+            break;
+          }
+        }
+      }
+
+      if (!matchedCity) {
+        await sock.sendMessage(remoteJid, {
+          text: `⚠️ A cidade informada não é válida para o boss *${matchedBossName}*.\nCidades válidas: ${validCities.join(', ')}.`
+        }, { quoted: msg });
+        return;
+      }
+
+      cityBossName = `${matchedBossName} (${matchedCity})`;
+    }
+
     const subscribers = await db.getSubscribers(matchedBossName);
     const world = await db.getGroupWorld(remoteJid);
 
@@ -170,7 +214,7 @@ export default {
     const trackingDateDisplay = `${tDay}/${tMonth}/${tYear}`;
 
     // ── 2. Alertar imediatamente ──────────────────────────────────────────
-    await db.addBossReport(matchedBossName, extraText, senderJid, subscribers.length);
+    await db.addBossReport(cityBossName, extraText, senderJid, subscribers.length);
     await db.incrementRank(senderJid);
 
     // Nota informativa se a API já atualizou esta noite
@@ -181,21 +225,26 @@ export default {
       ? `\n⚠️ Morto dia ${todayStr}, mas salvo dia ${trackingDateDisplay} para manter coerência com a API.`
       : '';
 
+    let bossHeader = `⚔️ *${matchedBossName.toUpperCase()}*`;
+    if (matchedCity) {
+      bossHeader = `⚔️ *${matchedBossName.toUpperCase()}* (${matchedCity})`;
+    }
+
     if (subscribers.length === 0) {
       await sock.sendMessage(remoteJid, {
-        text: `📢 BOSS CONFIRMADO!\n⚔️ *${matchedBossName.toUpperCase()}*\n👤 Por: @${senderPhone}\n🕒 Horário: ${brtTimeStr}${apiNote}\n📭 Não há membros inscritos para notificação no momento.`,
+        text: `📢 BOSS CONFIRMADO!\n${bossHeader}\n👤 Por: @${senderPhone}\n🕒 Horário: ${brtTimeStr}${apiNote}\n📭 Não há membros inscritos para notificação no momento.`,
         mentions: [senderJid]
       }, { quoted: msg });
     } else {
       await sock.sendMessage(remoteJid, {
-        text: `📢 BOSS CONFIRMADO!\n⚔️ *${matchedBossName.toUpperCase()}*\n👤 Por: @${senderPhone}\n🕒 Horário: ${brtTimeStr}${apiNote}\n🔔 Disparando notificações\n📋 ${subscribers.length} inscrito(s)`,
+        text: `📢 BOSS CONFIRMADO!\n${bossHeader}\n👤 Por: @${senderPhone}\n🕒 Horário: ${brtTimeStr}${apiNote}\n🔔 Disparando notificações\n📋 ${subscribers.length} inscrito(s)`,
         mentions: [senderJid]
       }, { quoted: msg });
 
-      enqueueNotification(sock, subscribers, matchedBossName, extraText, world);
+      enqueueNotification(sock, subscribers, cityBossName, finalExtraText, world);
     }
 
     // ── 3. Salvar com o dia de rastreamento correto ───────────────────────
-    await db.setBossLastSeenDate(matchedBossName, senderJid, seenAt, world);
+    await db.setBossLastSeenDate(cityBossName, senderJid, seenAt, world, matchedCity);
   }
 }

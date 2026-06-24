@@ -1,4 +1,4 @@
-export const bossIntervals = {
+{
   "Albino Dragon": {
     "fixedDaysFrequency": {
       "min": 0,
@@ -490,4 +490,4 @@ export const bossIntervals = {
       "max": 29
     }
   }
-};
+}

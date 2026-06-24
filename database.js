@@ -85,6 +85,7 @@ export function initDb() {
             boss_name    TEXT NOT NULL,
             confirmed_by TEXT NOT NULL,
             seen_at      TEXT NOT NULL,
+            city         TEXT,
             PRIMARY KEY (world, boss_name)
           )
         `);
@@ -96,9 +97,14 @@ export function initDb() {
             boss_name  TEXT NOT NULL,
             checked_by TEXT NOT NULL,
             checked_at TEXT NOT NULL,
+            city         TEXT,
             PRIMARY KEY (world, boss_name)
           )
         `);
+
+        // Migrate boss_last_seen and boss_check to include city column
+        db.run(`ALTER TABLE boss_last_seen ADD COLUMN city TEXT`, () => {});
+        db.run(`ALTER TABLE boss_check ADD COLUMN city TEXT`, () => {});
 
         // Migrate allowed_groups: add tibia_world column if not exists
         db.run(`ALTER TABLE allowed_groups ADD COLUMN tibia_world TEXT`, () => {
@@ -448,21 +454,21 @@ export function getMonthlyRank(month, year) {
 
 // ─── Boss Last Seen ──────────────────────────────────────────────────────────
 
-export function updateBossLastSeen(bossName, jid, world = 'Quelibra') {
+export function updateBossLastSeen(bossName, jid, world = 'Quelibra', city = null) {
   const cleanJid = jidNormalizedUser(jid);
   const now = new Date();
   now.setUTCHours(now.getUTCHours() - 3); // Converte UTC -> BRT (UTC-3)
   const seenAt = now.toISOString().replace('T', ' ').substring(0, 16);
-  return setBossLastSeenDate(bossName, cleanJid, seenAt, world);
+  return setBossLastSeenDate(bossName, cleanJid, seenAt, world, city);
 }
 
-export function setBossLastSeenDate(bossName, jid, seenAt, world = 'Quelibra') {
+export function setBossLastSeenDate(bossName, jid, seenAt, world = 'Quelibra', city = null) {
   const cleanJid = (jid && jid.includes('@')) ? jidNormalizedUser(jid) : jid;
   return new Promise((resolve, reject) => {
     db.run(
-      `INSERT INTO boss_last_seen (world, boss_name, confirmed_by, seen_at) VALUES (?, ?, ?, ?)
-       ON CONFLICT(world, boss_name) DO UPDATE SET confirmed_by = excluded.confirmed_by, seen_at = excluded.seen_at`,
-      [world, bossName, cleanJid, seenAt],
+      `INSERT INTO boss_last_seen (world, boss_name, confirmed_by, seen_at, city) VALUES (?, ?, ?, ?, ?)
+       ON CONFLICT(world, boss_name) DO UPDATE SET confirmed_by = excluded.confirmed_by, seen_at = excluded.seen_at, city = excluded.city`,
+      [world, bossName, cleanJid, seenAt, city],
       function (err) {
         if (err) return reject(err);
         resolve();
@@ -474,7 +480,7 @@ export function setBossLastSeenDate(bossName, jid, seenAt, world = 'Quelibra') {
 export function getBossLastSeen(bossName, world = 'Quelibra') {
   return new Promise((resolve, reject) => {
     db.get(
-      `SELECT confirmed_by, seen_at FROM boss_last_seen WHERE boss_name = ? AND world = ?`,
+      `SELECT confirmed_by, seen_at, city FROM boss_last_seen WHERE boss_name = ? AND world = ?`,
       [bossName, world],
       (err, row) => {
         if (err) return reject(err);
@@ -487,7 +493,7 @@ export function getBossLastSeen(bossName, world = 'Quelibra') {
 export function getAllBossesLastSeen(world = 'Quelibra') {
   return new Promise((resolve, reject) => {
     db.all(
-      `SELECT boss_name, confirmed_by, seen_at FROM boss_last_seen WHERE world = ?`,
+      `SELECT boss_name, confirmed_by, seen_at, city FROM boss_last_seen WHERE world = ?`,
       [world],
       (err, rows) => {
         if (err) return reject(err);
@@ -499,16 +505,16 @@ export function getAllBossesLastSeen(world = 'Quelibra') {
 
 // ─── Boss Check (checked and NOT found) ─────────────────────────────────────
 
-export function updateBossCheck(bossName, jid, world = 'Quelibra') {
+export function updateBossCheck(bossName, jid, world = 'Quelibra', city = null) {
   const cleanJid = jidNormalizedUser(jid);
   const now = new Date();
   now.setUTCHours(now.getUTCHours() - 3); // Converte UTC -> BRT (UTC-3)
   const checkedAt = now.toISOString().replace('T', ' ').substring(0, 16);
   return new Promise((resolve, reject) => {
     db.run(
-      `INSERT INTO boss_check (world, boss_name, checked_by, checked_at) VALUES (?, ?, ?, ?)
-       ON CONFLICT(world, boss_name) DO UPDATE SET checked_by = excluded.checked_by, checked_at = excluded.checked_at`,
-      [world, bossName, cleanJid, checkedAt],
+      `INSERT INTO boss_check (world, boss_name, checked_by, checked_at, city) VALUES (?, ?, ?, ?, ?)
+       ON CONFLICT(world, boss_name) DO UPDATE SET checked_by = excluded.checked_by, checked_at = excluded.checked_at, city = excluded.city`,
+      [world, bossName, cleanJid, checkedAt, city],
       function (err) {
         if (err) return reject(err);
         resolve();
@@ -520,7 +526,7 @@ export function updateBossCheck(bossName, jid, world = 'Quelibra') {
 export function getBossCheck(bossName, world = 'Quelibra') {
   return new Promise((resolve, reject) => {
     db.get(
-      `SELECT checked_by, checked_at FROM boss_check WHERE boss_name = ? AND world = ?`,
+      `SELECT checked_by, checked_at, city FROM boss_check WHERE boss_name = ? AND world = ?`,
       [bossName, world],
       (err, row) => {
         if (err) return reject(err);

@@ -1,5 +1,5 @@
 import * as db from '../database.js';
-import { findBossMatch, loadBosses } from '../commands.js';
+import { findBossMatch, loadBosses, normalizeBossName, getBossCities } from '../commands.js';
 
 export default {
   name: 'check',
@@ -14,7 +14,27 @@ export default {
       return;
     }
 
-    const bossRaw = args.join(' ');
+    const rest = args.join(' ');
+    let bossRaw = rest;
+    let extraText = '';
+
+    const commaIndex = rest.indexOf(',');
+    const pipeIndex = rest.indexOf('|');
+    let separatorIndex = -1;
+    if (commaIndex !== -1 && pipeIndex !== -1) {
+      separatorIndex = Math.min(commaIndex, pipeIndex);
+    } else {
+      separatorIndex = commaIndex !== -1 ? commaIndex : pipeIndex;
+    }
+
+    if (separatorIndex !== -1) {
+      bossRaw = rest.substring(0, separatorIndex).trim();
+      extraText = rest.substring(separatorIndex + 1).trim();
+    }
+
+    const bossName = normalizeBossName(bossRaw);
+    if (!bossName) return;
+
     const bossesList = loadBosses();
     const matchResult = findBossMatch(bossRaw, bossesList);
 
@@ -32,16 +52,58 @@ export default {
       return;
     }
 
-    const bossName = matchResult.match;
+    const matchedBossName = matchResult.match;
+
+    // Checagem de boss multi-cidades
+    const validCities = getBossCities(matchedBossName);
+    let matchedCity = null;
+    let cityBossName = matchedBossName;
+
+    if (validCities) {
+      if (!extraText.trim()) {
+        await sock.sendMessage(remoteJid, {
+          text: `⚠️ O boss *${matchedBossName}* nasce em várias cidades. Por favor, especifique a cidade como argumento.\nExemplo: \`${context.prefix}check ${matchedBossName}, Ankrahmun\`\nCidades válidas: ${validCities.join(', ')}`
+        }, { quoted: msg });
+        return;
+      }
+
+      const normalizedExtra = normalizeBossName(extraText);
+      for (const city of validCities) {
+        const normalizedCity = normalizeBossName(city);
+        if (normalizedExtra.startsWith(normalizedCity)) {
+          const hasBoundary = normalizedExtra.length === normalizedCity.length || 
+                              !/^[a-z0-9]$/i.test(normalizedExtra[normalizedCity.length]);
+          if (hasBoundary) {
+            matchedCity = city;
+            break;
+          }
+        }
+      }
+
+      if (!matchedCity) {
+        await sock.sendMessage(remoteJid, {
+          text: `⚠️ A cidade informada não é válida para o boss *${matchedBossName}*.\nCidades válidas: ${validCities.join(', ')}.`
+        }, { quoted: msg });
+        return;
+      }
+
+      cityBossName = `${matchedBossName} (${matchedCity})`;
+    }
+
     const world = await db.getGroupWorld(remoteJid);
-    await db.updateBossCheck(bossName, senderJid, world);
+    await db.updateBossCheck(cityBossName, senderJid, world, matchedCity);
 
     const now = new Date();
     now.setHours(now.getHours() - 3);
     const timeString = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
+    let checkHeader = `🔍 *${matchedBossName}*`;
+    if (matchedCity) {
+      checkHeader = `🔍 *${matchedBossName}* (${matchedCity})`;
+    }
+
     await sock.sendMessage(remoteJid, {
-      text: `🔍 *${bossName}*\n\n✅ Check registrado por @${senderPhone} às *${timeString}*\n❌ Boss não estava no spawn.`,
+      text: `${checkHeader}\n\n✅ Check registrado por @${senderPhone} às *${timeString}*\n❌ Boss não estava no spawn.`,
       mentions: [senderJid]
     }, { quoted: msg });
   }

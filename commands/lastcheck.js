@@ -1,5 +1,5 @@
 import * as db from '../database.js';
-import { findBossMatch, loadBosses } from '../commands.js';
+import { findBossMatch, loadBosses, getBossCities } from '../commands.js';
 
 export default {
   name: 'lastcheck',
@@ -34,6 +34,44 @@ export default {
 
     const bossName = matchResult.match;
     const world = await db.getGroupWorld(remoteJid);
+
+    // Checagem de boss multi-cidades
+    const cities = getBossCities(bossName);
+    if (cities) {
+      let text = `🔍 *${bossName}*\n\n`;
+      const mentions = [];
+      for (const city of cities) {
+        const cityBossName = `${bossName} (${city})`;
+        const [checkRecord, lastSeenRecord] = await Promise.all([
+          db.getBossCheck(cityBossName, world),
+          db.getBossLastSeen(cityBossName, world)
+        ]);
+        
+        text += `📍 *${city}*:\n`;
+        if (checkRecord) {
+          const phone = checkRecord.checked_by.split('@')[0];
+          text += `🕵️ Último check: *${checkRecord.checked_at}* por @${phone}\n`;
+          mentions.push(checkRecord.checked_by);
+        } else {
+          text += `🕵️ Último check: Nenhum registro\n`;
+        }
+        
+        if (lastSeenRecord) {
+          const phone = lastSeenRecord.confirmed_by.split('@')[0];
+          text += `⚔️ Último avistamento: *${lastSeenRecord.seen_at}* por @${phone}\n`;
+          mentions.push(lastSeenRecord.confirmed_by);
+        } else {
+          text += `⚔️ Último avistamento: Nenhum registro\n`;
+        }
+        text += '\n';
+      }
+      
+      await sock.sendMessage(remoteJid, {
+        text: text.trim(),
+        mentions: [...new Set(mentions)]
+      }, { quoted: msg });
+      return;
+    }
 
     const [checkRecord, lastSeenRecord] = await Promise.all([
       db.getBossCheck(bossName, world),

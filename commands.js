@@ -106,3 +106,13 @@ export function findBossMatch(input, bossesList) {
 
   return { match: null, suggestions: [] };
 }
+
+export const MULTI_CITY_BOSSES = {
+  "oculta": ["Yalahar", "Venore", "Ankrahmun"]
+};
+
+export function getBossCities(bossName) {
+  if (!bossName) return null;
+  const normalized = normalizeBossName(bossName);
+  return MULTI_CITY_BOSSES[normalized] || null;
+}
