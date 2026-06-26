@@ -78,6 +78,16 @@ export function initDb() {
           )
         `);
 
+        // Create users table for names
+        db.run(`
+          CREATE TABLE IF NOT EXISTS users (
+            jid TEXT PRIMARY KEY,
+            name TEXT,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          )
+        `);
+
+
         // Create boss last seen table (with composite primary key)
         db.run(`
           CREATE TABLE IF NOT EXISTS boss_last_seen (
@@ -578,7 +588,56 @@ export function setGroupWorld(jid, world) {
   });
 }
 
+// ─── Users (Names) ───────────────────────────────────────────────────────────
+
+export function upsertUser(jid, name) {
+  const cleanJid = jidNormalizedUser(jid);
+  return new Promise((resolve, reject) => {
+    db.run(
+      `INSERT INTO users (jid, name, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)
+       ON CONFLICT(jid) DO UPDATE SET name = excluded.name, updated_at = CURRENT_TIMESTAMP`,
+      [cleanJid, name],
+      function (err) {
+        if (err) return reject(err);
+        resolve(this.changes > 0);
+      }
+    );
+  });
+}
+
+export function getUserName(jid) {
+  const cleanJid = jidNormalizedUser(jid);
+  return new Promise((resolve, reject) => {
+    db.get(
+      `SELECT name FROM users WHERE jid = ?`,
+      [cleanJid],
+      (err, row) => {
+        if (err) return reject(err);
+        resolve(row ? row.name : null);
+      }
+    );
+  });
+}
+
+export function getAllUserNames() {
+  return new Promise((resolve, reject) => {
+    db.all(
+      `SELECT jid, name FROM users`,
+      [],
+      (err, rows) => {
+        if (err) return reject(err);
+        const mapping = {};
+        for (const row of (rows || [])) {
+          mapping[row.jid] = row.name;
+        }
+        resolve(mapping);
+      }
+    );
+  });
+}
+
 // ─── Misc ────────────────────────────────────────────────────────────────────
+
 
 export function closeDb() {
   return new Promise((resolve, reject) => {

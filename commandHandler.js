@@ -63,6 +63,10 @@ class CommandHandler {
       const isGroup = remoteJid.endsWith('@g.us');
       const senderJid = jidNormalizedUser(msg.key.participant || remoteJid);
       const senderPhone = senderJid.split('@')[0];
+      const senderName = msg.pushName || '';
+      if (senderName) {
+        db.upsertUser(senderJid, senderName).catch(() => {});
+      }
       const allowedGroups = await db.getAllowedGroups();
 
       const context = {
@@ -143,6 +147,10 @@ class CommandHandler {
     const isGroup = remoteJid.endsWith('@g.us');
     const senderJid = jidNormalizedUser(msg.key.participant || remoteJid);
     const senderPhone = senderJid.split('@')[0];
+    const senderName = msg.pushName || '';
+    if (senderName) {
+      db.upsertUser(senderJid, senderName).catch(() => {});
+    }
     const allowedGroups = await db.getAllowedGroups();
 
     const context = {

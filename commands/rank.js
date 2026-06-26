@@ -27,15 +27,19 @@ export default {
       return;
     }
 
-    // Tenta resolver nomes dos participantes se estiver em grupo
-    let nameMap = {};
+    // Tenta resolver nomes dos participantes usando o banco de dados
+    const nameMap = await db.getAllUserNames();
+    
+    // Fallback: se ainda quiser tentar pegar do metadata caso falte no BD (embora baileys moderno nao traga notify por padrao)
     if (isGroup) {
       try {
         const metadata = await sock.groupMetadata(remoteJid);
         for (const p of metadata.participants) {
-          nameMap[p.id] = p.notify || p.name || p.id.split('@')[0];
+          if (!nameMap[p.id] && (p.notify || p.name)) {
+            nameMap[p.id] = p.notify || p.name;
+          }
         }
-      } catch (_) { /* silently fail, will fallback to phone number */ }
+      } catch (_) { /* silently fail */ }
     }
 
     let text = `🏆 *Ranking de ${monthName}/${year}*\n\n`;
