@@ -55,25 +55,7 @@ export async function sendPushoverMessage(token, user, message, title = 'BossBot
   }
 }
 
-/**
- * Enqueue a notification job.
- * @param {object} sock - The Baileys socket instance
- * @param {string[]} subscribers - List of JIDs to notify
- * @param {string} bossName - Name of the boss
- * @param {string} extraText - Localization/details text
- */
-export function enqueueNotification(sock, subscribers, bossName, extraText, world = 'Quelibra') {
-  jobQueue.push({ sock, subscribers, bossName, extraText, world });
-  processQueue();
-}
-
-async function processQueue() {
-  if (isProcessing) return;
-  if (jobQueue.length === 0) return;
-
-  isProcessing = true;
-  const { sock, subscribers, bossName, extraText, world } = jobQueue.shift();
-
+export async function enqueueNotification(sock, subscribers, bossName, extraText, world = 'Quelibra') {
   try {
     const uppercaseBoss = bossName.toUpperCase();
     const now = new Date();
@@ -84,7 +66,7 @@ async function processQueue() {
       ? `🚨 *ALERTA DE BOSS* 🚨\n\n⚔️ *Boss:* ${uppercaseBoss}\n🕒 *Horário:* ${timeString}\n📍 *Detalhes:* ${extraText}`
       : `🚨 *ALERTA DE BOSS* 🚨\n\n⚔️ *Boss:* ${uppercaseBoss}\n🕒 *Horário:* ${timeString}`;
 
-    console.log(`Starting notifications for boss ${uppercaseBoss} on world ${world} to ${subscribers.length} subscribers.`);
+    console.log(`Starting validation for boss ${uppercaseBoss} on world ${world} with ${subscribers.length} subscribers.`);
 
     const allowedGroups = await db.getAllowedGroups();
     const activeMembersSet = new Set();
@@ -104,7 +86,7 @@ async function processQueue() {
     }
 
     const validSubscribers = subscribers.filter(sub => activeMembersSet.has(jidNormalizedUser(sub)));
-    console.log(`Filtered down to ${validSubscribers.length} valid subscribers (currently in allowed groups).`);
+    console.log(`Filtered down to ${validSubscribers.length} valid subscribers.`);
 
     // 1. Process Pushover notifications in parallel immediately
     const globalToken = process.env.PUSHOVER_TOKEN;
@@ -138,6 +120,27 @@ async function processQueue() {
         });
       }
     }
+
+    // 2. Enqueue WhatsApp notifications to be processed sequentially
+    if (validSubscribers.length > 0) {
+      jobQueue.push({ sock, validSubscribers, bossName, alertMessage });
+      processQueue();
+    }
+  } catch (err) {
+    console.error('Error in enqueueNotification:', err);
+  }
+}
+
+async function processQueue() {
+  if (isProcessing) return;
+  if (jobQueue.length === 0) return;
+
+  isProcessing = true;
+  const { sock, validSubscribers, bossName, alertMessage } = jobQueue.shift();
+
+  try {
+    const uppercaseBoss = bossName.toUpperCase();
+    console.log(`Starting WhatsApp notifications for boss ${uppercaseBoss} to ${validSubscribers.length} subscribers.`);
 
     for (let i = 0; i < validSubscribers.length; i++) {
       const jid = jidNormalizedUser(validSubscribers[i]);
