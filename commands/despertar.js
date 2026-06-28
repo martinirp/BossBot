@@ -1,25 +1,19 @@
 export default {
   name: 'despertar',
-  aliases: ['acordar'],
+  aliases: ['acordar', 'alertar'],
   execute: async (context, args) => {
     const { sock, msg, remoteJid, withoutPrefix } = context;
 
-    // Obtém o verbo exato usado pelo usuário (despertar ou acordar)
+    // Obtém o verbo exato usado pelo usuário (despertar, acordar ou alertar)
     const verbUsed = withoutPrefix.split(/\s+/)[0].toLowerCase();
     
     // Une o restante da mensagem enviada
     const restText = args.join(' ');
 
-    if (!restText) {
-      await sock.sendMessage(remoteJid, {
-        text: `⚠️ Por favor, digite o que deseja ${verbUsed}.\nExemplo: *!${verbUsed} coruja às 3 da manhã*`
-      }, { quoted: msg });
-      return;
-    }
-
     // Responde confirmando dinamicamente
+    const responseText = `certo, vou ${verbUsed} ${restText}`.trim();
     await sock.sendMessage(remoteJid, {
-      text: `certo, vou ${verbUsed} ${restText}`
+      text: responseText
     }, { quoted: msg });
   }
 };
