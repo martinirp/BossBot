@@ -1,4 +1,5 @@
 import * as db from '../database.js';
+import { execSync } from 'child_process';
 
 export default {
   name: 'reset',
@@ -6,9 +7,22 @@ export default {
   execute: async (context, args) => {
     const { sock, msg, remoteJid, senderJid, senderPhone } = context;
 
-    console.log(`[SYSTEM] Reset command received from ${senderPhone}. Restarting bot...`);
+    console.log(`[SYSTEM] Reset command received from ${senderPhone}. Running git pull...`);
+
+    // Executa o git pull capturando stdout e stderr
+    let gitOutput = '';
+    try {
+      gitOutput = execSync('git pull 2>&1', { cwd: process.cwd(), encoding: 'utf8' }).trim();
+    } catch (err) {
+      const out = err.stdout?.toString().trim() || '';
+      const rederr = err.stderr?.toString().trim() || '';
+      gitOutput = out || rederr || err.message || 'Erro desconhecido no git pull.';
+    }
+
+    console.log(`[SYSTEM] git pull output:\n${gitOutput}`);
+
     await sock.sendMessage(remoteJid, {
-      text: `🔄 Reiniciando o bot a pedido de @${senderPhone}...`,
+      text: `🔄 *Git Pull* (pedido por @${senderPhone})\n\n\`\`\`\n${gitOutput}\n\`\`\`\n\n♻️ Reiniciando o bot...`,
       mentions: [senderJid]
     }, { quoted: msg });
 
@@ -20,6 +34,6 @@ export default {
       }
       console.log('[SYSTEM] Exiting process for restart.');
       process.exit(0);
-    }, 1500);
+    }, 2000);
   }
 }

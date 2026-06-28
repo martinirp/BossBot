@@ -1,6 +1,7 @@
 import * as db from '../database.js';
 import { findBossMatch, normalizeBossName, loadBosses, getBossCities, CITY_ALIASES } from '../commands.js';
 import { enqueueNotification } from '../notifier.js';
+import fs from 'fs';
 
 /**
  * Verifica se a Alemanha está no horário de verão (CEST = UTC+2).
@@ -255,6 +256,16 @@ export default {
       }, { quoted: msg });
 
       enqueueNotification(sock, subscribers, cityBossName, finalExtraText, world);
+    }
+
+    // Envia a figurinha de alerta se existir
+    const stickerPath = './assets/alerta.webp';
+    if (fs.existsSync(stickerPath)) {
+      try {
+        await sock.sendMessage(remoteJid, { sticker: { url: stickerPath } });
+      } catch (err) {
+        console.error('Erro ao enviar figurinha de alerta de boss:', err);
+      }
     }
 
     // ── 3. Salvar com o dia de rastreamento correto ───────────────────────
