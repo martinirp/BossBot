@@ -45,8 +45,8 @@ export const bossIntervals = {
   },
   "Captain Jones": {
     "fixedDaysFrequency": {
-      "min": 5,
-      "max": 9
+      "min": 6,
+      "max": 8
     }
   },
   "Chizzoron the Distorter": {
@@ -168,8 +168,8 @@ export const bossIntervals = {
   },
   "Gravelord Oshuran": {
     "fixedDaysFrequency": {
-      "min": 6,
-      "max": 12
+      "min": 7,
+      "max": 11
     }
   },
   "Hairman the Huge": {
