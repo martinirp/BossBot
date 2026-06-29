@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node manager.js",
     "test": "node test.js",
-    "sync": "node runSync.js"
+    "sync": "node runSync.js",
+    "cleardb": "node clearDb.js"
   },
   "keywords": [],
   "author": "",
