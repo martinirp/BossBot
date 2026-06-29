@@ -39,9 +39,9 @@ const calculatePrediction = (seenAtStr, minDays, maxDays, confirmedBy) => {
   const datePart = seenAtStr.split(' ')[0]; // "YYYY-MM-DD"
   const seenDate = new Date(datePart + 'T03:00:00Z');
 
-  const shiftMs = confirmedBy === 'TibiaData_API' ? 24 * 60 * 60 * 1000 : 0;
-  const minDate = new Date(seenDate.getTime() + minDays * 24 * 60 * 60 * 1000 + shiftMs);
-  const maxDate = new Date(seenDate.getTime() + maxDays * 24 * 60 * 60 * 1000 + shiftMs);
+  const shiftMinMs = confirmedBy === 'TibiaData_API' ? -24 * 60 * 60 * 1000 : 0;
+  const minDate = new Date(seenDate.getTime() + minDays * 24 * 60 * 60 * 1000 + shiftMinMs);
+  const maxDate = new Date(seenDate.getTime() + maxDays * 24 * 60 * 60 * 1000);
   
   const today = new Date();
 

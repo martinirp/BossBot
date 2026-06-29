@@ -60,9 +60,9 @@ export default {
          const datePart = record.seen_at.split(' ')[0]; // "YYYY-MM-DD"
          const seenDate = new Date(datePart + 'T03:00:00Z');
 
-         const shiftMs = record.confirmed_by === 'TibiaData_API' ? 24 * 60 * 60 * 1000 : 0;
-         const minDate = new Date(seenDate.getTime() + minDays * 24 * 60 * 60 * 1000 + shiftMs);
-         const maxDate = new Date(seenDate.getTime() + maxDays * 24 * 60 * 60 * 1000 + shiftMs);
+         const shiftMinMs = record.confirmed_by === 'TibiaData_API' ? -24 * 60 * 60 * 1000 : 0;
+         const minDate = new Date(seenDate.getTime() + minDays * 24 * 60 * 60 * 1000 + shiftMinMs);
+         const maxDate = new Date(seenDate.getTime() + maxDays * 24 * 60 * 60 * 1000);
          
          // Calcula dias decorridos
          const diffTime = Math.abs(today - seenDate);
