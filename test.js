@@ -484,94 +484,94 @@ async function runTests() {
 
     console.log('confirmados command (Quelibra) test passed ✅\n');
 
-    // Test 8: Multi-city and Fake Boss Oculta
-    console.log('--- Test 8: Multi-city and Fake Boss Oculta ---');
+    // Test 8: Multi-location and The Voice Of Ruin
+    console.log('--- Test 8: Multi-location and The Voice Of Ruin ---');
     
     // Set group world back to Quelibra (from previous tests)
     await dbModule.setGroupWorld(groupJid, 'Quelibra');
 
-    // 8.1 Test that confirm command fails without city
+    // 8.1 Test that confirm command fails without location
     sentMessages = [];
-    await commandHandler.handleMessage(mockSock, mockMsg3, '!boss oculta');
-    console.log('!boss oculta response:', sentMessages[0]?.content?.text);
+    await commandHandler.handleMessage(mockSock, mockMsg3, '!boss the voice of ruin');
+    console.log('!boss the voice of ruin response:', sentMessages[0]?.content?.text);
     if (!sentMessages[0]?.content?.text || !sentMessages[0]?.content?.text.includes('nasce em várias cidades. Por favor, especifique a cidade')) {
-      throw new Error('Multi-city boss confirm without city did not fail properly');
+      throw new Error('Multi-location boss confirm without location did not fail properly');
     }
-    console.log('Confirm without city validation passed ✅');
+    console.log('Confirm without location validation passed ✅');
 
-    // 8.2 Test that confirm command fails with invalid city
+    // 8.2 Test that confirm command fails with invalid location
     sentMessages = [];
-    await commandHandler.handleMessage(mockSock, mockMsg3, '!boss oculta, VenoreCity');
-    console.log('!boss oculta, VenoreCity response:', sentMessages[0]?.content?.text);
+    await commandHandler.handleMessage(mockSock, mockMsg3, '!boss the voice of ruin, Centro');
+    console.log('!boss the voice of ruin, Centro response:', sentMessages[0]?.content?.text);
     if (!sentMessages[0]?.content?.text || !sentMessages[0]?.content?.text.includes('A cidade informada não é válida')) {
-      throw new Error('Multi-city boss confirm with invalid city did not fail properly');
+      throw new Error('Multi-location boss confirm with invalid location did not fail properly');
     }
-    console.log('Confirm with invalid city validation passed ✅');
+    console.log('Confirm with invalid location validation passed ✅');
 
-    // 8.3 Test confirm command succeeds with valid city
+    // 8.3 Test confirm command succeeds with valid location (alias 'e')
     sentMessages = [];
-    await commandHandler.handleMessage(mockSock, mockMsg3, '!boss oculta, Venore');
-    console.log('!boss oculta, Venore response:', sentMessages[0]?.content?.text);
-    if (!sentMessages[0]?.content?.text || !sentMessages[0]?.content?.text.includes('BOSS CONFIRMADO!') || !sentMessages[0]?.content?.text.includes('(Venore)')) {
-      throw new Error('Multi-city boss confirm with valid city failed');
+    await commandHandler.handleMessage(mockSock, mockMsg3, '!boss the voice of ruin, e');
+    console.log('!boss the voice of ruin, e response:', sentMessages[0]?.content?.text);
+    if (!sentMessages[0]?.content?.text || !sentMessages[0]?.content?.text.includes('BOSS CONFIRMADO!') || !sentMessages[0]?.content?.text.includes('(Esquerda)')) {
+      throw new Error('Multi-location boss confirm with valid location (alias e) failed');
     }
-    console.log('Confirm with valid city passed ✅');
+    console.log('Confirm with valid location passed ✅');
 
     // 8.4 Verify database last seen record
-    const seenRecord = await dbModule.getBossLastSeen('Oculta (Venore)', 'Quelibra');
-    console.log('Oculta (Venore) DB seen record:', seenRecord);
-    if (!seenRecord || seenRecord.city !== 'Venore') {
-      throw new Error('Last seen record for Oculta (Venore) was not stored correctly');
+    const seenRecord = await dbModule.getBossLastSeen('The Voice Of Ruin (Esquerda)', 'Quelibra');
+    console.log('The Voice Of Ruin (Esquerda) DB seen record:', seenRecord);
+    if (!seenRecord || seenRecord.city !== 'Esquerda') {
+      throw new Error('Last seen record for The Voice Of Ruin (Esquerda) was not stored correctly');
     }
     console.log('Database last seen verified ✅');
 
-    // 8.5 Test check command fails without city
+    // 8.5 Test check command fails without location
     sentMessages = [];
-    await commandHandler.handleMessage(mockSock, mockMsg3, '!check oculta');
-    console.log('!check oculta response:', sentMessages[0]?.content?.text);
+    await commandHandler.handleMessage(mockSock, mockMsg3, '!check the voice of ruin');
+    console.log('!check the voice of ruin response:', sentMessages[0]?.content?.text);
     if (!sentMessages[0]?.content?.text || !sentMessages[0]?.content?.text.includes('nasce em várias cidades. Por favor, especifique a cidade')) {
-      throw new Error('Multi-city check without city did not fail properly');
+      throw new Error('Multi-location check without location did not fail properly');
     }
-    console.log('Check without city validation passed ✅');
+    console.log('Check without location validation passed ✅');
 
-    // 8.6 Test check command succeeds with valid city
+    // 8.6 Test check command succeeds with valid location (alias 'dir')
     sentMessages = [];
-    await commandHandler.handleMessage(mockSock, mockMsg3, '!check oculta, Ankrahmun');
-    console.log('!check oculta, Ankrahmun response:', sentMessages[0]?.content?.text);
-    if (!sentMessages[0]?.content?.text || !sentMessages[0]?.content?.text.includes('Oculta') || !sentMessages[0]?.content?.text.includes('(Ankrahmun)') || !sentMessages[0]?.content?.text.includes('Check registrado')) {
-      throw new Error('Multi-city check with valid city failed');
+    await commandHandler.handleMessage(mockSock, mockMsg3, '!check the voice of ruin, dir');
+    console.log('!check the voice of ruin, dir response:', sentMessages[0]?.content?.text);
+    if (!sentMessages[0]?.content?.text || !sentMessages[0]?.content?.text.includes('The Voice Of Ruin') || !sentMessages[0]?.content?.text.includes('(Direita)') || !sentMessages[0]?.content?.text.includes('Check registrado')) {
+      throw new Error('Multi-location check with valid location (alias dir) failed');
     }
-    console.log('Check with valid city passed ✅');
+    console.log('Check with valid location passed ✅');
 
     // 8.7 Verify database check record
-    const checkRecord = await dbModule.getBossCheck('Oculta (Ankrahmun)', 'Quelibra');
-    console.log('Oculta (Ankrahmun) DB check record:', checkRecord);
-    if (!checkRecord || checkRecord.city !== 'Ankrahmun') {
-      throw new Error('Check record for Oculta (Ankrahmun) was not stored correctly');
+    const checkRecord = await dbModule.getBossCheck('The Voice Of Ruin (Direita)', 'Quelibra');
+    console.log('The Voice Of Ruin (Direita) DB check record:', checkRecord);
+    if (!checkRecord || checkRecord.city !== 'Direita') {
+      throw new Error('Check record for The Voice Of Ruin (Direita) was not stored correctly');
     }
     console.log('Database check record verified ✅');
 
-    // 8.8 Test last command displays status for all cities
+    // 8.8 Test last command displays status for all locations
     sentMessages = [];
-    await commandHandler.handleMessage(mockSock, mockMsg3, '!last oculta');
-    console.log('!last oculta response:\n', sentMessages[0]?.content?.text);
+    await commandHandler.handleMessage(mockSock, mockMsg3, '!last the voice of ruin');
+    console.log('!last the voice of ruin response:\n', sentMessages[0]?.content?.text);
     const lastOutput = sentMessages[0]?.content?.text;
-    if (!lastOutput || !lastOutput.includes('Ankrahmun') || !lastOutput.includes('Venore') || !lastOutput.includes('Yalahar')) {
-      throw new Error('Last command did not display status for all cities');
+    if (!lastOutput || !lastOutput.includes('Esquerda') || !lastOutput.includes('Direita')) {
+      throw new Error('Last command did not display status for all locations');
     }
-    console.log('Last command grouped by city passed ✅');
+    console.log('Last command grouped by location passed ✅');
 
-    // 8.9 Test lastcheck command displays status for all cities
+    // 8.9 Test lastcheck command displays status for all locations
     sentMessages = [];
-    await commandHandler.handleMessage(mockSock, mockMsg3, '!lastcheck oculta');
-    console.log('!lastcheck oculta response:\n', sentMessages[0]?.content?.text);
+    await commandHandler.handleMessage(mockSock, mockMsg3, '!lastcheck the voice of ruin');
+    console.log('!lastcheck the voice of ruin response:\n', sentMessages[0]?.content?.text);
     const lastcheckOutput = sentMessages[0]?.content?.text;
-    if (!lastcheckOutput || !lastcheckOutput.includes('Ankrahmun') || !lastcheckOutput.includes('Venore') || !lastcheckOutput.includes('Yalahar')) {
-      throw new Error('Lastcheck command did not display status for all cities');
+    if (!lastcheckOutput || !lastcheckOutput.includes('Esquerda') || !lastcheckOutput.includes('Direita')) {
+      throw new Error('Lastcheck command did not display status for all locations');
     }
-    console.log('Lastcheck command grouped by city passed ✅');
+    console.log('Lastcheck command grouped by location passed ✅');
 
-    console.log('Multi-city and Fake Boss Oculta tests passed ✅\n');
+    console.log('Multi-location and The Voice Of Ruin tests passed ✅\n');
 
     // Test 9: Rotworm Queen and City Aliases
     console.log('--- Test 9: Rotworm Queen and City Aliases ---');

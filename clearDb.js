@@ -8,9 +8,9 @@ const db = new sqlite3.Database(dbFile);
 console.log(`[DB-CLEAN] Abrindo banco de dados: ${dbFile}`);
 
 db.serialize(() => {
-  // 1. Limpar boss_last_seen exceto Zarabustor e Rotworm Queen
+  // 1. Limpar boss_last_seen exceto Zarabustor, Rotworm Queen, The Voice Of Ruin e Flamecaller Zazrak
   db.run(
-    "DELETE FROM boss_last_seen WHERE boss_name != 'Zarabustor' AND boss_name NOT LIKE 'Rotworm Queen%'",
+    "DELETE FROM boss_last_seen WHERE boss_name != 'Zarabustor' AND boss_name NOT LIKE 'Rotworm Queen%' AND boss_name NOT LIKE 'The Voice Of Ruin%' AND boss_name NOT LIKE 'Flamecaller Zazrak%'",
     function (err) {
       if (err) {
         console.error('[DB-CLEAN] Erro ao limpar boss_last_seen:', err);
@@ -20,9 +20,9 @@ db.serialize(() => {
     }
   );
 
-  // 2. Limpar boss_check exceto Zarabustor e Rotworm Queen
+  // 2. Limpar boss_check exceto Zarabustor, Rotworm Queen, The Voice Of Ruin e Flamecaller Zazrak
   db.run(
-    "DELETE FROM boss_check WHERE boss_name != 'Zarabustor' AND boss_name NOT LIKE 'Rotworm Queen%'",
+    "DELETE FROM boss_check WHERE boss_name != 'Zarabustor' AND boss_name NOT LIKE 'Rotworm Queen%' AND boss_name NOT LIKE 'The Voice Of Ruin%' AND boss_name NOT LIKE 'Flamecaller Zazrak%'",
     function (err) {
       if (err) {
         console.error('[DB-CLEAN] Erro ao limpar boss_check:', err);

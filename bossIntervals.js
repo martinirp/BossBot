@@ -110,7 +110,14 @@ export const bossIntervals = {
       "max": 175
     }
   },
-  "Flamecaller Zazrak": {
+  "Flamecaller Zazrak (Surface)": {
+    "fixedDaysFrequency": {
+      "min": 5,
+      "max": 20
+    },
+    "spawnCount": 2
+  },
+  "Flamecaller Zazrak (North)": {
     "fixedDaysFrequency": {
       "min": 5,
       "max": 20
@@ -257,24 +264,6 @@ export const bossIntervals = {
       "max": 5
     }
   },
-  "Oculta (Ankrahmun)": {
-    "fixedDaysFrequency": {
-      "min": 20,
-      "max": 25
-    }
-  },
-  "Oculta (Venore)": {
-    "fixedDaysFrequency": {
-      "min": 20,
-      "max": 25
-    }
-  },
-  "Oculta (Yalahar)": {
-    "fixedDaysFrequency": {
-      "min": 20,
-      "max": 25
-    }
-  },
   "Orshabaal": {
     "fixedDaysFrequency": {
       "min": 153,
@@ -412,7 +401,14 @@ export const bossIntervals = {
       "max": 21
     }
   },
-  "The Voice Of Ruin": {
+  "The Voice Of Ruin (Esquerda)": {
+    "fixedDaysFrequency": {
+      "min": 5,
+      "max": 10
+    },
+    "spawnCount": 2
+  },
+  "The Voice Of Ruin (Direita)": {
     "fixedDaysFrequency": {
       "min": 5,
       "max": 10
@@ -511,4 +507,4 @@ export const bossIntervals = {
       "max": 29
     }
   }
-};
+};\n

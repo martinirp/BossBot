@@ -108,8 +108,9 @@ export function findBossMatch(input, bossesList) {
 }
 
 export const MULTI_CITY_BOSSES = {
-  "oculta": ["Yalahar", "Venore", "Ankrahmun"],
-  "rotworm queen": ["Ab'Dendriel", "Darashia", "Edron", "Liberty Bay"]
+  "rotworm queen": ["Ab'Dendriel", "Darashia", "Edron", "Liberty Bay"],
+  "the voice of ruin": ["Esquerda", "Direita"],
+  "flamecaller zazrak": ["Surface", "North"]
 };
 
 export const CITY_ALIASES = {
@@ -117,7 +118,15 @@ export const CITY_ALIASES = {
   "lb": "Liberty Bay",
   "ab": "Ab'Dendriel",
   "yala": "Yalahar",
-  "ank": "Ankrahmun"
+  "ank": "Ankrahmun",
+  "esq": "Esquerda",
+  "e": "Esquerda",
+  "dir": "Direita",
+  "d": "Direita",
+  "surf": "Surface",
+  "s": "Surface",
+  "norte": "North",
+  "n": "North"
 };
 
 export function getBossCities(bossName) {
