@@ -39,10 +39,13 @@ export default {
 
         const isLost = !confirmer || confirmer === 'TibiaData_API';
         const isSystem = confirmer === 'system_adjust';
+        const isFlop = confirmer === 'flop';
 
         responseText += `*${bName}*\n`;
         if (isLost) {
           responseText += `Status: PERDIDO\n`;
+        } else if (isFlop) {
+          responseText += `Status: FLOPADO (Perdido)\n`;
         } else if (isSystem) {
           responseText += `Confirmado por: Sistema\n`;
         } else {
@@ -50,7 +53,7 @@ export default {
           responseText += `Confirmado por: @${phone}\n`;
           mentions.push(confirmer);
         }
-        const label = isLost ? 'Último morto' : 'Último avistamento';
+        const label = (isLost || isFlop) ? 'Último morto' : 'Último avistamento';
         responseText += `${label}: ${seenAtFormatted}\n\n`;
       }
 

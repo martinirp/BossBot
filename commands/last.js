@@ -58,9 +58,19 @@ export default {
       for (const item of records) {
         reply += `📍 *${item.city}*:\n`;
         if (item.record) {
-          const phone = item.record.confirmed_by.split('@')[0];
-          reply += `👁️ Último avistamento: *${item.record.seen_at}*\n👤 Por: @${phone}\n\n`;
-          mentions.push(item.record.confirmed_by);
+          const confirmer = item.record.confirmed_by;
+          reply += `👁️ Último avistamento: *${item.record.seen_at}*\n`;
+          if (confirmer === 'flop') {
+            reply += `👤 Por: Flop (Perdido)\n\n`;
+          } else if (confirmer === 'TibiaData_API') {
+            reply += `👤 Por: TibiaData API\n\n`;
+          } else if (confirmer === 'system_adjust') {
+            reply += `👤 Por: Sistema\n\n`;
+          } else {
+            const phone = confirmer.split('@')[0];
+            reply += `👤 Por: @${phone}\n\n`;
+            mentions.push(confirmer);
+          }
         } else {
           reply += `📭 Nenhum avistamento registrado ainda.\n\n`;
         }
@@ -82,11 +92,26 @@ export default {
       return;
     }
 
-    const phone = record.confirmed_by.split('@')[0];
     const cityText = record.city ? ` (${record.city})` : '';
+    const confirmer = record.confirmed_by;
+    let text = `⚔️ *${bossName}*\n\n👁️ Último avistamento: *${record.seen_at}*${cityText}\n`;
+    const singleMentions = [];
+
+    if (confirmer === 'flop') {
+      text += `👤 Por: Flop (Perdido)`;
+    } else if (confirmer === 'TibiaData_API') {
+      text += `👤 Por: TibiaData API`;
+    } else if (confirmer === 'system_adjust') {
+      text += `👤 Por: Sistema`;
+    } else {
+      const phone = confirmer.split('@')[0];
+      text += `👤 Por: @${phone}`;
+      singleMentions.push(confirmer);
+    }
+
     await sock.sendMessage(remoteJid, {
-      text: `⚔️ *${bossName}*\n\n👁️ Último avistamento: *${record.seen_at}*${cityText}\n👤 Por: @${phone}`,
-      mentions: [record.confirmed_by]
+      text: text,
+      mentions: singleMentions
     }, { quoted: msg });
   }
 }

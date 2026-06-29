@@ -80,8 +80,19 @@ const formatBossInfo = (bossName, intervalName, record) => {
 
   let text = '';
   if (record && record.seen_at) {
-    const phone = record.confirmed_by.split('@')[0];
-    text += `👁️ *Último morto:* ${formatSeenAt(record.seen_at)} (por @${phone})\n`;
+    const confirmer = record.confirmed_by;
+    let details = '';
+    if (confirmer === 'flop') {
+      details = 'Flop (Perdido)';
+    } else if (confirmer === 'TibiaData_API') {
+      details = 'TibiaData API';
+    } else if (confirmer === 'system_adjust') {
+      details = 'Sistema';
+    } else {
+      const phone = confirmer.split('@')[0];
+      details = `@${phone}`;
+    }
+    text += `👁️ *Último morto:* ${formatSeenAt(record.seen_at)} (por ${details})\n`;
   } else {
     text += `👁️ *Último morto:* Nenhum avistamento registrado ainda\n`;
   }

@@ -47,7 +47,7 @@ function getApiUpdateTimeBRT(utcNow) {
  * @param {string} world - O mundo do Tibia (ex: Antica)
  * @returns {{ seenAt: string, trackingDateStr: string, apiUpdatedTonight: boolean, brtTimeStr: string }}
  */
-async function calcTrackingDay(utcNow, world) {
+export async function calcTrackingDay(utcNow, world) {
   // Converte para BRT (UTC-3)
   const brtNow = new Date(utcNow);
   brtNow.setUTCHours(brtNow.getUTCHours() - 3);

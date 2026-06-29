@@ -2,7 +2,7 @@ import cron from 'node-cron';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
-import { getAllBossesLastSeen, setBossLastSeenDate, getUniqueWorlds, setGlobalSetting } from './database.js';
+import { getAllBossesLastSeen, setBossLastSeenDate, getUniqueWorlds, setGlobalSetting, getGlobalSetting } from './database.js';
 
 dotenv.config();
 
@@ -129,10 +129,78 @@ export async function syncWorldKillStatistics(targetWorld) {
     }
 }
 
-// Inicia o cron para rodar todos os dias às 06:30 da manhã
+// Verifica se a API do TibiaData atualizou e executa a sincronização completa
+export async function checkAndSyncIfApiUpdated() {
+    try {
+        const worlds = await getUniqueWorlds();
+        const defaultWorld = process.env.TIBIA_WORLD || 'Quelibra';
+        const targetWorld = worlds.length > 0 ? worlds[0] : defaultWorld;
+
+        // Converte para BRT (UTC-3) para formatar a data de hoje
+        const brtNow = new Date();
+        brtNow.setUTCHours(brtNow.getUTCHours() - 3);
+        const pad = (n) => String(n).padStart(2, '0');
+        const todayStr = `${brtNow.getUTCFullYear()}-${pad(brtNow.getUTCMonth() + 1)}-${pad(brtNow.getUTCDate())}`;
+
+        // Verifica se já sincronizou hoje
+        const lastSync = await getGlobalSetting('tibiadata_last_sync_date');
+        if (lastSync === todayStr) {
+            console.log(`[SYNC-CHECK] Já sincronizado hoje (${todayStr}). Pulando verificação.`);
+            return;
+        }
+
+        console.log(`[SYNC-CHECK] Verificando se a API do TibiaData atualizou para ${targetWorld}...`);
+        
+        const res = await fetch(`https://api.tibiadata.com/v4/killstatistics/${targetWorld}`);
+        if (!res.ok) {
+            console.error(`[SYNC-CHECK] Falha ao verificar API do TibiaData (Status: ${res.status})`);
+            return;
+        }
+        
+        const data = await res.json();
+        const entries = data.killstatistics?.entries || [];
+        let currentSum = 0;
+        entries.forEach(e => { currentSum += e.last_day_killed; });
+
+        const savedSumStr = await getGlobalSetting(`tibiadata_checksum_${targetWorld}`);
+        
+        if (savedSumStr === null) {
+            // Primeiro registro: inicializa o checksum e encerra
+            await setGlobalSetting(`tibiadata_checksum_${targetWorld}`, currentSum);
+            console.log(`[SYNC-CHECK] Checksum inicializado para ${targetWorld}: ${currentSum}`);
+            return;
+        }
+
+        const savedSum = parseInt(savedSumStr, 10);
+
+        if (currentSum !== savedSum) {
+            console.log(`[SYNC-CHECK] Mudança de checksum detectada (${savedSum} -> ${currentSum}). A API atualizou!`);
+            
+            // Executa a sincronização completa
+            await syncKillStatistics();
+            
+            // Grava que sincronizou hoje para evitar re-runs
+            await setGlobalSetting('tibiadata_last_sync_date', todayStr);
+            console.log(`[SYNC-CHECK] Sincronização automatizada concluída para ${todayStr}.`);
+        } else {
+            console.log(`[SYNC-CHECK] A API ainda não atualizou hoje (Checksum estável: ${currentSum}).`);
+        }
+    } catch (err) {
+        console.error('[SYNC-CHECK] Erro ao verificar atualização da API:', err);
+    }
+}
+
+// Inicia os crons inteligente e de fallback
 export function startSyncCron() {
-    cron.schedule('30 6 * * *', () => {
+    // 1. Cron Inteligente: roda a cada 15 min nas horas da noite (21:00 às 03:00)
+    cron.schedule('*/15 21,22,23,0,1,2,3 * * *', () => {
+        checkAndSyncIfApiUpdated();
+    });
+
+    // 2. Cron de Fallback: roda às 06:00 AM como garantia
+    cron.schedule('0 6 * * *', () => {
         syncKillStatistics();
     });
-    console.log('[SYNC] Cron Job de sincronização com TibiaData agendado para as 06:30 diariamente.');
+
+    console.log('[SYNC] Cron Jobs de sincronização inteligente e fallback agendados.');
 }
