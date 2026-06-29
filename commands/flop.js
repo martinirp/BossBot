@@ -68,7 +68,7 @@ export default {
         const normalizedCity = normalizeBossName(city);
         const aliases = Object.keys(CITY_ALIASES).filter(key => CITY_ALIASES[key] === city);
         const candidates = [normalizedCity, ...aliases];
-        
+
         let matched = false;
         let matchedPrefix = null;
         for (const candidate of candidates) {
@@ -80,8 +80,8 @@ export default {
         }
 
         if (matched) {
-          const hasBoundary = normalizedExtra.length === matchedPrefix.length || 
-                              !/^[a-z0-9]$/i.test(normalizedExtra[matchedPrefix.length]);
+          const hasBoundary = normalizedExtra.length === matchedPrefix.length ||
+            !/^[a-z0-9]$/i.test(normalizedExtra[matchedPrefix.length]);
           if (hasBoundary) {
             matchedCity = city;
             const cityLen = matchedPrefix.length;
@@ -118,7 +118,7 @@ export default {
     }
 
     await sock.sendMessage(remoteJid, {
-      text: `📉 *BOSS FLOPADO (PERDIDO)*\n${bossHeader}\n🕒 Registrado às: ${brtTimeStr}\n📌 Ciclo de nascimento reiniciado!`,
+      text: `📉 *BOSS FLOPADO\n${bossHeader}\n🕒 Registrado às: ${brtTimeStr}\n📌 Ciclo de nascimento reiniciado!`,
     }, { quoted: msg });
   }
 };

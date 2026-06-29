@@ -82,15 +82,19 @@ const formatBossInfo = (bossName, intervalName, record) => {
   if (record && record.seen_at) {
     const confirmer = record.confirmed_by;
     let details = '';
-    if (confirmer === 'flop') {
+    if (!confirmer) {
+      details = 'Desconhecido';
+    } else if (confirmer === 'flop') {
       details = 'Flop (Perdido)';
     } else if (confirmer === 'TibiaData_API') {
       details = 'TibiaData API';
     } else if (confirmer === 'system_adjust') {
       details = 'Sistema';
-    } else {
+    } else if (confirmer.includes('@')) {
       const phone = confirmer.split('@')[0];
       details = `@${phone}`;
+    } else {
+      details = confirmer;
     }
     text += `👁️ *Último morto:* ${formatSeenAt(record.seen_at)} (por ${details})\n`;
   } else {
@@ -148,13 +152,13 @@ export default {
         reply += `📍 *${city}*:\n`;
         const { text, confirmedBy } = formatBossInfo(bossName, cityBossName, record);
         reply += text + '\n';
-        if (confirmedBy) mentions.push(confirmedBy);
+        if (confirmedBy && confirmedBy.includes('@')) mentions.push(confirmedBy);
       }
     } else {
       const record = await db.getBossLastSeen(bossName, world);
       const { text, confirmedBy } = formatBossInfo(bossName, bossName, record);
       reply += text;
-      if (confirmedBy) mentions.push(confirmedBy);
+      if (confirmedBy && confirmedBy.includes('@')) mentions.push(confirmedBy);
     }
 
     await sock.sendMessage(remoteJid, {

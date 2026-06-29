@@ -51,7 +51,7 @@ export default {
         } else {
           const phone = confirmer.split('@')[0];
           responseText += `Confirmado por: @${phone}\n`;
-          mentions.push(confirmer);
+          if (confirmer && confirmer.includes('@')) mentions.push(confirmer);
         }
         const label = (isLost || isFlop) ? 'Último morto' : 'Último avistamento';
         responseText += `${label}: ${seenAtFormatted}\n\n`;

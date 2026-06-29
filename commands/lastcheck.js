@@ -51,7 +51,7 @@ export default {
         if (checkRecord) {
           const phone = checkRecord.checked_by.split('@')[0];
           text += `🕵️ Último check: *${checkRecord.checked_at}* por @${phone}\n`;
-          mentions.push(checkRecord.checked_by);
+          if (checkRecord.checked_by.includes('@')) mentions.push(checkRecord.checked_by);
         } else {
           text += `🕵️ Último check: Nenhum registro\n`;
         }
@@ -59,7 +59,7 @@ export default {
         if (lastSeenRecord) {
           const phone = lastSeenRecord.confirmed_by.split('@')[0];
           text += `⚔️ Último avistamento: *${lastSeenRecord.seen_at}* por @${phone}\n`;
-          mentions.push(lastSeenRecord.confirmed_by);
+          if (lastSeenRecord.confirmed_by.includes('@')) mentions.push(lastSeenRecord.confirmed_by);
         } else {
           text += `⚔️ Último avistamento: Nenhum registro\n`;
         }
@@ -97,8 +97,8 @@ export default {
     }
 
     const mentions = [];
-    if (checkRecord) mentions.push(checkRecord.checked_by);
-    if (lastSeenRecord) mentions.push(lastSeenRecord.confirmed_by);
+    if (checkRecord && checkRecord.checked_by.includes('@')) mentions.push(checkRecord.checked_by);
+    if (lastSeenRecord && lastSeenRecord.confirmed_by.includes('@')) mentions.push(lastSeenRecord.confirmed_by);
 
     await sock.sendMessage(remoteJid, {
       text: text.trim(),
