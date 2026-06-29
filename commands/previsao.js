@@ -1,7 +1,16 @@
 import * as db from '../database.js';
 import fs from 'fs';
 import path from 'path';
-import { bossIntervals } from '../bossIntervals.js';
+
+const loadIntervals = () => {
+  try {
+    const jsonPath = path.resolve('boss_intervals.json');
+    return JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+  } catch (err) {
+    console.error('[previsao] Error loading boss_intervals.json:', err);
+    return {};
+  }
+};
 
 export default {
   name: 'previsao',
@@ -10,7 +19,7 @@ export default {
     const { sock, msg, remoteJid } = context;
 
     try {
-
+      const bossIntervals = loadIntervals();
       const world = await db.getGroupWorld(remoteJid);
       const allSeen = await db.getAllBossesLastSeen(world);
       

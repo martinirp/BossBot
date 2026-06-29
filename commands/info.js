@@ -1,6 +1,17 @@
 import * as db from '../database.js';
 import { findBossMatch, loadBosses, getBossCities } from '../commands.js';
-import { bossIntervals } from '../bossIntervals.js';
+import fs from 'fs';
+import path from 'path';
+
+const loadIntervals = () => {
+  try {
+    const jsonPath = path.resolve('boss_intervals.json');
+    return JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+  } catch (err) {
+    console.error('[info] Error loading boss_intervals.json:', err);
+    return {};
+  }
+};
 
 // Helper to format seen_at timestamp from "YYYY-MM-DD HH:mm" to "DD/MM/YYYY HH:mm"
 const formatSeenAt = (seenAtStr) => {
@@ -55,6 +66,7 @@ const calculatePrediction = (seenAtStr, minDays, maxDays) => {
 
 // Helper to format the boss details block
 const formatBossInfo = (bossName, intervalName, record) => {
+  const bossIntervals = loadIntervals();
   const interval = bossIntervals[intervalName];
   let avgDaysText = 'N/A';
   let predictionText = 'Indefinida (necessita de um avistamento prévio)';
