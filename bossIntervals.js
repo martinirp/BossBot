@@ -483,8 +483,8 @@ export const bossIntervals = {
   },
   "Zarabustor": {
     "fixedDaysFrequency": {
-      "min": 5,
-      "max": 9
+      "min": 6,
+      "max": 8
     }
   },
   "Zevelon Duskbringer": {
