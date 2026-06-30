@@ -70,7 +70,7 @@ const calculatePrediction = (seenAtStr, minDays, maxDays, confirmedBy) => {
     } else if (today >= minDate) {
       extraStr = " (🟢 No radar / 🟢 Com chance)";
     } else {
-      extraStr = " (🔴 Fora do radar / 🔴 Sem chance)";
+      extraStr = " (🔴 Sem chance)";
     }
   }
   return predictionStr + extraStr;
@@ -90,16 +90,16 @@ const formatBossInfo = async (bossName, intervalName, record) => {
     const max = interval.fixedDaysFrequency.max;
     
     if (min === max) {
-      spawnIntervalLine = `📅 *Nasce a cada:* ${min} dia(s)\n`;
+      spawnIntervalLine = `📅 *Renasce a cada:* ${min} dia(s)\n`;
     } else {
-      spawnIntervalLine = `📅 *Nasce de:* ${min} a ${max} dias\n`;
+      spawnIntervalLine = `📅 *Renasce de:* ${min} a ${max} dias\n`;
     }
 
     if (record && record.seen_at) {
       predictionText = calculatePrediction(record.seen_at, min, max, record.confirmed_by);
     }
   } else {
-    spawnIntervalLine = `📅 *Nasce de:* Sem intervalo de spawn cadastrado\n`;
+    spawnIntervalLine = `📅 *Renasce de:* Sem intervalo de spawn cadastrado\n`;
     predictionText = 'Sem previsão disponível';
   }
 
