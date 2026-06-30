@@ -15,6 +15,15 @@ const loadIntervals = () => {
 
 // loadLocations imported from commands.js
 
+const loadStats = () => {
+  try {
+    const jsonPath = path.resolve('boss_stats.json');
+    return JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+  } catch (err) {
+    return {};
+  }
+};
+
 // Helper to format seen_at timestamp from "YYYY-MM-DD HH:mm" to "DD/MM/YYYY HH:mm"
 const formatSeenAt = (seenAtStr) => {
   if (!seenAtStr) return 'Nenhum avistamento registrado ainda';
@@ -185,7 +194,18 @@ export default {
     const cities = getBossCities(bossName);
     const mentions = [];
 
-    let reply = `ℹ️ *Informações do Boss:* ${bossName}\n\n`;
+    const bossStats = loadStats();
+    const stats = bossStats[bossName];
+    let statsLine = '';
+    if (stats) {
+      const hpText = stats.hp || 'Desconhecido';
+      const imunesText = stats.immunities && stats.immunities.length > 0
+        ? stats.immunities.join(', ')
+        : 'Nenhuma';
+      statsLine = `❤️ *HP:* ${hpText}\n🛡️ *Imunidades:* ${imunesText}\n\n`;
+    }
+
+    let reply = `ℹ️ *Informações do Boss:* ${bossName}\n${statsLine}`;
 
     if (cities) {
       for (const city of cities) {
@@ -204,9 +224,31 @@ export default {
       if (confirmedBy && confirmedBy.includes('@')) mentions.push(confirmedBy);
     }
 
-    await sock.sendMessage(remoteJid, {
-      text: reply.trim(),
-      mentions
-    }, { quoted: msg });
+    const gifPath = path.resolve('assets', 'bosses', `${bossName}.gif`);
+    const webpPath = path.resolve('assets', 'bosses', `${bossName}.webp`);
+
+    if (fs.existsSync(gifPath)) {
+      await sock.sendMessage(remoteJid, {
+        video: fs.readFileSync(gifPath),
+        gifPlayback: true,
+        caption: reply.trim(),
+        mentions
+      }, { quoted: msg });
+
+      if (fs.existsSync(webpPath)) {
+        try {
+          await sock.sendMessage(remoteJid, {
+            sticker: fs.readFileSync(webpPath)
+          });
+        } catch (err) {
+          console.error('[info] Error sending sticker:', err);
+        }
+      }
+    } else {
+      await sock.sendMessage(remoteJid, {
+        text: reply.trim(),
+        mentions
+      }, { quoted: msg });
+    }
   }
 };

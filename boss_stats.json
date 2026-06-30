@@ -1,0 +1,696 @@
+{
+  "Albino Dragon": {
+    "hp": "5000",
+    "immunities": [
+      "Fogo",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Arachir The Ancient One": {
+    "hp": "1600",
+    "immunities": [
+      "Terra",
+      "Morte",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Arthom The Hunter": {
+    "hp": "500",
+    "immunities": [
+      "Invisibilidade"
+    ]
+  },
+  "Bane Lord": {
+    "hp": "3000",
+    "immunities": [
+      "Invisibilidade"
+    ]
+  },
+  "Barbaria": {
+    "hp": "345",
+    "immunities": [
+      "Invisibilidade"
+    ]
+  },
+  "Battlemaster Zunzu": {
+    "hp": "4000",
+    "immunities": [
+      "Terra",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Big Boss Trolliver": {
+    "hp": "140",
+    "immunities": [
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Burster": {
+    "hp": "10000?",
+    "immunities": [
+      "Energia"
+    ]
+  },
+  "Captain Jones": {
+    "hp": "555",
+    "immunities": [
+      "Físico",
+      "Terra",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Chizzoron The Distorter": {
+    "hp": "16000",
+    "immunities": [
+      "Terra",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Countess Sorrow": {
+    "hp": "6500",
+    "immunities": [
+      "Físico",
+      "Terra",
+      "Morte",
+      "Dreno de Vida",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Crustacea Gigantica": {
+    "hp": "1600",
+    "immunities": [
+      "Gelo",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Cublarc The Plunderer": {
+    "hp": "400",
+    "immunities": [
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Devovorga": {
+    "hp": "500000",
+    "immunities": [
+      "Invisibilidade"
+    ]
+  },
+  "Dharalion": {
+    "hp": "390",
+    "immunities": [
+      "Invisibilidade"
+    ]
+  },
+  "Diblis The Fair": {
+    "hp": "1500",
+    "immunities": [
+      "Terra",
+      "Morte",
+      "Dreno de Vida",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Dire Penguin": {
+    "hp": "173",
+    "immunities": [
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Dracola": {
+    "hp": "16200",
+    "immunities": [
+      "Terra",
+      "Fogo",
+      "Morte",
+      "Gelo",
+      "Afogamento",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Draptor": {
+    "hp": "3000",
+    "immunities": [
+      "Energia",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Dreadful Disruptor": {
+    "hp": "10000?",
+    "immunities": []
+  },
+  "Dreadmaw": {
+    "hp": "3500",
+    "immunities": [
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Elf Overseer": {
+    "hp": "500",
+    "immunities": [
+      "Fogo",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Elvira Hammerthrust": {
+    "hp": "245",
+    "immunities": [
+      "Invisibilidade"
+    ]
+  },
+  "Feroxa": {
+    "hp": "?",
+    "immunities": [
+      "Invisibilidade"
+    ]
+  },
+  "Ferumbras": {
+    "hp": "90000",
+    "immunities": [
+      "Dreno de Vida",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Flamecaller Zazrak": {
+    "hp": "2690",
+    "immunities": [
+      "Terra",
+      "Invisibilidade"
+    ]
+  },
+  "Fleabringer": {
+    "hp": "265",
+    "immunities": [
+      "Invisibilidade"
+    ]
+  },
+  "Foreman Kneebiter": {
+    "hp": "570",
+    "immunities": [
+      "Invisibilidade"
+    ]
+  },
+  "Furyosa": {
+    "hp": "25000",
+    "immunities": [
+      "Fogo"
+    ]
+  },
+  "Gaz'haragoth": {
+    "hp": "350000",
+    "immunities": [
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "General Murius": {
+    "hp": "550",
+    "immunities": [
+      "Invisibilidade"
+    ]
+  },
+  "Ghazbaran": {
+    "hp": "77000",
+    "immunities": [
+      "Terra",
+      "Fogo",
+      "Gelo",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Grand Mother Foulscale": {
+    "hp": "1850",
+    "immunities": [
+      "Fogo",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Grandfather Tridian": {
+    "hp": "1800",
+    "immunities": [
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Gravelord Oshuran": {
+    "hp": "3100",
+    "immunities": [
+      "Terra",
+      "Morte",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Groam": {
+    "hp": "400",
+    "immunities": [
+      "Fogo",
+      "Gelo",
+      "Invisibilidade"
+    ]
+  },
+  "Grorlam": {
+    "hp": "3000",
+    "immunities": [
+      "Terra",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Hairman The Huge": {
+    "hp": "600",
+    "immunities": []
+  },
+  "Hatebreeder": {
+    "hp": "18000",
+    "immunities": [
+      "Terra",
+      "Morte",
+      "Gelo",
+      "Dreno de Vida",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "High Templar Cobrass": {
+    "hp": "410",
+    "immunities": [
+      "Terra",
+      "Invisibilidade"
+    ]
+  },
+  "Hirintror": {
+    "hp": "1500",
+    "immunities": [
+      "Fogo",
+      "Morte",
+      "Sagrado",
+      "Gelo",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Jesse The Wicked": {
+    "hp": "280",
+    "immunities": []
+  },
+  "Mahatheb": {
+    "hp": "650",
+    "immunities": [
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Man In The Cave": {
+    "hp": "485",
+    "immunities": [
+      "Invisibilidade"
+    ]
+  },
+  "Massacre": {
+    "hp": "32000",
+    "immunities": [
+      "Fogo",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Mawhawk": {
+    "hp": "45000",
+    "immunities": [
+      "Invisibilidade"
+    ]
+  },
+  "Midnight Panther": {
+    "hp": "1200",
+    "immunities": [
+      "Energia",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Morgaroth": {
+    "hp": "55000",
+    "immunities": [
+      "Terra",
+      "Fogo",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Mornenion": {
+    "hp": "190",
+    "immunities": [
+      "Invisibilidade"
+    ]
+  },
+  "Morshabaal": {
+    "hp": "1000000",
+    "immunities": [
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Mr Punish": {
+    "hp": "22000",
+    "immunities": [
+      "Terra",
+      "Fogo",
+      "Energia",
+      "Gelo",
+      "Invisibilidade"
+    ]
+  },
+  "Nimmersatt": {
+    "hp": "Desconhecido",
+    "immunities": []
+  },
+  "Ocyakao": {
+    "hp": "700",
+    "immunities": [
+      "Gelo",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Omrafir": {
+    "hp": "322000",
+    "immunities": [
+      "Fogo",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Oodok Witchmaster": {
+    "hp": "450",
+    "immunities": [
+      "Terra"
+    ]
+  },
+  "Orshabaal": {
+    "hp": "22500",
+    "immunities": [
+      "Terra",
+      "Fogo",
+      "Dreno de Vida",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Robby The Reckless": {
+    "hp": "155",
+    "immunities": [
+      "Invisibilidade"
+    ]
+  },
+  "Rotrender": {
+    "hp": "?",
+    "immunities": [
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Rotworm Queen": {
+    "hp": "105",
+    "immunities": []
+  },
+  "Rukor Zad": {
+    "hp": "380",
+    "immunities": [
+      "Invisibilidade"
+    ]
+  },
+  "Shlorg": {
+    "hp": "?",
+    "immunities": [
+      "Físico",
+      "Terra",
+      "Fogo",
+      "Morte",
+      "Energia",
+      "Sagrado",
+      "Gelo",
+      "Dreno de Vida",
+      "Afogamento"
+    ]
+  },
+  "Sir Leopold": {
+    "hp": "81000",
+    "immunities": [
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Sir Valorcrest": {
+    "hp": "1600",
+    "immunities": [
+      "Terra",
+      "Morte",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Smuggler Baron Silvertoe": {
+    "hp": "280",
+    "immunities": [
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "The Abomination": {
+    "hp": "750000?",
+    "immunities": [
+      "Dreno de Vida",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "The Big Bad One": {
+    "hp": "300",
+    "immunities": [
+      "Invisibilidade"
+    ]
+  },
+  "The Blightfather": {
+    "hp": "400",
+    "immunities": [
+      "Terra",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "The Evil Eye": {
+    "hp": "1200",
+    "immunities": [
+      "Terra",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "The Frog Prince": {
+    "hp": "55",
+    "immunities": []
+  },
+  "The Handmaiden": {
+    "hp": "19500",
+    "immunities": [
+      "Terra",
+      "Fogo",
+      "Morte",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "The Hungerer": {
+    "hp": "2000",
+    "immunities": [
+      "Terra",
+      "Invisibilidade"
+    ]
+  },
+  "The Imperor": {
+    "hp": "15000",
+    "immunities": [
+      "Fogo",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "The Manhunter": {
+    "hp": "4500",
+    "immunities": []
+  },
+  "The Mean Masher": {
+    "hp": "8000",
+    "immunities": [
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "The Mutated Pumpkin": {
+    "hp": "500000",
+    "immunities": [
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "The Old Whopper": {
+    "hp": "785",
+    "immunities": [
+      "Invisibilidade"
+    ]
+  },
+  "The Pale Count": {
+    "hp": "50000",
+    "immunities": [
+      "Morte",
+      "Invisibilidade"
+    ]
+  },
+  "The Plasmother": {
+    "hp": "7500",
+    "immunities": [
+      "Terra",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "The Voice Of Ruin": {
+    "hp": "5500",
+    "immunities": [
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "The Welter": {
+    "hp": "25000",
+    "immunities": [
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Tyrn": {
+    "hp": "12000",
+    "immunities": [
+      "Energia",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Tzumrah The Dazzler": {
+    "hp": "1700",
+    "immunities": [
+      "Invisibilidade"
+    ]
+  },
+  "Undead Cavebear": {
+    "hp": "450",
+    "immunities": [
+      "Terra",
+      "Morte",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Warlord Ruzad": {
+    "hp": "1500",
+    "immunities": [
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "White Pale": {
+    "hp": "500",
+    "immunities": [
+      "Terra",
+      "Invisibilidade"
+    ]
+  },
+  "Willi Wasp": {
+    "hp": "250",
+    "immunities": [
+      "Terra"
+    ]
+  },
+  "Xenia": {
+    "hp": "200",
+    "immunities": []
+  },
+  "Yachal": {
+    "hp": "5750",
+    "immunities": [
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Yaga The Crone": {
+    "hp": "620",
+    "immunities": [
+      "Energia",
+      "Invisibilidade"
+    ]
+  },
+  "Yeti": {
+    "hp": "950",
+    "immunities": [
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Zarabustor": {
+    "hp": "5100",
+    "immunities": [
+      "Fogo",
+      "Energia",
+      "Gelo",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Zevelon Duskbringer": {
+    "hp": "1400",
+    "immunities": [
+      "Terra",
+      "Morte",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Zomba": {
+    "hp": "300",
+    "immunities": [
+      "Invisibilidade"
+    ]
+  },
+  "Zulazza The Corruptor": {
+    "hp": "46500",
+    "immunities": [
+      "Energia",
+      "Paralisia",
+      "Invisibilidade"
+    ]
+  },
+  "Zushuka": {
+    "hp": "15000",
+    "immunities": [
+      "Gelo"
+    ]
+  }
+}
