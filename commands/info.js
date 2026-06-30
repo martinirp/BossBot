@@ -224,31 +224,21 @@ export default {
       if (confirmedBy && confirmedBy.includes('@')) mentions.push(confirmedBy);
     }
 
-    const gifPath = path.resolve('assets', 'bosses', `${bossName}.gif`);
     const webpPath = path.resolve('assets', 'bosses', `${bossName}.webp`);
 
-    if (fs.existsSync(gifPath)) {
-      await sock.sendMessage(remoteJid, {
-        video: fs.readFileSync(gifPath),
-        gifPlayback: true,
-        caption: reply.trim(),
-        mentions
-      }, { quoted: msg });
-
-      if (fs.existsSync(webpPath)) {
-        try {
-          await sock.sendMessage(remoteJid, {
-            sticker: fs.readFileSync(webpPath)
-          });
-        } catch (err) {
-          console.error('[info] Error sending sticker:', err);
-        }
+    if (fs.existsSync(webpPath)) {
+      try {
+        await sock.sendMessage(remoteJid, {
+          sticker: fs.readFileSync(webpPath)
+        });
+      } catch (err) {
+        console.error('[info] Error sending sticker:', err);
       }
-    } else {
-      await sock.sendMessage(remoteJid, {
-        text: reply.trim(),
-        mentions
-      }, { quoted: msg });
     }
+
+    await sock.sendMessage(remoteJid, {
+      text: reply.trim(),
+      mentions
+    }, { quoted: msg });
   }
 };
