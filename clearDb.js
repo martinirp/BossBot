@@ -8,9 +8,9 @@ const db = new sqlite3.Database(dbFile);
 console.log(`[DB-CLEAN] Abrindo banco de dados: ${dbFile}`);
 
 db.serialize(() => {
-  // 1. Limpar boss_last_seen exceto Zarabustor, Rotworm Queen, The Voice Of Ruin e Flamecaller Zazrak
+  // 1. Limpar boss_last_seen exceto bosses de teste e multi-locais importantes
   db.run(
-    "DELETE FROM boss_last_seen WHERE boss_name != 'Zarabustor' AND boss_name NOT LIKE 'Rotworm Queen%' AND boss_name NOT LIKE 'The Voice Of Ruin%' AND boss_name NOT LIKE 'Flamecaller Zazrak%'",
+    "DELETE FROM boss_last_seen WHERE boss_name != 'Zarabustor' AND boss_name NOT LIKE 'Rotworm Queen%' AND boss_name NOT LIKE 'The Voice Of Ruin%' AND boss_name NOT LIKE 'Flamecaller Zazrak%' AND boss_name NOT LIKE 'Tyrn%' AND boss_name NOT LIKE 'Dreadmaw%' AND boss_name NOT LIKE 'White Pale%' AND boss_name NOT LIKE 'Hirintror%' AND boss_name NOT LIKE 'Battlemaster Zunzu%' AND boss_name NOT LIKE 'Fleabringer%' AND boss_name NOT LIKE 'Albino Dragon%'",
     function (err) {
       if (err) {
         console.error('[DB-CLEAN] Erro ao limpar boss_last_seen:', err);
@@ -20,9 +20,9 @@ db.serialize(() => {
     }
   );
 
-  // 2. Limpar boss_check exceto Zarabustor, Rotworm Queen, The Voice Of Ruin e Flamecaller Zazrak
+  // 2. Limpar boss_check exceto bosses de teste e multi-locais importantes
   db.run(
-    "DELETE FROM boss_check WHERE boss_name != 'Zarabustor' AND boss_name NOT LIKE 'Rotworm Queen%' AND boss_name NOT LIKE 'The Voice Of Ruin%' AND boss_name NOT LIKE 'Flamecaller Zazrak%'",
+    "DELETE FROM boss_check WHERE boss_name != 'Zarabustor' AND boss_name NOT LIKE 'Rotworm Queen%' AND boss_name NOT LIKE 'The Voice Of Ruin%' AND boss_name NOT LIKE 'Flamecaller Zazrak%' AND boss_name NOT LIKE 'Tyrn%' AND boss_name NOT LIKE 'Dreadmaw%' AND boss_name NOT LIKE 'White Pale%' AND boss_name NOT LIKE 'Hirintror%' AND boss_name NOT LIKE 'Battlemaster Zunzu%' AND boss_name NOT LIKE 'Fleabringer%' AND boss_name NOT LIKE 'Albino Dragon%'",
     function (err) {
       if (err) {
         console.error('[DB-CLEAN] Erro ao limpar boss_check:', err);

@@ -1,5 +1,33 @@
 {
-  "Albino Dragon": {
+  "Albino Dragon (Ank)": {
+    "fixedDaysFrequency": {
+      "min": 0,
+      "max": 2
+    },
+    "spawnCount": 5
+  },
+  "Albino Dragon (Farmine)": {
+    "fixedDaysFrequency": {
+      "min": 0,
+      "max": 2
+    },
+    "spawnCount": 5
+  },
+  "Albino Dragon (Fenrock)": {
+    "fixedDaysFrequency": {
+      "min": 0,
+      "max": 2
+    },
+    "spawnCount": 5
+  },
+  "Albino Dragon (Goroma)": {
+    "fixedDaysFrequency": {
+      "min": 0,
+      "max": 2
+    },
+    "spawnCount": 5
+  },
+  "Albino Dragon (POI)": {
     "fixedDaysFrequency": {
       "min": 0,
       "max": 2
@@ -10,6 +38,12 @@
     "fixedDaysFrequency": {
       "min": 0,
       "max": 9
+    }
+  },
+  "Arachir The Ancient One": {
+    "fixedDaysFrequency": {
+      "min": 6,
+      "max": 8
     }
   },
   "Arachir the Ancient One": {
@@ -30,7 +64,14 @@
       "max": 12
     }
   },
-  "Battlemaster Zunzu": {
+  "Battlemaster Zunzu (East)": {
+    "fixedDaysFrequency": {
+      "min": 6,
+      "max": 8
+    },
+    "spawnCount": 2
+  },
+  "Battlemaster Zunzu (West)": {
     "fixedDaysFrequency": {
       "min": 6,
       "max": 8
@@ -73,6 +114,12 @@
       "max": 8
     }
   },
+  "Diblis The Fair": {
+    "fixedDaysFrequency": {
+      "min": 10,
+      "max": 15
+    }
+  },
   "Diblis the Fair": {
     "fixedDaysFrequency": {
       "min": 9,
@@ -91,7 +138,14 @@
       "max": 10
     }
   },
-  "Dreadmaw": {
+  "Dreadmaw (East)": {
+    "fixedDaysFrequency": {
+      "min": 12,
+      "max": 24
+    },
+    "spawnCount": 2
+  },
+  "Dreadmaw (West)": {
     "fixedDaysFrequency": {
       "min": 12,
       "max": 24
@@ -110,13 +164,6 @@
       "max": 175
     }
   },
-  "Flamecaller Zazrak (Surface)": {
-    "fixedDaysFrequency": {
-      "min": 6,
-      "max": 19
-    },
-    "spawnCount": 2
-  },
   "Flamecaller Zazrak (North)": {
     "fixedDaysFrequency": {
       "min": 6,
@@ -124,7 +171,28 @@
     },
     "spawnCount": 2
   },
-  "Fleabringer": {
+  "Flamecaller Zazrak (Surface)": {
+    "fixedDaysFrequency": {
+      "min": 6,
+      "max": 19
+    },
+    "spawnCount": 2
+  },
+  "Fleabringer (North)": {
+    "fixedDaysFrequency": {
+      "min": 1,
+      "max": 3
+    },
+    "spawnCount": 3
+  },
+  "Fleabringer (Sul)": {
+    "fixedDaysFrequency": {
+      "min": 1,
+      "max": 3
+    },
+    "spawnCount": 3
+  },
+  "Fleabringer (Surface)": {
     "fixedDaysFrequency": {
       "min": 1,
       "max": 3
@@ -179,6 +247,12 @@
       "max": 11
     }
   },
+  "Hairman The Huge": {
+    "fixedDaysFrequency": {
+      "min": 6,
+      "max": 9
+    }
+  },
   "Hairman the Huge": {
     "fixedDaysFrequency": {
       "min": 5,
@@ -197,12 +271,25 @@
       "max": 8
     }
   },
-  "Hirintror": {
+  "Hirintror (Mines)": {
     "fixedDaysFrequency": {
       "min": 10,
       "max": 29
     },
     "spawnCount": 2
+  },
+  "Hirintror (Nibelor)": {
+    "fixedDaysFrequency": {
+      "min": 10,
+      "max": 29
+    },
+    "spawnCount": 2
+  },
+  "Man In The Cave": {
+    "fixedDaysFrequency": {
+      "min": 13,
+      "max": 15
+    }
   },
   "Man in the Cave": {
     "fixedDaysFrequency": {
@@ -232,6 +319,12 @@
     "fixedDaysFrequency": {
       "min": 153,
       "max": 175
+    }
+  },
+  "Mr Punish": {
+    "fixedDaysFrequency": {
+      "min": 14,
+      "max": 20
     }
   },
   "Mr. Punish": {
@@ -401,14 +494,14 @@
       "max": 20
     }
   },
-  "The Voice Of Ruin (Esquerda)": {
+  "The Voice Of Ruin (Direita)": {
     "fixedDaysFrequency": {
       "min": 5,
       "max": 10
     },
     "spawnCount": 2
   },
-  "The Voice Of Ruin (Direita)": {
+  "The Voice Of Ruin (Esquerda)": {
     "fixedDaysFrequency": {
       "min": 5,
       "max": 10
@@ -421,7 +514,14 @@
       "max": 28
     }
   },
-  "Tyrn": {
+  "Tyrn (Drefia)": {
+    "fixedDaysFrequency": {
+      "min": 12,
+      "max": 28
+    },
+    "spawnCount": 2
+  },
+  "Tyrn (Liberty Bay)": {
     "fixedDaysFrequency": {
       "min": 12,
       "max": 28
@@ -446,7 +546,21 @@
       "max": 8
     }
   },
-  "White Pale": {
+  "White Pale (Darashia)": {
+    "fixedDaysFrequency": {
+      "min": 15,
+      "max": 28
+    },
+    "spawnCount": 3
+  },
+  "White Pale (Edron)": {
+    "fixedDaysFrequency": {
+      "min": 15,
+      "max": 28
+    },
+    "spawnCount": 3
+  },
+  "White Pale (Liberty Bay)": {
     "fixedDaysFrequency": {
       "min": 15,
       "max": 28
@@ -463,6 +577,12 @@
     "fixedDaysFrequency": {
       "min": 7,
       "max": 13
+    }
+  },
+  "Yaga The Crone": {
+    "fixedDaysFrequency": {
+      "min": 5,
+      "max": 7
     }
   },
   "Yaga the Crone": {
@@ -505,42 +625,6 @@
     "fixedDaysFrequency": {
       "min": 19,
       "max": 28
-    }
-  },
-  "Mr Punish": {
-    "fixedDaysFrequency": {
-      "min": 14,
-      "max": 20
-    }
-  },
-  "Hairman The Huge": {
-    "fixedDaysFrequency": {
-      "min": 6,
-      "max": 9
-    }
-  },
-  "Diblis The Fair": {
-    "fixedDaysFrequency": {
-      "min": 10,
-      "max": 15
-    }
-  },
-  "Arachir The Ancient One": {
-    "fixedDaysFrequency": {
-      "min": 6,
-      "max": 8
-    }
-  },
-  "Yaga The Crone": {
-    "fixedDaysFrequency": {
-      "min": 5,
-      "max": 7
-    }
-  },
-  "Man In The Cave": {
-    "fixedDaysFrequency": {
-      "min": 13,
-      "max": 15
     }
   }
 }
