@@ -26,21 +26,21 @@ export const bossIntervals = {
   },
   "Barbaria": {
     "fixedDaysFrequency": {
-      "min": 7,
-      "max": 13
+      "min": 8,
+      "max": 12
     }
   },
   "Battlemaster Zunzu": {
     "fixedDaysFrequency": {
-      "min": 5,
-      "max": 9
+      "min": 6,
+      "max": 8
     },
     "spawnCount": 2
   },
   "Big Boss Trolliver": {
     "fixedDaysFrequency": {
-      "min": 2,
-      "max": 6
+      "min": 3,
+      "max": 5
     }
   },
   "Captain Jones": {
@@ -57,8 +57,8 @@ export const bossIntervals = {
   },
   "Countess Sorrow": {
     "fixedDaysFrequency": {
-      "min": 13,
-      "max": 21
+      "min": 14,
+      "max": 20
     }
   },
   "Cublarc the Plunderer": {
@@ -69,8 +69,8 @@ export const bossIntervals = {
   },
   "Dharalion": {
     "fixedDaysFrequency": {
-      "min": 5,
-      "max": 9
+      "min": 6,
+      "max": 8
     }
   },
   "Diblis the Fair": {
@@ -81,8 +81,8 @@ export const bossIntervals = {
   },
   "Dracola": {
     "fixedDaysFrequency": {
-      "min": 13,
-      "max": 21
+      "min": 14,
+      "max": 20
     }
   },
   "Draptor": {
@@ -93,8 +93,8 @@ export const bossIntervals = {
   },
   "Dreadmaw": {
     "fixedDaysFrequency": {
-      "min": 11,
-      "max": 25
+      "min": 12,
+      "max": 24
     },
     "spawnCount": 2
   },
@@ -112,35 +112,35 @@ export const bossIntervals = {
   },
   "Flamecaller Zazrak (Surface)": {
     "fixedDaysFrequency": {
-      "min": 5,
-      "max": 20
+      "min": 6,
+      "max": 19
     },
     "spawnCount": 2
   },
   "Flamecaller Zazrak (North)": {
     "fixedDaysFrequency": {
-      "min": 5,
-      "max": 20
+      "min": 6,
+      "max": 19
     },
     "spawnCount": 2
   },
   "Fleabringer": {
     "fixedDaysFrequency": {
-      "min": 0,
-      "max": 4
+      "min": 1,
+      "max": 3
     },
     "spawnCount": 3
   },
   "Foreman Kneebiter": {
     "fixedDaysFrequency": {
-      "min": 2,
-      "max": 7
+      "min": 3,
+      "max": 6
     }
   },
   "Furyosa": {
     "fixedDaysFrequency": {
-      "min": 13,
-      "max": 29
+      "min": 14,
+      "max": 28
     }
   },
   "Gaz'haragoth": {
@@ -151,8 +151,8 @@ export const bossIntervals = {
   },
   "General Murius": {
     "fixedDaysFrequency": {
-      "min": 5,
-      "max": 9
+      "min": 6,
+      "max": 8
     }
   },
   "Ghazbaran": {
@@ -169,8 +169,8 @@ export const bossIntervals = {
   },
   "Grandfather Tridian": {
     "fixedDaysFrequency": {
-      "min": 5,
-      "max": 9
+      "min": 6,
+      "max": 8
     }
   },
   "Gravelord Oshuran": {
@@ -187,20 +187,20 @@ export const bossIntervals = {
   },
   "Hatebreeder": {
     "fixedDaysFrequency": {
-      "min": 5,
-      "max": 9
+      "min": 6,
+      "max": 8
     }
   },
   "High Templar Cobrass": {
     "fixedDaysFrequency": {
-      "min": 5,
-      "max": 9
+      "min": 6,
+      "max": 8
     }
   },
   "Hirintror": {
     "fixedDaysFrequency": {
-      "min": 9,
-      "max": 30
+      "min": 10,
+      "max": 29
     },
     "spawnCount": 2
   },
@@ -212,14 +212,14 @@ export const bossIntervals = {
   },
   "Massacre": {
     "fixedDaysFrequency": {
-      "min": 13,
-      "max": 21
+      "min": 14,
+      "max": 20
     }
   },
   "Midnight Panther": {
     "fixedDaysFrequency": {
-      "min": 2,
-      "max": 4
+      "min": 3,
+      "max": 3
     }
   },
   "Morgaroth": {
@@ -248,14 +248,14 @@ export const bossIntervals = {
   },
   "Ocyakao": {
     "fixedDaysFrequency": {
-      "min": 15,
-      "max": 26
+      "min": 16,
+      "max": 25
     }
   },
   "Omrafir": {
     "fixedDaysFrequency": {
-      "min": 13,
-      "max": 28
+      "min": 14,
+      "max": 27
     }
   },
   "Oodok Witchmaster": {
@@ -313,26 +313,26 @@ export const bossIntervals = {
   },
   "Rukor Zad": {
     "fixedDaysFrequency": {
-      "min": 5,
-      "max": 10
+      "min": 6,
+      "max": 9
     }
   },
   "Shlorg": {
     "fixedDaysFrequency": {
-      "min": 13,
-      "max": 29
+      "min": 14,
+      "max": 28
     }
   },
   "Sir Valorcrest": {
     "fixedDaysFrequency": {
-      "min": 4,
-      "max": 9
+      "min": 5,
+      "max": 8
     }
   },
   "Smuggler Baron Silvertoe": {
     "fixedDaysFrequency": {
-      "min": 7,
-      "max": 15
+      "min": 8,
+      "max": 14
     }
   },
   "Teleskor": {
@@ -349,8 +349,8 @@ export const bossIntervals = {
   },
   "The Big Bad One": {
     "fixedDaysFrequency": {
-      "min": 5,
-      "max": 11
+      "min": 6,
+      "max": 10
     }
   },
   "The Blightfather": {
@@ -361,32 +361,32 @@ export const bossIntervals = {
   },
   "The Evil Eye": {
     "fixedDaysFrequency": {
-      "min": 5,
-      "max": 12
+      "min": 6,
+      "max": 11
     }
   },
   "The Frog Prince": {
     "fixedDaysFrequency": {
-      "min": 11,
-      "max": 19
+      "min": 12,
+      "max": 18
     }
   },
   "The Handmaiden": {
     "fixedDaysFrequency": {
-      "min": 13,
-      "max": 21
+      "min": 14,
+      "max": 20
     }
   },
   "The Imperor": {
     "fixedDaysFrequency": {
-      "min": 13,
-      "max": 21
+      "min": 14,
+      "max": 20
     }
   },
   "The Old Whopper": {
     "fixedDaysFrequency": {
-      "min": 4,
-      "max": 10
+      "min": 5,
+      "max": 9
     }
   },
   "The Pale Count": {
@@ -397,8 +397,8 @@ export const bossIntervals = {
   },
   "The Plasmother": {
     "fixedDaysFrequency": {
-      "min": 13,
-      "max": 21
+      "min": 14,
+      "max": 20
     }
   },
   "The Voice Of Ruin (Esquerda)": {
@@ -417,39 +417,39 @@ export const bossIntervals = {
   },
   "The Welter": {
     "fixedDaysFrequency": {
-      "min": 15,
-      "max": 29
+      "min": 16,
+      "max": 28
     }
   },
   "Tyrn": {
     "fixedDaysFrequency": {
-      "min": 11,
-      "max": 29
+      "min": 12,
+      "max": 28
     },
     "spawnCount": 2
   },
   "Tzumrah The Dazzler": {
     "fixedDaysFrequency": {
-      "min": 19,
-      "max": 29
+      "min": 20,
+      "max": 28
     }
   },
   "Undead Cavebear": {
     "fixedDaysFrequency": {
-      "min": 1,
-      "max": 4
+      "min": 2,
+      "max": 3
     }
   },
   "Warlord Ruzad": {
     "fixedDaysFrequency": {
-      "min": 5,
-      "max": 9
+      "min": 6,
+      "max": 8
     }
   },
   "White Pale": {
     "fixedDaysFrequency": {
-      "min": 14,
-      "max": 29
+      "min": 15,
+      "max": 28
     },
     "spawnCount": 3
   },
@@ -461,8 +461,8 @@ export const bossIntervals = {
   },
   "Xenia": {
     "fixedDaysFrequency": {
-      "min": 6,
-      "max": 14
+      "min": 7,
+      "max": 13
     }
   },
   "Yaga the Crone": {
@@ -473,8 +473,8 @@ export const bossIntervals = {
   },
   "Yeti": {
     "fixedDaysFrequency": {
-      "min": 17,
-      "max": 25
+      "min": 18,
+      "max": 24
     }
   },
   "Zarabustor": {
@@ -485,8 +485,8 @@ export const bossIntervals = {
   },
   "Zevelon Duskbringer": {
     "fixedDaysFrequency": {
-      "min": 5,
-      "max": 10
+      "min": 6,
+      "max": 9
     }
   },
   "Zomba": {
@@ -503,8 +503,44 @@ export const bossIntervals = {
   },
   "Zushuka": {
     "fixedDaysFrequency": {
-      "min": 18,
-      "max": 29
+      "min": 19,
+      "max": 28
+    }
+  },
+  "Mr Punish": {
+    "fixedDaysFrequency": {
+      "min": 14,
+      "max": 20
+    }
+  },
+  "Hairman The Huge": {
+    "fixedDaysFrequency": {
+      "min": 6,
+      "max": 9
+    }
+  },
+  "Diblis The Fair": {
+    "fixedDaysFrequency": {
+      "min": 10,
+      "max": 15
+    }
+  },
+  "Arachir The Ancient One": {
+    "fixedDaysFrequency": {
+      "min": 6,
+      "max": 8
+    }
+  },
+  "Yaga The Crone": {
+    "fixedDaysFrequency": {
+      "min": 5,
+      "max": 7
+    }
+  },
+  "Man In The Cave": {
+    "fixedDaysFrequency": {
+      "min": 13,
+      "max": 15
     }
   }
 };\n
