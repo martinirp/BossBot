@@ -34,15 +34,13 @@ const formatSeenAt = (seenAtStr) => {
   return `${dateParts[2]}/${dateParts[1]}/${dateParts[0]} ${parts[1]}`;
 };
 
-// Helper to format Date in "fake UTC" (matching Brazil timezone digits) to "DD/MM/YYYY HH:mm"
+// Helper to format Date in "fake UTC" (matching Brazil timezone digits) to "DD/MM/YYYY"
 const formatFakeUtcDate = (date) => {
   const pad = (n) => String(n).padStart(2, '0');
   const day = pad(date.getUTCDate());
   const month = pad(date.getUTCMonth() + 1);
   const year = date.getUTCFullYear();
-  const hours = pad(date.getUTCHours());
-  const minutes = pad(date.getUTCMinutes());
-  return `${day}/${month}/${year} ${hours}:${minutes}`;
+  return `${day}/${month}/${year}`;
 };
 
 // Calculates prediction based on seenDate, minDays, and maxDays
@@ -82,47 +80,21 @@ const calculatePrediction = (seenAtStr, minDays, maxDays, confirmedBy) => {
 const formatBossInfo = async (bossName, intervalName, record) => {
   const bossIntervals = loadIntervals();
   const interval = bossIntervals[intervalName];
-  let spawnIntervalLine = '';
   let predictionText = 'Indefinida (necessita de um avistamento prévio)';
 
   if (interval && interval.fixedDaysFrequency) {
     const min = interval.fixedDaysFrequency.min;
     const max = interval.fixedDaysFrequency.max;
-    
-    if (min === max) {
-      spawnIntervalLine = `📅 *Renasce a cada:* ${min} dia(s)\n`;
-    } else {
-      spawnIntervalLine = `📅 *Renasce de:* ${min} a ${max} dias\n`;
-    }
 
     if (record && record.seen_at) {
       predictionText = calculatePrediction(record.seen_at, min, max, record.confirmed_by);
     }
   } else {
-    spawnIntervalLine = `📅 *Renasce de:* Sem intervalo de spawn cadastrado\n`;
     predictionText = 'Sem previsão disponível';
   }
 
-  let text = '';
-  if (record && record.seen_at) {
-    const confirmer = record.confirmed_by;
-    if (confirmer === 'TibiaData_API') {
-      text += `👁️ *Visto:* ${formatSeenAt(record.seen_at)} (por TibiaData API)\n`;
-    } else {
-      text += `👁️ *Visto:* ${formatSeenAt(record.seen_at)}\n`;
-    }
-  } else {
-    text += `👁️ *Visto:* Nenhum avistamento registrado ainda\n`;
-  }
-
-  text += spawnIntervalLine;
-  text += `🔮 *Previsão:* ${predictionText}\n`;
-
-  const recentTimes = await db.getBossRecentTimes(intervalName);
-  if (recentTimes && recentTimes.length > 0) {
-    text += `⏰ *Últimos horários de morte:* ${recentTimes.join(', ')}\n`;
-  }
-
+  // 1. Build map line
+  let mapLine = '';
   const bossLocations = loadLocations();
   const locations = bossLocations[bossName] || [];
   if (locations.length > 0) {
@@ -135,13 +107,43 @@ const formatBossInfo = async (bossName, intervalName, record) => {
     if (city) {
       const link = getLinkForCity(bossName, locations, city);
       if (link) {
-        text += `🗺️ *Mapa:* ${link}\n`;
+        mapLine = `🗺️ *Mapa:* ${link}\n`;
       }
     } else {
       const links = locations.map(l => l.link);
-      text += `🗺️ *Mapa:* ${links.join(', ')}\n`;
+      mapLine = `🗺️ *Mapa:* ${links.join(', ')}\n`;
     }
   }
+
+  // 2. Build prediction line
+  const predictionLine = `🔮 *Previsão:* ${predictionText}\n`;
+
+  // 3. Build seen line
+  let seenLine = '';
+  if (record && record.seen_at) {
+    const confirmer = record.confirmed_by;
+    if (confirmer === 'TibiaData_API') {
+      seenLine = `👁️ *Visto:* ${formatSeenAt(record.seen_at)} (por TibiaData API)\n`;
+    } else {
+      seenLine = `👁️ *Visto:* ${formatSeenAt(record.seen_at)}\n`;
+    }
+  } else {
+    seenLine = `👁️ *Visto:* Nenhum avistamento registrado ainda\n`;
+  }
+
+  // 4. Build recent times line
+  let recentTimesLine = '';
+  const recentTimes = await db.getBossRecentTimes(intervalName);
+  if (recentTimes && recentTimes.length > 0) {
+    recentTimesLine = `⏰ *Últimos horários de morte:* ${recentTimes.join(', ')}\n`;
+  }
+
+  // 5. Combine in the requested order (map, prediction, seen, recentTimes)
+  let text = '';
+  text += mapLine;
+  text += predictionLine;
+  text += seenLine;
+  text += recentTimesLine;
 
   return { text, confirmedBy: record ? record.confirmed_by : null };
 };
@@ -196,7 +198,23 @@ export default {
       statsLine = `❤️ *HP:* ${hpText}\n🛡️ *Imunidades:* ${imunesText}\n\n`;
     }
 
-    let reply = `*${bossName}*\n${statsLine}`;
+    const bossIntervals = loadIntervals();
+    const sampleIntervalName = cities ? `${bossName} (${cities[0]})` : bossName;
+    const interval = bossIntervals[sampleIntervalName];
+    let spawnIntervalLine = '';
+    if (interval && interval.fixedDaysFrequency) {
+      const min = interval.fixedDaysFrequency.min;
+      const max = interval.fixedDaysFrequency.max;
+      if (min === max) {
+        spawnIntervalLine = `📅 *Renasce a cada:* ${min} dia(s)\n`;
+      } else {
+        spawnIntervalLine = `📅 *Renasce de:* ${min} a ${max} dias\n`;
+      }
+    } else {
+      spawnIntervalLine = `📅 *Renasce de:* Sem intervalo de spawn cadastrado\n`;
+    }
+
+    let reply = `*${bossName}*\n${statsLine}${spawnIntervalLine}\n`;
 
     if (cities) {
       for (const city of cities) {

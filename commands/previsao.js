@@ -34,15 +34,13 @@ export default {
         return `${dateParts[2]}/${dateParts[1]}/${dateParts[0]} ${parts[1]}`;
       };
 
-      // Helper to format Date in "fake UTC" (matching Brazil timezone digits) to "DD/MM/YYYY HH:mm"
+      // Helper to format Date in "fake UTC" (matching Brazil timezone digits) to "DD/MM/YYYY"
       const formatFakeUtcDate = (date) => {
         const pad = (n) => String(n).padStart(2, '0');
         const day = pad(date.getUTCDate());
         const month = pad(date.getUTCMonth() + 1);
         const year = date.getUTCFullYear();
-        const hours = pad(date.getUTCHours());
-        const minutes = pad(date.getUTCMinutes());
-        return `${day}/${month}/${year} ${hours}:${minutes}`;
+        return `${day}/${month}/${year}`;
       };
 
       const today = new Date();
