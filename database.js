@@ -687,11 +687,11 @@ export function getAllUserNames() {
     );
   });
 }
-export function getBossRecentTimes(bossName, limit = 10) {
+export function getBossRecentTimes(bossName) {
   return new Promise((resolve, reject) => {
     db.all(
-      `SELECT created_at FROM boss_reports WHERE boss_name = ? OR boss_name LIKE ? ORDER BY created_at DESC LIMIT ?`,
-      [bossName, `${bossName} (%`, limit],
+      `SELECT created_at FROM boss_reports WHERE boss_name = ? OR boss_name LIKE ? ORDER BY created_at DESC`,
+      [bossName, `${bossName} (%`],
       (err, rows) => {
         if (err) return reject(err);
         if (!rows || rows.length === 0) return resolve([]);
