@@ -1,5 +1,5 @@
 import * as db from '../database.js';
-import { findBossMatch, normalizeBossName, loadBosses, getBossCities, CITY_ALIASES } from '../commands.js';
+import { findBossMatch, normalizeBossName, loadBosses, getBossCities, CITY_ALIASES, loadLocations, getLinkForCity } from '../commands.js';
 import { enqueueNotification } from '../notifier.js';
 import fs from 'fs';
 
@@ -244,14 +244,31 @@ export default {
       bossHeader = `⚔️ *${matchedBossName.toUpperCase()}* (${matchedCity})`;
     }
 
+    const bossLocations = loadLocations();
+    const locations = bossLocations[matchedBossName] || [];
+    let mapLine = '';
+    if (locations.length > 0) {
+      if (matchedCity) {
+        const link = getLinkForCity(matchedBossName, locations, matchedCity);
+        if (link) {
+          mapLine = `\n🗺️ *Mapa:* ${link}`;
+        }
+      } else {
+        const links = locations.map(l => l.link);
+        mapLine = `\n🗺️ *Mapa:* ${links.join(', ')}`;
+      }
+    }
+
+    const baseText = `📢 BOSS CONFIRMADO!\n${bossHeader}\n👤 Por: @${senderPhone}\n🕒 Horário: ${brtTimeStr}${apiNote}${mapLine}`;
+
     if (subscribers.length === 0) {
       await sock.sendMessage(remoteJid, {
-        text: `📢 BOSS CONFIRMADO!\n${bossHeader}\n👤 Por: @${senderPhone}\n🕒 Horário: ${brtTimeStr}${apiNote}\n📭 Não há membros inscritos para notificação no momento.`,
+        text: `${baseText}\n📭 Não há membros inscritos para notificação no momento.`,
         mentions: [senderJid]
       }, { quoted: msg });
     } else {
       await sock.sendMessage(remoteJid, {
-        text: `📢 BOSS CONFIRMADO!\n${bossHeader}\n👤 Por: @${senderPhone}\n🕒 Horário: ${brtTimeStr}${apiNote}\n🔔 Disparando notificações\n📋 ${subscribers.length} inscrito(s)`,
+        text: `${baseText}\n🔔 Disparando notificações\n📋 ${subscribers.length} inscrito(s)`,
         mentions: [senderJid]
       }, { quoted: msg });
 

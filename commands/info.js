@@ -1,5 +1,5 @@
 import * as db from '../database.js';
-import { findBossMatch, loadBosses, getBossCities } from '../commands.js';
+import { findBossMatch, loadBosses, getBossCities, loadLocations, getLinkForCity } from '../commands.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -13,14 +13,7 @@ const loadIntervals = () => {
   }
 };
 
-const loadLocations = () => {
-  try {
-    const jsonPath = path.resolve('boss_locations.json');
-    return JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
-  } catch (err) {
-    return {};
-  }
-};
+// loadLocations imported from commands.js
 
 // Helper to format seen_at timestamp from "YYYY-MM-DD HH:mm" to "DD/MM/YYYY HH:mm"
 const formatSeenAt = (seenAtStr) => {
@@ -74,47 +67,7 @@ const calculatePrediction = (seenAtStr, minDays, maxDays, confirmedBy) => {
   return predictionStr + extraStr;
 };
 
-const getLinkForCity = (bossName, locations, city) => {
-  const normCity = city.toLowerCase();
-  for (const loc of locations) {
-    const desc = loc.description.toLowerCase();
-    
-    if (normCity === 'ank' && (desc.includes('ankrahmun') || desc.includes('ank'))) return loc.link;
-    if (normCity === 'poi' && (desc.includes('pits of inferno') || desc.includes('poi'))) return loc.link;
-    if (normCity === 'lb' && (desc.includes('liberty bay') || desc.includes('lb'))) return loc.link;
-    if (normCity === 'dara' && (desc.includes('darashia') || desc.includes('dara'))) return loc.link;
-    if (normCity === 'ab' && (desc.includes("ab'dendriel") || desc.includes('ab'))) return loc.link;
-    if (normCity === 'yala' && (desc.includes('yalahar') || desc.includes('yala'))) return loc.link;
-    
-    if (desc.includes(normCity)) {
-      return loc.link;
-    }
-  }
-
-  const MULTI_CITY_BOSSES = {
-    "rotworm queen": ["Ab'Dendriel", "Darashia", "Edron", "Liberty Bay"],
-    "the voice of ruin": ["Esquerda", "Direita"],
-    "flamecaller zazrak": ["Surface", "North"],
-    "tyrn": ["Liberty Bay", "Drefia"],
-    "dreadmaw": ["West", "East"],
-    "white pale": ["Edron", "Darashia", "Liberty Bay"],
-    "hirintror": ["Mines", "Nibelor"],
-    "battlemaster zunzu": ["West", "East"],
-    "fleabringer": ["Surface", "North", "Sul"],
-    "albino dragon": ["Farmine", "Fenrock", "Goroma", "POI", "Ank"]
-  };
-
-  const cities = MULTI_CITY_BOSSES[bossName.toLowerCase()];
-  if (cities) {
-    const cityIndex = cities.findIndex(c => c.toLowerCase() === normCity);
-    if (cityIndex !== -1 && locations[cityIndex]) {
-      return locations[cityIndex].link;
-    }
-  }
-
-  if (locations.length === 1) return locations[0].link;
-  return null;
-};
+// getLinkForCity imported from commands.js
 
 // Helper to format the boss details block
 const formatBossInfo = async (bossName, intervalName, record) => {

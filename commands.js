@@ -155,3 +155,41 @@ export function getBossCities(bossName) {
   const normalized = normalizeBossName(bossName);
   return MULTI_CITY_BOSSES[normalized] || null;
 }
+
+export function loadLocations() {
+  try {
+    const jsonPath = path.resolve('boss_locations.json');
+    return JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+  } catch (err) {
+    return {};
+  }
+}
+
+export function getLinkForCity(bossName, locations, city) {
+  const normCity = city.toLowerCase();
+  for (const loc of locations) {
+    const desc = loc.description.toLowerCase();
+    
+    if (normCity === 'ank' && (desc.includes('ankrahmun') || desc.includes('ank'))) return loc.link;
+    if (normCity === 'poi' && (desc.includes('pits of inferno') || desc.includes('poi'))) return loc.link;
+    if (normCity === 'lb' && (desc.includes('liberty bay') || desc.includes('lb'))) return loc.link;
+    if (normCity === 'dara' && (desc.includes('darashia') || desc.includes('dara'))) return loc.link;
+    if (normCity === 'ab' && (desc.includes("ab'dendriel") || desc.includes('ab'))) return loc.link;
+    if (normCity === 'yala' && (desc.includes('yalahar') || desc.includes('yala'))) return loc.link;
+    
+    if (desc.includes(normCity)) {
+      return loc.link;
+    }
+  }
+
+  const cities = MULTI_CITY_BOSSES[bossName.toLowerCase()];
+  if (cities) {
+    const cityIndex = cities.findIndex(c => c.toLowerCase() === normCity);
+    if (cityIndex !== -1 && locations[cityIndex]) {
+      return locations[cityIndex].link;
+    }
+  }
+
+  if (locations.length === 1) return locations[0].link;
+  return null;
+}
