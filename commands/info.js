@@ -66,11 +66,11 @@ const calculatePrediction = (seenAtStr, minDays, maxDays, confirmedBy) => {
   let extraStr = "";
   if (minDays !== maxDays) {
     if (today >= maxDate) {
-      extraStr = " (Atrasado / Alta chance)";
+      extraStr = " (🟢 No radar / 🟢 Alta chance)";
     } else if (today >= minDate) {
-      extraStr = " (Pode nascer)";
+      extraStr = " (🟢 No radar / 🟢 Com chance)";
     } else {
-      extraStr = " (Aguardando período)";
+      extraStr = " (🔴 Fora do radar / 🔴 Sem chance)";
     }
   }
   return predictionStr + extraStr;
@@ -82,52 +82,40 @@ const calculatePrediction = (seenAtStr, minDays, maxDays, confirmedBy) => {
 const formatBossInfo = async (bossName, intervalName, record) => {
   const bossIntervals = loadIntervals();
   const interval = bossIntervals[intervalName];
-  let avgDaysText = 'N/A';
+  let spawnIntervalLine = '';
   let predictionText = 'Indefinida (necessita de um avistamento prévio)';
 
   if (interval && interval.fixedDaysFrequency) {
     const min = interval.fixedDaysFrequency.min;
     const max = interval.fixedDaysFrequency.max;
-    const avg = (min + max) / 2;
     
     if (min === max) {
-      avgDaysText = `${min} dia(s)`;
+      spawnIntervalLine = `📅 *Nasce a cada:* ${min} dia(s)\n`;
     } else {
-      avgDaysText = `${avg} dias (Faixa: ${min} a ${max} dias)`;
+      spawnIntervalLine = `📅 *Nasce de:* ${min} a ${max} dias\n`;
     }
 
     if (record && record.seen_at) {
       predictionText = calculatePrediction(record.seen_at, min, max, record.confirmed_by);
     }
   } else {
-    avgDaysText = 'Sem intervalo de spawn cadastrado';
+    spawnIntervalLine = `📅 *Nasce de:* Sem intervalo de spawn cadastrado\n`;
     predictionText = 'Sem previsão disponível';
   }
 
   let text = '';
   if (record && record.seen_at) {
     const confirmer = record.confirmed_by;
-    let details = '';
-    if (!confirmer) {
-      details = 'Desconhecido';
-    } else if (confirmer === 'flop') {
-      details = 'Flop (Perdido)';
-    } else if (confirmer === 'TibiaData_API') {
-      details = 'TibiaData API';
-    } else if (confirmer === 'system_adjust') {
-      details = 'Sistema';
-    } else if (confirmer.includes('@')) {
-      const phone = confirmer.split('@')[0];
-      details = `@${phone}`;
+    if (confirmer === 'TibiaData_API') {
+      text += `👁️ *Visto:* ${formatSeenAt(record.seen_at)} (por TibiaData API)\n`;
     } else {
-      details = confirmer;
+      text += `👁️ *Visto:* ${formatSeenAt(record.seen_at)}\n`;
     }
-    text += `👁️ *Último morto:* ${formatSeenAt(record.seen_at)} (por ${details})\n`;
   } else {
-    text += `👁️ *Último morto:* Nenhum avistamento registrado ainda\n`;
+    text += `👁️ *Visto:* Nenhum avistamento registrado ainda\n`;
   }
 
-  text += `📅 *Média de spawn:* ${avgDaysText}\n`;
+  text += spawnIntervalLine;
   text += `🔮 *Previsão:* ${predictionText}\n`;
 
   const recentTimes = await db.getBossRecentTimes(intervalName);
@@ -205,7 +193,7 @@ export default {
       statsLine = `❤️ *HP:* ${hpText}\n🛡️ *Imunidades:* ${imunesText}\n\n`;
     }
 
-    let reply = `ℹ️ *Informações do Boss:* ${bossName}\n${statsLine}`;
+    let reply = `*${bossName}*\n${statsLine}`;
 
     if (cities) {
       for (const city of cities) {
@@ -213,15 +201,13 @@ export default {
         const record = await db.getBossLastSeen(cityBossName, world);
         
         reply += `📍 *${city}*:\n`;
-        const { text, confirmedBy } = await formatBossInfo(bossName, cityBossName, record);
+        const { text } = await formatBossInfo(bossName, cityBossName, record);
         reply += text + '\n';
-        if (confirmedBy && confirmedBy.includes('@')) mentions.push(confirmedBy);
       }
     } else {
       const record = await db.getBossLastSeen(bossName, world);
-      const { text, confirmedBy } = await formatBossInfo(bossName, bossName, record);
+      const { text } = await formatBossInfo(bossName, bossName, record);
       reply += text;
-      if (confirmedBy && confirmedBy.includes('@')) mentions.push(confirmedBy);
     }
 
     const webpPath = path.resolve('assets', 'bosses', `${bossName}.webp`);

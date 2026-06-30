@@ -78,9 +78,9 @@ export default {
          let extraStr = "";
          if (minDays !== maxDays) {
            if (today >= maxDate) {
-               extraStr = " (Atrasado / Alta chance)";
+               extraStr = " (🟢 No radar / 🟢 Alta chance)";
            } else if (today >= minDate) {
-               extraStr = " (Pode nascer)";
+               extraStr = " (🟢 No radar / 🟢 Com chance)";
            } else {
                // Ainda não está na faixa que pode nascer, então pulamos
                continue;
