@@ -5,6 +5,29 @@ import fs from 'fs';
 import { commandHandler } from './commandHandler.js';
 import * as db from './database.js';
 
+export let sockInstance = null;
+export let mockSendGroupMessage = null;
+
+export function setMockSendGroupMessage(fn) {
+  mockSendGroupMessage = fn;
+}
+
+export async function sendGroupMessage(jid, text, mentions = []) {
+  if (mockSendGroupMessage) {
+    return mockSendGroupMessage(jid, text, mentions);
+  }
+  if (!sockInstance) {
+    console.error('[whatsapp] Cannot send message: sockInstance is null');
+    return;
+  }
+  try {
+    await sockInstance.sendMessage(jid, { text, mentions });
+    console.log(`[whatsapp] Mensagem enviada para ${jid}`);
+  } catch (err) {
+    console.error(`[whatsapp] Failed to send message to ${jid}:`, err);
+  }
+}
+
 export async function connectToWhatsApp() {
   await commandHandler.loadCommands(); // Carrega os comandos
 
@@ -17,6 +40,8 @@ export async function connectToWhatsApp() {
     printQRInTerminal: false,
     logger: pino({ level: 'error' })
   });
+
+  sockInstance = sock;
 
   sock.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect, qr } = update;

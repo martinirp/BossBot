@@ -2,7 +2,8 @@ import cron from 'node-cron';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
-import { getAllBossesLastSeen, setBossLastSeenDate, getUniqueWorlds, setGlobalSetting, getGlobalSetting } from './database.js';
+import { getAllBossesLastSeen, setBossLastSeenDate, getUniqueWorlds, setGlobalSetting, getGlobalSetting, revertBossLastSeen, getBossLastSeen, getAllowedGroups, getGroupWorld } from './database.js';
+import { sendGroupMessage } from './whatsapp.js';
 
 dotenv.config();
 
@@ -45,20 +46,13 @@ export async function syncWorldKillStatistics(targetWorld) {
         entries.forEach(e => { currentSum += e.last_day_killed; });
         await setGlobalSetting(`tibiadata_checksum_${targetWorld}`, currentSum);
 
-        // Filtra apenas os que morreram no dia anterior
-        const killedYesterday = entries.filter(e => e.last_day_killed > 0);
-
-        if (killedYesterday.length === 0) {
-            console.log(`[SYNC] Nenhum boss reportado no dia anterior pelo TibiaData para ${targetWorld}.`);
+        if (entries.length === 0) {
+            console.log(`[SYNC] TibiaData API retornou 0 criaturas para o mundo ${targetWorld}. Sincronização abortada.`);
             return;
         }
 
+        const killedYesterday = entries.filter(e => e.last_day_killed > 0);
         const allLocal = await getAllBossesLastSeen(targetWorld);
-        // Guarda tanto a data quanto quem confirmou, para proteger registros de usuários reais
-        const localMap = {};
-        allLocal.forEach(r => {
-            localMap[r.boss_name.toLowerCase()] = { seen_at: r.seen_at, confirmed_by: r.confirmed_by };
-        });
 
         // O TibiaData atualiza Kill Statistics uma vez por dia:
         //   - ~22:15 BRT durante o horário de verão europeu (CEST = UTC+2)
@@ -81,6 +75,71 @@ export async function syncWorldKillStatistics(targetWorld) {
         // Registra como 00:00 do dia D: a API informa apenas a DATA do ciclo, não a hora exata.
         const fallbackDate = `${year}-${month}-${day} 00:00`;
         const fallbackDayStr = `${year}-${month}-${day}`;
+
+        // ─── DETECÇÃO E REVERSÃO DE FALSOS ALARMES ───
+        const killedBossNames = new Set(killedYesterday.map(k => k.race.toLowerCase()));
+        
+        function getBaseBossName(fullName) {
+            const match = fullName.match(/^(.+?)\s*\(/);
+            return match ? match[1].trim() : fullName.trim();
+        }
+
+        for (const localRecord of allLocal) {
+            const confirmedByHuman = localRecord.confirmed_by !== 'TibiaData_API' && 
+                                     localRecord.confirmed_by !== 'system_adjust' && 
+                                     localRecord.confirmed_by !== 'flop';
+            
+            if (!confirmedByHuman) continue;
+
+            const localDayStr = localRecord.seen_at.split(' ')[0]; // Ex: 2026-06-29
+            if (localDayStr === fallbackDayStr) {
+                const baseName = getBaseBossName(localRecord.boss_name).toLowerCase();
+                
+                if (!killedBossNames.has(baseName)) {
+                    console.log(`[SYNC-WARN] Falso alarme detectado em ${targetWorld}: ${localRecord.boss_name} por ${localRecord.confirmed_by}. Revertendo...`);
+                    
+                    // Reverter o boss no banco
+                    await revertBossLastSeen(localRecord.boss_name, targetWorld);
+                    
+                    // Notificar grupos
+                    const restoredRecord = await getBossLastSeen(localRecord.boss_name, targetWorld);
+                    let restoredInfo = 'Sem registros anteriores.';
+                    const mentions = [localRecord.confirmed_by];
+                    
+                    if (restoredRecord) {
+                        const [rDate, rTime] = restoredRecord.seen_at.split(' ');
+                        const [rYear, rMonth, rDay] = rDate.split('-');
+                        const rPhone = restoredRecord.confirmed_by.split('@')[0];
+                        restoredInfo = `${rDay}/${rMonth}/${rYear} às ${rTime} (Confirmado por: @${rPhone})`;
+                        if (restoredRecord.confirmed_by.includes('@')) {
+                            mentions.push(restoredRecord.confirmed_by);
+                        }
+                    }
+
+                    const userPhone = localRecord.confirmed_by.split('@')[0];
+                    const warningText = `⚠️ *ALERTA FALSO DETECTADO!*\n\n` +
+                                        `O boss *${localRecord.boss_name.toUpperCase()}* foi reportado ontem por @${userPhone}, mas as estatísticas oficiais da CipSoft (TibiaData) indicam que ele *não morreu*.\n\n` +
+                                        `↩️ A última aparição dele foi revertida para:\n📅 *${restoredInfo}*\n\n` +
+                                        `⚠️ *Atenção:* Evitem confirmar bosses sem certeza para não comprometer os tempos e previsões!`;
+                    
+                    const allowedGroups = await getAllowedGroups();
+                    for (const groupJid of allowedGroups) {
+                        const groupWorld = await getGroupWorld(groupJid);
+                        if (groupWorld === targetWorld) {
+                            await sendGroupMessage(groupJid, warningText, mentions);
+                        }
+                    }
+                }
+            }
+        }
+        // ─────────────────────────────────────────────
+
+        // Busca o estado local mais atualizado após possíveis reversões
+        const allLocalAfterRevert = await getAllBossesLastSeen(targetWorld);
+        const localMap = {};
+        allLocalAfterRevert.forEach(r => {
+            localMap[r.boss_name.toLowerCase()] = { seen_at: r.seen_at, confirmed_by: r.confirmed_by };
+        });
 
         let syncCount = 0;
 

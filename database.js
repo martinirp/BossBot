@@ -116,6 +116,11 @@ export function initDb() {
         db.run(`ALTER TABLE boss_last_seen ADD COLUMN city TEXT`, () => {});
         db.run(`ALTER TABLE boss_check ADD COLUMN city TEXT`, () => {});
 
+        // Migrate boss_last_seen to include prev_* columns for false alarm reverts
+        db.run(`ALTER TABLE boss_last_seen ADD COLUMN prev_confirmed_by TEXT`, () => {});
+        db.run(`ALTER TABLE boss_last_seen ADD COLUMN prev_seen_at TEXT`, () => {});
+        db.run(`ALTER TABLE boss_last_seen ADD COLUMN prev_city TEXT`, () => {});
+
         // Migrate allowed_groups: add tibia_world column if not exists
         db.run(`ALTER TABLE allowed_groups ADD COLUMN tibia_world TEXT`, () => {
           db.run(`UPDATE allowed_groups SET tibia_world = ? WHERE tibia_world IS NULL`, [defaultWorld]);
@@ -476,12 +481,59 @@ export function setBossLastSeenDate(bossName, jid, seenAt, world = 'Quelibra', c
   const cleanJid = (jid && jid.includes('@')) ? jidNormalizedUser(jid) : jid;
   return new Promise((resolve, reject) => {
     db.run(
-      `INSERT INTO boss_last_seen (world, boss_name, confirmed_by, seen_at, city) VALUES (?, ?, ?, ?, ?)
-       ON CONFLICT(world, boss_name) DO UPDATE SET confirmed_by = excluded.confirmed_by, seen_at = excluded.seen_at, city = excluded.city`,
+      `INSERT INTO boss_last_seen (world, boss_name, confirmed_by, seen_at, city, prev_confirmed_by, prev_seen_at, prev_city) 
+       VALUES (?, ?, ?, ?, ?, NULL, NULL, NULL)
+       ON CONFLICT(world, boss_name) DO UPDATE SET 
+         prev_confirmed_by = boss_last_seen.confirmed_by, 
+         prev_seen_at = boss_last_seen.seen_at, 
+         prev_city = boss_last_seen.city, 
+         confirmed_by = excluded.confirmed_by, 
+         seen_at = excluded.seen_at, 
+         city = excluded.city`,
       [world, bossName, cleanJid, seenAt, city],
       function (err) {
         if (err) return reject(err);
         resolve();
+      }
+    );
+  });
+}
+
+export function revertBossLastSeen(bossName, world = 'Quelibra') {
+  return new Promise((resolve, reject) => {
+    db.get(
+      `SELECT prev_seen_at FROM boss_last_seen WHERE boss_name = ? AND world = ?`,
+      [bossName, world],
+      (err, row) => {
+        if (err) return reject(err);
+        if (!row) return resolve(false);
+
+        if (!row.prev_seen_at) {
+          db.run(
+            `DELETE FROM boss_last_seen WHERE boss_name = ? AND world = ?`,
+            [bossName, world],
+            function (err) {
+              if (err) return reject(err);
+              resolve(true);
+            }
+          );
+        } else {
+          db.run(
+            `UPDATE boss_last_seen SET 
+               confirmed_by = prev_confirmed_by,
+               seen_at = prev_seen_at,
+               city = prev_city,
+               prev_confirmed_by = NULL,
+               prev_seen_at = NULL,
+               prev_city = NULL
+             WHERE boss_name = ? AND world = ?`,
+            [bossName, world],
+            function (err) {
+              if (err) return reject(err);
+              resolve(true);
+            }
+          );
+        }
       }
     );
   });
