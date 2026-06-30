@@ -135,7 +135,7 @@ const formatBossInfo = async (bossName, intervalName, record) => {
   let recentTimesLine = '';
   const recentTimes = await db.getBossRecentTimes(intervalName);
   if (recentTimes && recentTimes.length > 0) {
-    recentTimesLine = `⏰ *Últimos horários de morte:* ${recentTimes.join(', ')}\n`;
+    recentTimesLine = `⏰ *Últimas aparições:* ${recentTimes.join(', ')}\n`;
   }
 
   // 5. Combine in the requested order (map, prediction, seen, recentTimes)

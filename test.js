@@ -646,7 +646,7 @@ async function runTests() {
     await commandHandler.handleMessage(mockSock, mockMsg3, '!info the voice of ruin');
     const infoOutput = sentMessages.find(m => m.content && m.content.text)?.content?.text;
     console.log('!info the voice of ruin response:\n', infoOutput);
-    if (!infoOutput || !infoOutput.includes('Últimos horários de morte:')) {
+    if (!infoOutput || !infoOutput.includes('Últimas aparições:')) {
       throw new Error('Info output does not display the expected recent spawn times');
     }
     

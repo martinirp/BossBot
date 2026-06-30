@@ -88,7 +88,7 @@ export default {
           const recentTimes = await db.getBossRecentTimes(bName);
           let predictionText = predictionStr + extraStr;
           if (recentTimes && recentTimes.length > 0) {
-            predictionText += `\n⏰ *Últimos horários de morte:* ${recentTimes.join(', ')}`;
+            predictionText += `\n⏰ *Últimas aparições:* ${recentTimes.join(', ')}`;
           }
 
           bossesWithPrediction.push({

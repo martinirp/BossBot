@@ -687,7 +687,7 @@ export function getAllUserNames() {
     );
   });
 }
-export function getBossRecentTimes(bossName, limit = 5) {
+export function getBossRecentTimes(bossName, limit = 4) {
   return new Promise((resolve, reject) => {
     db.all(
       `SELECT created_at FROM boss_reports WHERE boss_name = ? OR boss_name LIKE ? ORDER BY created_at DESC LIMIT ?`,
@@ -707,13 +707,15 @@ export function getBossRecentTimes(bossName, limit = 5) {
           // Convert to BRT (UTC-3)
           const brtDate = new Date(utcDate.getTime() - 3 * 60 * 60 * 1000);
           
+          const day = String(brtDate.getUTCDate()).padStart(2, '0');
+          const month = String(brtDate.getUTCMonth() + 1).padStart(2, '0');
+          const year = brtDate.getUTCFullYear();
           const hours = String(brtDate.getUTCHours()).padStart(2, '0');
           const minutes = String(brtDate.getUTCMinutes()).padStart(2, '0');
-          const timeStr = `${hours}:${minutes}`;
-
-          if (!seen.has(timeStr)) {
-            seen.add(timeStr);
-            times.push(timeStr);
+          const formatted = `${day}/${month}/${year} às ${hours}:${minutes}`;
+          if (!seen.has(formatted)) {
+            seen.add(formatted);
+            times.push(formatted);
           }
         }
 
