@@ -87,10 +87,10 @@ export default {
            }
          }
 
-          const avgTimeData = await db.getBossAverageTime(bName);
+          const recentTimes = await db.getBossRecentTimes(bName);
           let predictionText = predictionStr + extraStr;
-          if (avgTimeData) {
-            predictionText += `\n⏰ *Horário estimado:* ${avgTimeData.avgTimeStr} (média de ${avgTimeData.count} reports)`;
+          if (recentTimes && recentTimes.length > 0) {
+            predictionText += `\n⏰ *Últimos horários de morte:* ${recentTimes.join(', ')}`;
           }
 
           bossesWithPrediction.push({

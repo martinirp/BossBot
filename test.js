@@ -629,28 +629,28 @@ async function runTests() {
     }
     console.log('Last command grouped by city for Rotworm Queen passed ✅');
 
-    // Test 10: Expected Spawn Time Calculation (Circular Mean)
-    console.log('--- Test 10: Expected Spawn Time (Circular Mean) ---');
+    // Test 10: Recent Spawn Times Display
+    console.log('--- Test 10: Recent Spawn Times ---');
     
     await dbModule.addBossReport('The Voice Of Ruin (Esquerda)', 'extra text', '123@s.whatsapp.net', 0);
     await dbModule.addBossReport('The Voice Of Ruin (Esquerda)', 'extra text 2', '123@s.whatsapp.net', 0);
     
-    const avgTimeData = await dbModule.getBossAverageTime('The Voice Of Ruin (Esquerda)');
-    console.log('getBossAverageTime output:', avgTimeData);
-    if (!avgTimeData || avgTimeData.count !== 3) {
-      throw new Error('getBossAverageTime did not count the reports correctly');
+    const recentTimes = await dbModule.getBossRecentTimes('The Voice Of Ruin (Esquerda)');
+    console.log('getBossRecentTimes output:', recentTimes);
+    if (!Array.isArray(recentTimes) || recentTimes.length === 0) {
+      throw new Error('getBossRecentTimes did not return reports correctly');
     }
     
-    // Verify !info output shows the average time
+    // Verify !info output shows the recent times
     sentMessages = [];
     await commandHandler.handleMessage(mockSock, mockMsg3, '!info the voice of ruin');
     console.log('!info the voice of ruin response:\n', sentMessages[0]?.content?.text);
     const infoOutput = sentMessages[0]?.content?.text;
-    if (!infoOutput || !infoOutput.includes('Horário estimado') || !infoOutput.includes('média de 3 reports')) {
-      throw new Error('Info output does not display the expected average spawn time');
+    if (!infoOutput || !infoOutput.includes('Últimos horários de morte:')) {
+      throw new Error('Info output does not display the expected recent spawn times');
     }
     
-    console.log('Expected Spawn Time tests passed ✅\n');
+    console.log('Recent Spawn Times tests passed ✅\n');
 
   } finally {
     if (statsBackup !== null) {

@@ -117,9 +117,9 @@ const formatBossInfo = async (bossName, intervalName, record) => {
   text += `📅 *Média de spawn:* ${avgDaysText}\n`;
   text += `🔮 *Previsão:* ${predictionText}\n`;
 
-  const avgTimeData = await db.getBossAverageTime(intervalName);
-  if (avgTimeData) {
-    text += `⏰ *Horário estimado:* ${avgTimeData.avgTimeStr} (média de ${avgTimeData.count} reports)\n`;
+  const recentTimes = await db.getBossRecentTimes(intervalName);
+  if (recentTimes && recentTimes.length > 0) {
+    text += `⏰ *Últimos horários de morte:* ${recentTimes.join(', ')}\n`;
   }
 
   return { text, confirmedBy: record ? record.confirmed_by : null };

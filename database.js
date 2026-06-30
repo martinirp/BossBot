@@ -635,19 +635,17 @@ export function getAllUserNames() {
     );
   });
 }
-export function getBossAverageTime(bossName) {
+export function getBossRecentTimes(bossName, limit = 5) {
   return new Promise((resolve, reject) => {
     db.all(
-      `SELECT created_at FROM boss_reports WHERE boss_name = ? OR boss_name LIKE ?`,
-      [bossName, `${bossName} (%`],
+      `SELECT created_at FROM boss_reports WHERE boss_name = ? OR boss_name LIKE ? ORDER BY created_at DESC LIMIT ?`,
+      [bossName, `${bossName} (%`, limit],
       (err, rows) => {
         if (err) return reject(err);
-        if (!rows || rows.length === 0) return resolve(null);
+        if (!rows || rows.length === 0) return resolve([]);
 
-        let sumSin = 0;
-        let sumCos = 0;
-        let count = 0;
-
+        const times = [];
+        const seen = new Set();
         for (const row of rows) {
           if (!row.created_at) continue;
           // SQLite CURRENT_TIMESTAMP is UTC "YYYY-MM-DD HH:MM:SS"
@@ -657,34 +655,18 @@ export function getBossAverageTime(bossName) {
           // Convert to BRT (UTC-3)
           const brtDate = new Date(utcDate.getTime() - 3 * 60 * 60 * 1000);
           
-          const hours = brtDate.getUTCHours();
-          const minutes = brtDate.getUTCMinutes();
-          const minutesSinceMidnight = hours * 60 + minutes;
+          const hours = String(brtDate.getUTCHours()).padStart(2, '0');
+          const minutes = String(brtDate.getUTCMinutes()).padStart(2, '0');
+          const timeStr = `${hours}:${minutes}`;
 
-          const angle = (minutesSinceMidnight / 1440) * 2 * Math.PI;
-          sumSin += Math.sin(angle);
-          sumCos += Math.cos(angle);
-          count++;
+          if (!seen.has(timeStr)) {
+            seen.add(timeStr);
+            times.push(timeStr);
+          }
         }
 
-        if (count === 0) return resolve(null);
-
-        const avgSin = sumSin / count;
-        const avgCos = sumCos / count;
-        let avgAngle = Math.atan2(avgSin, avgCos);
-        if (avgAngle < 0) {
-          avgAngle += 2 * Math.PI;
-        }
-
-        const avgMinutes = Math.round((avgAngle / (2 * Math.PI)) * 1440) % 1440;
-        const avgHours = Math.floor(avgMinutes / 60);
-        const avgMins = avgMinutes % 60;
-
-        const pad = (n) => String(n).padStart(2, '0');
-        resolve({
-          avgTimeStr: `${pad(avgHours)}:${pad(avgMins)}`,
-          count
-        });
+        // Return sorted chronologically (oldest to newest)
+        resolve(times.reverse());
       }
     );
   });
