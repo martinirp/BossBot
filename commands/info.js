@@ -66,7 +66,7 @@ const calculatePrediction = (seenAtStr, minDays, maxDays, confirmedBy) => {
 };
 
 // Helper to format the boss details block
-const formatBossInfo = (bossName, intervalName, record) => {
+const formatBossInfo = async (bossName, intervalName, record) => {
   const bossIntervals = loadIntervals();
   const interval = bossIntervals[intervalName];
   let avgDaysText = 'N/A';
@@ -116,6 +116,12 @@ const formatBossInfo = (bossName, intervalName, record) => {
 
   text += `📅 *Média de spawn:* ${avgDaysText}\n`;
   text += `🔮 *Previsão:* ${predictionText}\n`;
+
+  const avgTimeData = await db.getBossAverageTime(intervalName);
+  if (avgTimeData) {
+    text += `⏰ *Horário estimado:* ${avgTimeData.avgTimeStr} (média de ${avgTimeData.count} reports)\n`;
+  }
+
   return { text, confirmedBy: record ? record.confirmed_by : null };
 };
 
@@ -163,13 +169,13 @@ export default {
         const record = await db.getBossLastSeen(cityBossName, world);
         
         reply += `📍 *${city}*:\n`;
-        const { text, confirmedBy } = formatBossInfo(bossName, cityBossName, record);
+        const { text, confirmedBy } = await formatBossInfo(bossName, cityBossName, record);
         reply += text + '\n';
         if (confirmedBy && confirmedBy.includes('@')) mentions.push(confirmedBy);
       }
     } else {
       const record = await db.getBossLastSeen(bossName, world);
-      const { text, confirmedBy } = formatBossInfo(bossName, bossName, record);
+      const { text, confirmedBy } = await formatBossInfo(bossName, bossName, record);
       reply += text;
       if (confirmedBy && confirmedBy.includes('@')) mentions.push(confirmedBy);
     }

@@ -87,11 +87,17 @@ export default {
            }
          }
 
-         bossesWithPrediction.push({
-            name: bName,
-            lastSeenFormatted: formatSeenAt(record.seen_at),
-            prediction: predictionStr + extraStr
-         });
+          const avgTimeData = await db.getBossAverageTime(bName);
+          let predictionText = predictionStr + extraStr;
+          if (avgTimeData) {
+            predictionText += `\n⏰ *Horário estimado:* ${avgTimeData.avgTimeStr} (média de ${avgTimeData.count} reports)`;
+          }
+
+          bossesWithPrediction.push({
+             name: bName,
+             lastSeenFormatted: formatSeenAt(record.seen_at),
+             prediction: predictionText
+          });
       }
 
       if (bossesWithPrediction.length === 0) {

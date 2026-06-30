@@ -635,6 +635,60 @@ export function getAllUserNames() {
     );
   });
 }
+export function getBossAverageTime(bossName) {
+  return new Promise((resolve, reject) => {
+    db.all(
+      `SELECT created_at FROM boss_reports WHERE boss_name = ? OR boss_name LIKE ?`,
+      [bossName, `${bossName} (%`],
+      (err, rows) => {
+        if (err) return reject(err);
+        if (!rows || rows.length === 0) return resolve(null);
+
+        let sumSin = 0;
+        let sumCos = 0;
+        let count = 0;
+
+        for (const row of rows) {
+          if (!row.created_at) continue;
+          // SQLite CURRENT_TIMESTAMP is UTC "YYYY-MM-DD HH:MM:SS"
+          const utcDate = new Date(row.created_at.replace(' ', 'T') + 'Z');
+          if (isNaN(utcDate.getTime())) continue;
+
+          // Convert to BRT (UTC-3)
+          const brtDate = new Date(utcDate.getTime() - 3 * 60 * 60 * 1000);
+          
+          const hours = brtDate.getUTCHours();
+          const minutes = brtDate.getUTCMinutes();
+          const minutesSinceMidnight = hours * 60 + minutes;
+
+          const angle = (minutesSinceMidnight / 1440) * 2 * Math.PI;
+          sumSin += Math.sin(angle);
+          sumCos += Math.cos(angle);
+          count++;
+        }
+
+        if (count === 0) return resolve(null);
+
+        const avgSin = sumSin / count;
+        const avgCos = sumCos / count;
+        let avgAngle = Math.atan2(avgSin, avgCos);
+        if (avgAngle < 0) {
+          avgAngle += 2 * Math.PI;
+        }
+
+        const avgMinutes = Math.round((avgAngle / (2 * Math.PI)) * 1440) % 1440;
+        const avgHours = Math.floor(avgMinutes / 60);
+        const avgMins = avgMinutes % 60;
+
+        const pad = (n) => String(n).padStart(2, '0');
+        resolve({
+          avgTimeStr: `${pad(avgHours)}:${pad(avgMins)}`,
+          count
+        });
+      }
+    );
+  });
+}
 
 // ─── Misc ────────────────────────────────────────────────────────────────────
 

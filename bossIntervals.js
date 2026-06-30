@@ -496,15 +496,15 @@ export const bossIntervals = {
   },
   "The Voice Of Ruin (Direita)": {
     "fixedDaysFrequency": {
-      "min": 5,
-      "max": 10
+      "min": 6,
+      "max": 9
     },
     "spawnCount": 2
   },
   "The Voice Of Ruin (Esquerda)": {
     "fixedDaysFrequency": {
-      "min": 5,
-      "max": 10
+      "min": 6,
+      "max": 9
     },
     "spawnCount": 2
   },
