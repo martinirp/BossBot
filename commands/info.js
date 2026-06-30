@@ -187,8 +187,11 @@ export default {
     let statsLine = '';
     if (stats) {
       const hpText = stats.hp || 'Desconhecido';
-      const imunesText = stats.immunities && stats.immunities.length > 0
-        ? stats.immunities.join(', ')
+      const filteredImmunities = (stats.immunities || []).filter(
+        im => im.toLowerCase() !== 'paralisia' && im.toLowerCase() !== 'invisibilidade'
+      );
+      const imunesText = filteredImmunities.length > 0
+        ? filteredImmunities.join(', ')
         : 'Nenhuma';
       statsLine = `❤️ *HP:* ${hpText}\n🛡️ *Imunidades:* ${imunesText}\n\n`;
     }
