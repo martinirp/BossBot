@@ -105,20 +105,30 @@ export async function syncWorldKillStatistics(targetWorld) {
         function getActualKillCalendarDate(seenAtStr) {
             const [trackingDateStr, brtTimeStr] = seenAtStr.split(' ');
             const [brtHour, brtMin] = brtTimeStr.split(':').map(Number);
-            
             const [tYear, tMonth, tDay] = trackingDateStr.split('-').map(Number);
-            const utcDate = new Date(Date.UTC(tYear, tMonth - 1, tDay, brtHour + 3, brtMin));
-            const isDST = isGermanDST(utcDate);
             
+            let brtYear = tYear;
+            let brtMonth = tMonth;
+            let brtDay = tDay;
+            
+            const approxUtc = new Date(Date.UTC(tYear, tMonth - 1, tDay, 12, 0));
+            const isDST = isGermanDST(approxUtc);
             const serverSaveBrtHour = isDST ? 5 : 6;
-            const pad = (n) => String(n).padStart(2, '0');
             
             if (brtHour < serverSaveBrtHour) {
-                const nextDay = new Date(Date.UTC(tYear, tMonth - 1, tDay + 1));
-                return `${nextDay.getUTCFullYear()}-${pad(nextDay.getUTCMonth() + 1)}-${pad(nextDay.getUTCDate())}`;
-            } else {
-                return trackingDateStr;
+                const nextBrt = new Date(Date.UTC(tYear, tMonth - 1, tDay + 1));
+                brtYear = nextBrt.getUTCFullYear();
+                brtMonth = nextBrt.getUTCMonth() + 1;
+                brtDay = nextBrt.getUTCDate();
             }
+            
+            const utcDate = new Date(Date.UTC(brtYear, brtMonth - 1, brtDay, brtHour + 3, brtMin));
+            const dstActive = isGermanDST(utcDate);
+            const offsetHours = dstActive ? 2 : 1;
+            const germanTime = new Date(utcDate.getTime() + offsetHours * 60 * 60 * 1000);
+            
+            const pad = (n) => String(n).padStart(2, '0');
+            return `${germanTime.getUTCFullYear()}-${pad(germanTime.getUTCMonth() + 1)}-${pad(germanTime.getUTCDate())}`;
         }
 
         const revertedBosses = [];
