@@ -210,11 +210,17 @@ export default {
       enqueueNotification(sock, subscribers, cityBossName, finalExtraText, world);
     }
 
-    // Envia a figurinha de alerta se existir
-    const stickerPath = './assets/alerta.webp';
-    if (fs.existsSync(stickerPath)) {
+    // Envia a figurinha de alerta referente ao boss, se existir
+    const specificStickerPath = `./assets/bosses/${matchedBossName}.webp`;
+    let stickerToSend = './assets/alerta.webp';
+    
+    if (fs.existsSync(specificStickerPath)) {
+      stickerToSend = specificStickerPath;
+    }
+
+    if (fs.existsSync(stickerToSend)) {
       try {
-        await sock.sendMessage(remoteJid, { sticker: { url: stickerPath } });
+        await sock.sendMessage(remoteJid, { sticker: { url: stickerToSend } });
       } catch (err) {
         console.error('Erro ao enviar figurinha de alerta de boss:', err);
       }
