@@ -111,6 +111,25 @@ export async function syncWorldKillStatistics(targetWorld) {
             return match ? match[1].trim() : fullName.trim();
         }
 
+        function getActualKillCalendarDate(seenAtStr) {
+            const [trackingDateStr, brtTimeStr] = seenAtStr.split(' ');
+            const [brtHour, brtMin] = brtTimeStr.split(':').map(Number);
+            
+            const [tYear, tMonth, tDay] = trackingDateStr.split('-').map(Number);
+            const utcDate = new Date(Date.UTC(tYear, tMonth - 1, tDay, brtHour + 3, brtMin));
+            const isDST = isGermanDST(utcDate);
+            
+            const serverSaveBrtHour = isDST ? 5 : 6;
+            const pad = (n) => String(n).padStart(2, '0');
+            
+            if (brtHour < serverSaveBrtHour) {
+                const nextDay = new Date(Date.UTC(tYear, tMonth - 1, tDay + 1));
+                return `${nextDay.getUTCFullYear()}-${pad(nextDay.getUTCMonth() + 1)}-${pad(nextDay.getUTCDate())}`;
+            } else {
+                return trackingDateStr;
+            }
+        }
+
         for (const localRecord of allLocal) {
             const confirmedByHuman = localRecord.confirmed_by !== 'TibiaData_API' && 
                                      localRecord.confirmed_by !== 'system_adjust' && 
@@ -118,8 +137,8 @@ export async function syncWorldKillStatistics(targetWorld) {
             
             if (!confirmedByHuman) continue;
 
-            const localDayStr = localRecord.seen_at.split(' ')[0]; // Ex: 2026-06-29
-            if (localDayStr === fallbackDayStr) {
+            const actualKillDayStr = getActualKillCalendarDate(localRecord.seen_at);
+            if (actualKillDayStr === fallbackDayStr) {
                 const baseName = getBaseBossName(localRecord.boss_name).toLowerCase();
                 
                 // Só acusa falso alarme se a criatura existe no relatório da API e consta com 0 mortes.
