@@ -93,9 +93,24 @@ export default {
       `, [world]);
 
       if (recentReports.length === 0) {
-        await sock.sendMessage(remoteJid, {
-          text: `ℹ️ Nenhum boss reportado por jogadores nas últimas 48 horas no mundo *${world}* precisa de restauração.`
-        }, { quoted: msg });
+        const debugLastReports = await runQuery(`
+          SELECT boss_name, reported_by_jid, created_at, world
+          FROM boss_reports
+          ORDER BY created_at DESC
+          LIMIT 5
+        `);
+        
+        let debugText = `ℹ️ Nenhum boss reportado por jogadores nas últimas 48 horas no mundo *${world}* precisa de restauração.\n\n`;
+        if (debugLastReports.length > 0) {
+          debugText += `*Últimos 5 relatórios registrados (para depuração):*\n`;
+          for (const r of debugLastReports) {
+            debugText += `- ${r.boss_name} (${r.created_at}) [Mundo: ${r.world || 'null'}] por @${r.reported_by_jid.split('@')[0]}\n`;
+          }
+        } else {
+          debugText += `⚠️ A tabela de relatórios está vazia no banco de dados.`;
+        }
+
+        await sock.sendMessage(remoteJid, { text: debugText }, { quoted: msg });
         return;
       }
 
