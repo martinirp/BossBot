@@ -64,20 +64,17 @@ async function main() {
   const world = process.env.TIBIA_WORLD || 'Quelibra';
   console.log(`Target World: ${world}`);
 
-  // Fetch reports from the last 48 hours
+  // Fetch latest player reports (date-agnostic, case-insensitive)
   const recentReports = await runQuery(`
     SELECT r.boss_name, r.reported_by_jid, r.created_at
     FROM boss_reports r
     INNER JOIN (
       SELECT boss_name, MAX(created_at) as max_created
       FROM boss_reports
-      WHERE created_at >= datetime('now', '-2 days')
-        AND reported_by_jid != 'TibiaData_API'
-        AND reported_by_jid != 'system_adjust'
-        AND reported_by_jid != 'flop'
+      WHERE LOWER(reported_by_jid) NOT IN ('tibiadata_api', 'system_adjust', 'flop')
       GROUP BY boss_name
     ) latest ON r.boss_name = latest.boss_name AND r.created_at = latest.max_created
-    WHERE r.world = ? OR r.world IS NULL
+    WHERE LOWER(r.world) = LOWER(?) OR r.world IS NULL
   `, [world]);
 
   if (recentReports.length === 0) {
