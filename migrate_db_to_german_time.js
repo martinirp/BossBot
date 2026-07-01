@@ -60,14 +60,14 @@ async function migrateDatabase() {
   try {
     // 1. Migrar boss_last_seen
     console.log('[Migração] Lendo registros de boss_last_seen...');
-    const bosses = await allRows('SELECT id, seen_at FROM boss_last_seen');
+    const bosses = await allRows('SELECT world, boss_name, seen_at FROM boss_last_seen');
     let migratedBosses = 0;
     
     for (const boss of bosses) {
       if (boss.seen_at && boss.seen_at.includes('-')) {
         const utcDate = reverseOldDateToUtc(boss.seen_at);
         const germanStr = utcToGermanStr(utcDate);
-        await runQuery('UPDATE boss_last_seen SET seen_at = ? WHERE id = ?', [germanStr, boss.id]);
+        await runQuery('UPDATE boss_last_seen SET seen_at = ? WHERE world = ? AND boss_name = ?', [germanStr, boss.world, boss.boss_name]);
         migratedBosses++;
       }
     }
@@ -75,18 +75,19 @@ async function migrateDatabase() {
 
     // 2. Migrar boss_checks
     console.log('[Migração] Lendo registros de boss_checks...');
-    const checks = await allRows('SELECT id, checked_at FROM boss_checks');
+    // Table name is actually boss_check
+    const checks = await allRows('SELECT world, boss_name, checked_at FROM boss_check');
     let migratedChecks = 0;
     
     for (const check of checks) {
       if (check.checked_at && check.checked_at.includes('-')) {
         const utcDate = reverseOldDateToUtc(check.checked_at);
         const germanStr = utcToGermanStr(utcDate);
-        await runQuery('UPDATE boss_checks SET checked_at = ? WHERE id = ?', [germanStr, check.id]);
+        await runQuery('UPDATE boss_check SET checked_at = ? WHERE world = ? AND boss_name = ?', [germanStr, check.world, check.boss_name]);
         migratedChecks++;
       }
     }
-    console.log(`[Migração] ${migratedChecks} registros de boss_checks convertidos para o Horário da Alemanha.`);
+    console.log(`[Migração] ${migratedChecks} registros de boss_check convertidos para o Horário da Alemanha.`);
 
     // 3. Migrar boss_reports
     console.log('[Migração] Lendo registros do histórico (boss_reports)...');
