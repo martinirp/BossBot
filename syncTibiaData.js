@@ -130,6 +130,8 @@ export async function syncWorldKillStatistics(targetWorld) {
             }
         }
 
+        const revertedBosses = [];
+
         for (const localRecord of allLocal) {
             const confirmedByHuman = localRecord.confirmed_by !== 'TibiaData_API' && 
                                      localRecord.confirmed_by !== 'system_adjust' && 
@@ -149,34 +151,43 @@ export async function syncWorldKillStatistics(targetWorld) {
                     // Reverter o boss no banco
                     await revertBossLastSeen(localRecord.boss_name, targetWorld);
                     
-                    // Notificar grupos
                     const restoredRecord = await getBossLastSeen(localRecord.boss_name, targetWorld);
                     let restoredInfo = 'Sem registros anteriores.';
-                    const mentions = [localRecord.confirmed_by];
                     
                     if (restoredRecord) {
                         const [rDate, rTime] = restoredRecord.seen_at.split(' ');
                         const [rYear, rMonth, rDay] = rDate.split('-');
                         const rPhone = restoredRecord.confirmed_by.split('@')[0];
                         restoredInfo = `${rDay}/${rMonth}/${rYear} às ${rTime} (Confirmado por: @${rPhone})`;
-                        if (restoredRecord.confirmed_by.includes('@')) {
-                            mentions.push(restoredRecord.confirmed_by);
-                        }
                     }
 
                     const userPhone = localRecord.confirmed_by.split('@')[0];
-                    const warningText = `⚠️ *ALERTA FALSO DETECTADO!*\n\n` +
-                                        `O boss *${localRecord.boss_name.toUpperCase()}* foi reportado ontem por @${userPhone}, mas as estatísticas oficiais da CipSoft (TibiaData) indicam que ele *não morreu*.\n\n` +
-                                        `↩️ A última aparição dele foi revertida para:\n📅 *${restoredInfo}*\n\n` +
-                                        `⚠️ *Atenção:* Evitem confirmar bosses sem certeza para não comprometer os tempos e previsões!`;
-                    
-                    const allowedGroups = await getAllowedGroups();
-                    for (const groupJid of allowedGroups) {
-                        const groupWorld = await getGroupWorld(groupJid);
-                        if (groupWorld === targetWorld) {
-                            await sendGroupMessage(groupJid, warningText, mentions);
-                        }
-                    }
+                    revertedBosses.push({
+                        boss_name: localRecord.boss_name.toUpperCase(),
+                        reported_by: userPhone,
+                        restored_info: restoredInfo
+                    });
+                }
+            }
+        }
+
+        if (revertedBosses.length > 0) {
+            let warningText = `⚠️ *ALERTAS FALSOS DETECTADOS!*\n\n` +
+                                `As estatísticas oficiais da CipSoft (TibiaData) indicam que os seguintes bosses reportados ontem *não morreram*:\n\n`;
+            
+            for (const item of revertedBosses) {
+                warningText += `⚔️ *${item.boss_name}*\n` +
+                               `👤 Reportado por: @${item.reported_by}\n` +
+                               `↩️ A última aparição dele foi revertida para:\n📅 *${item.restored_info}*\n\n`;
+            }
+            
+            warningText += `⚠️ *Atenção:* Evitem confirmar bosses sem certeza para não comprometer os tempos e previsões!`;
+
+            const allowedGroups = await getAllowedGroups();
+            for (const groupJid of allowedGroups) {
+                const groupWorld = await getGroupWorld(groupJid);
+                if (groupWorld === targetWorld) {
+                    await sendGroupMessage(groupJid, warningText, []);
                 }
             }
         }
