@@ -65,8 +65,8 @@ export async function calcTrackingDay(utcNow, world) {
   // Calcula a hora em que o kill aconteceu na Alemanha (CET/CEST)
   const germanTime = new Date(utcNow.getTime() + offsetHours * 60 * 60 * 1000);
 
-  // Subtrai 4 horas para alinhar com o cutoff diário de 04:00 AM da CipSoft
-  const trackingTime = new Date(germanTime.getTime() - 4 * 60 * 60 * 1000);
+  // Subtrai 10 horas para alinhar com o cutoff diário de Server Save (10:00 CEST/CET) da CipSoft
+  const trackingTime = new Date(germanTime.getTime() - 10 * 60 * 60 * 1000);
 
   // Formata o dia de rastreamento final (dia do ciclo da CipSoft)
   const trackingYear = trackingTime.getUTCFullYear();

@@ -31,6 +31,22 @@ export async function syncKillStatistics() {
     }
 }
 
+function isGermanDST(date) {
+  const year = date.getUTCFullYear();
+
+  // Último domingo de março (DST começa às 02:00 CET = 01:00 UTC)
+  const marchEnd = new Date(Date.UTC(year, 2, 31));
+  while (marchEnd.getUTCDay() !== 0) marchEnd.setUTCDate(marchEnd.getUTCDate() - 1);
+  const dstStart = new Date(Date.UTC(year, 2, marchEnd.getUTCDate(), 1, 0, 0));
+
+  // Último domingo de outubro (DST termina às 03:00 CEST = 01:00 UTC)
+  const octEnd = new Date(Date.UTC(year, 9, 31));
+  while (octEnd.getUTCDay() !== 0) octEnd.setUTCDate(octEnd.getUTCDate() - 1);
+  const dstEnd = new Date(Date.UTC(year, 9, octEnd.getUTCDate(), 1, 0, 0));
+
+  return date >= dstStart && date < dstEnd;
+}
+
 export async function syncWorldKillStatistics(targetWorld) {
     console.log(`[SYNC] Sincronizando mundo: ${targetWorld}`);
     try {
@@ -59,12 +75,23 @@ export async function syncWorldKillStatistics(targetWorld) {
         brtNow.setUTCHours(brtNow.getUTCHours() - 3);
         const brtHour = brtNow.getUTCHours();
 
-        // O TibiaData atualiza Kill Statistics uma vez por dia (~22:15 / ~23:15 BRT).
-        // Se a sincronização roda à noite (após as 21:00 BRT), a API já virou e traz os dados do próprio dia atual civil.
-        // Se roda no dia seguinte de manhã/tarde (antes das 21:00 BRT), a API traz os dados do dia civil anterior (daysAgo = 1).
-        const daysAgo = brtHour >= 21 ? 0 : 1;
+        // Determina se a Alemanha está em DST (Horário de Verão: UTC+2) ou Padrão (CET: UTC+1)
+        const utcNow = new Date();
+        const isDST = isGermanDST(utcNow);
+        const offsetHours = isDST ? 2 : 1;
 
-        const targetDate = new Date(brtNow);
+        // Calcula a hora atual na Alemanha (CET/CEST)
+        const germanTime = new Date(utcNow.getTime() + offsetHours * 60 * 60 * 1000);
+
+        // Subtrai 10 horas para obter a data do ciclo de Server Save correspondente
+        const trackingTime = new Date(germanTime.getTime() - 10 * 60 * 60 * 1000);
+
+        // O TibiaData atualiza Kill Statistics uma vez por dia (~22:15 / ~23:15 BRT).
+        // Se a sincronização roda à noite (após as 21:00 BRT), a API já virou e traz os dados do ciclo anterior (daysAgo = 1).
+        // Se roda no dia seguinte de manhã/tarde (antes das 21:00 BRT), a API traz os dados de 2 ciclos atrás (daysAgo = 2).
+        const daysAgo = brtHour >= 21 ? 1 : 2;
+
+        const targetDate = new Date(trackingTime.getTime());
         targetDate.setUTCDate(targetDate.getUTCDate() - daysAgo);
         
         const year = targetDate.getUTCFullYear();
