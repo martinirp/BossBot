@@ -66,6 +66,16 @@ export function parseDateStr(str) {
   ));
 }
 
+// Format seen_at from German time to BRT "DD/MM/YYYY HH:mm"
+export function formatSeenAtBrt(seenAtStr) {
+  if (!seenAtStr) return 'Nenhum avistamento registrado ainda';
+  const germanDate = parseDateStr(seenAtStr);
+  if (!germanDate || isNaN(germanDate.getTime())) return seenAtStr;
+  const brtDate = utcToBrt(germanToUtc(germanDate));
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${pad(brtDate.getUTCDate())}/${pad(brtDate.getUTCMonth() + 1)}/${brtDate.getUTCFullYear()} ${pad(brtDate.getUTCHours())}:${pad(brtDate.getUTCMinutes())}`;
+}
+
 export function initDb() {
   return new Promise((resolve, reject) => {
     db = new sqlite3.Database(dbFile, (err) => {
