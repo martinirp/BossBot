@@ -1,0 +1,1370 @@
+{
+  "serverOptions": [
+    {
+      "name": "Aethera",
+      "value": "Aethera"
+    },
+    {
+      "name": "Antica",
+      "value": "Antica"
+    },
+    {
+      "name": "Astera",
+      "value": "Astera"
+    },
+    {
+      "name": "Belobra",
+      "value": "Belobra"
+    },
+    {
+      "name": "Blumera",
+      "value": "Blumera"
+    },
+    {
+      "name": "Bona",
+      "value": "Bona"
+    },
+    {
+      "name": "Bravoria",
+      "value": "Bravoria"
+    },
+    {
+      "name": "Calmera",
+      "value": "Calmera"
+    },
+    {
+      "name": "Cantabra",
+      "value": "Cantabra"
+    },
+    {
+      "name": "Celebra",
+      "value": "Celebra"
+    },
+    {
+      "name": "Celesta",
+      "value": "Celesta"
+    },
+    {
+      "name": "Citra",
+      "value": "Citra"
+    },
+    {
+      "name": "Collabra",
+      "value": "Collabra"
+    },
+    {
+      "name": "Descubra",
+      "value": "Descubra"
+    },
+    {
+      "name": "Dia",
+      "value": "Dia"
+    },
+    {
+      "name": "Dracobra",
+      "value": "Dracobra"
+    },
+    {
+      "name": "Eclipta",
+      "value": "Eclipta"
+    },
+    {
+      "name": "Epoca",
+      "value": "Epoca"
+    },
+    {
+      "name": "Escura",
+      "value": "Escura"
+    },
+    {
+      "name": "Etebra",
+      "value": "Etebra"
+    },
+    {
+      "name": "Ferobra",
+      "value": "Ferobra"
+    },
+    {
+      "name": "Firmera",
+      "value": "Firmera"
+    },
+    {
+      "name": "Floribra",
+      "value": "Floribra"
+    },
+    {
+      "name": "Gentebra",
+      "value": "Gentebra"
+    },
+    {
+      "name": "Gladera",
+      "value": "Gladera"
+    },
+    {
+      "name": "Gladibra",
+      "value": "Gladibra"
+    },
+    {
+      "name": "Harmonia",
+      "value": "Harmonia"
+    },
+    {
+      "name": "Havera",
+      "value": "Havera"
+    },
+    {
+      "name": "Honbra",
+      "value": "Honbra"
+    },
+    {
+      "name": "Hostera",
+      "value": "Hostera"
+    },
+    {
+      "name": "Idyllia",
+      "value": "Idyllia"
+    },
+    {
+      "name": "Ignibra",
+      "value": "Ignibra"
+    },
+    {
+      "name": "Ignitera",
+      "value": "Ignitera"
+    },
+    {
+      "name": "Inabra",
+      "value": "Inabra"
+    },
+    {
+      "name": "Issobra",
+      "value": "Issobra"
+    },
+    {
+      "name": "Jadebra",
+      "value": "Jadebra"
+    },
+    {
+      "name": "Junera",
+      "value": "Junera"
+    },
+    {
+      "name": "Kalanta",
+      "value": "Kalanta"
+    },
+    {
+      "name": "Kalibra",
+      "value": "Kalibra"
+    },
+    {
+      "name": "Kalimera",
+      "value": "Kalimera"
+    },
+    {
+      "name": "Kanda",
+      "value": "Kanda"
+    },
+    {
+      "name": "Karmeya",
+      "value": "Karmeya"
+    },
+    {
+      "name": "Lobera",
+      "value": "Lobera"
+    },
+    {
+      "name": "Luminera",
+      "value": "Luminera"
+    },
+    {
+      "name": "Lutabra",
+      "value": "Lutabra"
+    },
+    {
+      "name": "Luzibra",
+      "value": "Luzibra"
+    },
+    {
+      "name": "Maligna",
+      "value": "Maligna"
+    },
+    {
+      "name": "Menera",
+      "value": "Menera"
+    },
+    {
+      "name": "Monstera",
+      "value": "Monstera"
+    },
+    {
+      "name": "Monza",
+      "value": "Monza"
+    },
+    {
+      "name": "Mystera",
+      "value": "Mystera"
+    },
+    {
+      "name": "Nefera",
+      "value": "Nefera"
+    },
+    {
+      "name": "Nevia",
+      "value": "Nevia"
+    },
+    {
+      "name": "Noctalia",
+      "value": "Noctalia"
+    },
+    {
+      "name": "Oceanis",
+      "value": "Oceanis"
+    },
+    {
+      "name": "Ombra",
+      "value": "Ombra"
+    },
+    {
+      "name": "Opulera",
+      "value": "Opulera"
+    },
+    {
+      "name": "Ourobra",
+      "value": "Ourobra"
+    },
+    {
+      "name": "Pacera",
+      "value": "Pacera"
+    },
+    {
+      "name": "Peloria",
+      "value": "Peloria"
+    },
+    {
+      "name": "Penumbra",
+      "value": "Penumbra"
+    },
+    {
+      "name": "Premia",
+      "value": "Premia"
+    },
+    {
+      "name": "Quelibra",
+      "value": "Quelibra"
+    },
+    {
+      "name": "Quidera",
+      "value": "Quidera"
+    },
+    {
+      "name": "Quintera",
+      "value": "Quintera"
+    },
+    {
+      "name": "Rasteibra",
+      "value": "Rasteibra"
+    },
+    {
+      "name": "Refugia",
+      "value": "Refugia"
+    },
+    {
+      "name": "Retalia",
+      "value": "Retalia"
+    },
+    {
+      "name": "Secura",
+      "value": "Secura"
+    },
+    {
+      "name": "Serdebra",
+      "value": "Serdebra"
+    },
+    {
+      "name": "Solidera",
+      "value": "Solidera"
+    },
+    {
+      "name": "Sombra",
+      "value": "Sombra"
+    },
+    {
+      "name": "Sonira",
+      "value": "Sonira"
+    },
+    {
+      "name": "Stralis",
+      "value": "Stralis"
+    },
+    {
+      "name": "Talera",
+      "value": "Talera"
+    },
+    {
+      "name": "Tempestera",
+      "value": "Tempestera"
+    },
+    {
+      "name": "Terribra",
+      "value": "Terribra"
+    },
+    {
+      "name": "Thyria",
+      "value": "Thyria"
+    },
+    {
+      "name": "Tornabra",
+      "value": "Tornabra"
+    },
+    {
+      "name": "Unebra",
+      "value": "Unebra"
+    },
+    {
+      "name": "Ustebra",
+      "value": "Ustebra"
+    },
+    {
+      "name": "Venebra",
+      "value": "Venebra"
+    },
+    {
+      "name": "Victoris",
+      "value": "Victoris"
+    },
+    {
+      "name": "Vunira",
+      "value": "Vunira"
+    },
+    {
+      "name": "Wintera",
+      "value": "Wintera"
+    },
+    {
+      "name": "Xybra",
+      "value": "Xybra"
+    },
+    {
+      "name": "Xyla",
+      "value": "Xyla"
+    },
+    {
+      "name": "Xymera",
+      "value": "Xymera"
+    },
+    {
+      "name": "Yonabra",
+      "value": "Yonabra"
+    },
+    {
+      "name": "Yovera",
+      "value": "Yovera"
+    },
+    {
+      "name": "Yubra",
+      "value": "Yubra"
+    },
+    {
+      "name": "Zuna",
+      "value": "Zuna"
+    },
+    {
+      "name": "Zunera",
+      "value": "Zunera"
+    }
+  ],
+  "bossChances": {
+    "server": "Quelibra",
+    "lastUpdated": 1782092125476,
+    "bosses": [
+      {
+        "name": "Undead Cavebear",
+        "lastAppearence": 1781838000000,
+        "currentChance": 0.6688
+      },
+      {
+        "name": "Warlord Ruzad",
+        "lastAppearence": 1781406000000,
+        "currentChance": 0.3453
+      },
+      {
+        "name": "Cublarc the Plunderer",
+        "lastAppearence": 1781492400000,
+        "currentChance": 0.3314
+      },
+      {
+        "name": "Draptor",
+        "lastAppearence": 1781578800000,
+        "currentChance": 0.3229
+      },
+      {
+        "name": "High Templar Cobrass",
+        "lastAppearence": 1781492400000,
+        "currentChance": 0.2524
+      },
+      {
+        "name": "Grand Mother Foulscale",
+        "lastAppearence": 1781578800000,
+        "currentChance": 0.2137
+      },
+      {
+        "name": "Foreman Kneebiter",
+        "lastAppearence": 1781492400000,
+        "currentChance": 0.1983
+      },
+      {
+        "name": "Arachir the Ancient One",
+        "lastAppearence": 1780801200000,
+        "currentChance": 0.1979
+      },
+      {
+        "name": "The Big Bad One",
+        "lastAppearence": 1781406000000,
+        "currentChance": 0.1968
+      },
+      {
+        "name": "Oodok Witchmaster",
+        "lastAppearence": 1781838000000,
+        "currentChance": 0.1775
+      },
+      {
+        "name": "Hairman the Huge",
+        "lastAppearence": 1781492400000,
+        "currentChance": 0.1668
+      },
+      {
+        "name": "The Old Whopper",
+        "lastAppearence": 1781492400000,
+        "currentChance": 0.1652
+      },
+      {
+        "name": "Sir Valorcrest",
+        "lastAppearence": 1781665200000,
+        "currentChance": 0.1622
+      },
+      {
+        "name": "Arthom The Hunter",
+        "lastAppearence": 1782010800000,
+        "currentChance": 0.1473
+      },
+      {
+        "name": "Zevelon Duskbringer",
+        "lastAppearence": 1781578800000,
+        "currentChance": 0.1418
+      },
+      {
+        "name": "Munster",
+        "lastAppearence": 1781319600000,
+        "currentChance": 0.1008
+      },
+      {
+        "name": "Zomba",
+        "lastAppearence": 1781838000000,
+        "currentChance": 0.0927
+      },
+      {
+        "name": "Countess Sorrow",
+        "lastAppearence": 1780887600000,
+        "currentChance": 0.0719
+      },
+      {
+        "name": "Grandfather Tridian",
+        "lastAppearence": 1781319600000,
+        "currentChance": 0.057
+      },
+      {
+        "name": "Chizzoron the Distorter",
+        "lastAppearence": 1781492400000,
+        "currentChance": 0.0546
+      },
+      {
+        "name": "Zulazza the Corruptor",
+        "lastAppearence": 1781492400000,
+        "currentChance": 0.0545
+      },
+      {
+        "name": "Orshabaal",
+        "lastAppearence": 1768532400000,
+        "currentChance": 0.0508
+      },
+      {
+        "name": "Albino Dragon",
+        "lastAppearence": 1782010800000,
+        "daysLeftForPossibleSpawns": [
+          -3,
+          -3,
+          -2,
+          -2,
+          -1
+        ]
+      },
+      {
+        "name": "Fleabringer",
+        "lastAppearence": 1781751600000,
+        "daysLeftForPossibleSpawns": [
+          -11,
+          -5,
+          -4
+        ]
+      },
+      {
+        "name": "Battlemaster Zunzu",
+        "lastAppearence": 1781665200000,
+        "daysLeftForPossibleSpawns": [
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Hirintror",
+        "lastAppearence": 1781233200000,
+        "daysLeftForPossibleSpawns": [
+          -8,
+          -1
+        ]
+      },
+      {
+        "name": "Rottie the Rotworm",
+        "lastAppearence": 1773370800000,
+        "daysLeftForPossibleSpawns": [
+          -107,
+          -100
+        ]
+      },
+      {
+        "name": "Rotworm Queen",
+        "lastAppearence": 1781751600000,
+        "daysLeftForPossibleSpawns": [
+          -3,
+          0,
+          6,
+          7
+        ]
+      },
+      {
+        "name": "Dreadmaw",
+        "lastAppearence": 1782010800000,
+        "daysLeftForPossibleSpawns": [
+          -1,
+          10
+        ]
+      },
+      {
+        "name": "Flamecaller Zazrak",
+        "lastAppearence": 1781924400000,
+        "daysLeftForPossibleSpawns": [
+          -12,
+          3
+        ]
+      },
+      {
+        "name": "The Voice Of Ruin",
+        "lastAppearence": 1781838000000,
+        "daysLeftForPossibleSpawns": [
+          -2,
+          2
+        ]
+      },
+      {
+        "name": "White Pale",
+        "lastAppearence": 1781406000000,
+        "daysLeftForPossibleSpawns": [
+          -17,
+          1,
+          6
+        ]
+      },
+      {
+        "name": "Tyrn",
+        "lastAppearence": 1781924400000,
+        "daysLeftForPossibleSpawns": [
+          4,
+          9
+        ]
+      },
+      {
+        "name": "Big Boss Trolliver",
+        "lastAppearence": 1781924400000,
+        "currentChance": 0,
+        "expectedIn": 1
+      },
+      {
+        "name": "Dharalion",
+        "lastAppearence": 1781751600000,
+        "currentChance": 0,
+        "expectedIn": 1
+      },
+      {
+        "name": "Gaz'haragoth",
+        "lastAppearence": 1780974000000,
+        "currentChance": 0,
+        "expectedIn": 1
+      },
+      {
+        "name": "General Murius",
+        "lastAppearence": 1781665200000,
+        "currentChance": 0,
+        "expectedIn": 1
+      },
+      {
+        "name": "Midnight Panther",
+        "lastAppearence": 1782010800000,
+        "currentChance": 0,
+        "expectedIn": 1
+      },
+      {
+        "name": "Omrafir",
+        "lastAppearence": 1780974000000,
+        "currentChance": 0,
+        "expectedIn": 1
+      },
+      {
+        "name": "Smuggler Baron Silvertoe",
+        "lastAppearence": 1781492400000,
+        "currentChance": 0,
+        "expectedIn": 1
+      },
+      {
+        "name": "The Plasmother",
+        "lastAppearence": 1780974000000,
+        "currentChance": 0,
+        "expectedIn": 1
+      },
+      {
+        "name": "Yaga the Crone",
+        "lastAppearence": 1781751600000,
+        "currentChance": 0,
+        "expectedIn": 1
+      },
+      {
+        "name": "Barbaria",
+        "lastAppearence": 1781665200000,
+        "currentChance": 0,
+        "expectedIn": 2
+      },
+      {
+        "name": "The Blightfather",
+        "lastAppearence": 1781924400000,
+        "currentChance": 0,
+        "expectedIn": 2
+      },
+      {
+        "name": "The Evil Eye",
+        "lastAppearence": 1781838000000,
+        "currentChance": 0,
+        "expectedIn": 2
+      },
+      {
+        "name": "Willi Wasp",
+        "lastAppearence": 1781924400000,
+        "currentChance": 0,
+        "expectedIn": 2
+      },
+      {
+        "name": "Captain Jones",
+        "lastAppearence": 1781924400000,
+        "currentChance": 0,
+        "expectedIn": 3
+      },
+      {
+        "name": "Rukor Zad",
+        "lastAppearence": 1781924400000,
+        "currentChance": 0,
+        "expectedIn": 3
+      },
+      {
+        "name": "The Imperor",
+        "lastAppearence": 1781233200000,
+        "currentChance": 0,
+        "expectedIn": 3
+      },
+      {
+        "name": "Massacre",
+        "lastAppearence": 1781319600000,
+        "currentChance": 0,
+        "expectedIn": 4
+      },
+      {
+        "name": "Mr. Punish",
+        "lastAppearence": 1781319600000,
+        "currentChance": 0,
+        "expectedIn": 4
+      },
+      {
+        "name": "Zarabustor",
+        "lastAppearence": 1782010800000,
+        "currentChance": 0,
+        "expectedIn": 4
+      },
+      {
+        "name": "Xenia",
+        "lastAppearence": 1782010800000,
+        "currentChance": 0,
+        "expectedIn": 5
+      },
+      {
+        "name": "Diblis the Fair",
+        "lastAppearence": 1781838000000,
+        "currentChance": 0,
+        "expectedIn": 6
+      },
+      {
+        "name": "Fernfang",
+        "lastAppearence": 1780974000000,
+        "currentChance": 0,
+        "expectedIn": 6
+      },
+      {
+        "name": "Furyosa",
+        "lastAppearence": 1781492400000,
+        "currentChance": 0,
+        "expectedIn": 6
+      },
+      {
+        "name": "Dracola",
+        "lastAppearence": 1781665200000,
+        "currentChance": 0,
+        "expectedIn": 8
+      },
+      {
+        "name": "The Handmaiden",
+        "lastAppearence": 1781751600000,
+        "currentChance": 0,
+        "expectedIn": 9
+      },
+      {
+        "name": "Ferumbras",
+        "lastAppearence": 1769050800000,
+        "currentChance": 0,
+        "expectedIn": 10
+      },
+      {
+        "name": "The Frog Prince",
+        "lastAppearence": 1782010800000,
+        "currentChance": 0,
+        "expectedIn": 10
+      },
+      {
+        "name": "The Abomination",
+        "lastAppearence": 1770001200000,
+        "currentChance": 0,
+        "expectedIn": 13
+      },
+      {
+        "name": "Tzumrah The Dazzler",
+        "lastAppearence": 1781578800000,
+        "currentChance": 0,
+        "expectedIn": 13
+      },
+      {
+        "name": "Zushuka",
+        "lastAppearence": 1781751600000,
+        "currentChance": 0,
+        "expectedIn": 14
+      },
+      {
+        "name": "Feroxa",
+        "lastAppearence": 1781319600000,
+        "currentChance": 0,
+        "expectedIn": 21
+      },
+      {
+        "name": "Ghazbaran",
+        "lastAppearence": 1770087600000,
+        "currentChance": 0,
+        "expectedIn": 22
+      },
+      {
+        "name": "Morshabaal",
+        "lastAppearence": 1772074800000,
+        "currentChance": 0,
+        "expectedIn": 37
+      },
+      {
+        "name": "Morgaroth",
+        "lastAppearence": 1775790000000,
+        "currentChance": 0,
+        "expectedIn": 94
+      },
+      {
+        "name": "The Pale Count"
+      },
+      {
+        "name": "Shlorg"
+      },
+      {
+        "name": "Man in the Cave"
+      },
+      {
+        "name": "Ocyakao"
+      },
+      {
+        "name": "The Welter"
+      },
+      {
+        "name": "Yeti"
+      },
+      {
+        "name": "Apprentice Sheng",
+        "lastAppearence": 1778382000000
+      },
+      {
+        "name": "Burster",
+        "lastAppearence": 1781838000000
+      },
+      {
+        "name": "Chopper",
+        "lastAppearence": 1777604400000
+      },
+      {
+        "name": "Crustacea Gigantica",
+        "lastAppearence": 1781924400000
+      },
+      {
+        "name": "Dreadful Disruptor",
+        "lastAppearence": 1781924400000
+      },
+      {
+        "name": "Elvira Hammerthrust",
+        "lastAppearence": 1780974000000
+      },
+      {
+        "name": "Gravelord Oshuran",
+        "lastAppearence": 1775444400000
+      },
+      {
+        "name": "Groam",
+        "lastAppearence": 1781233200000
+      },
+      {
+        "name": "Grorlam",
+        "lastAppearence": 1782010800000
+      },
+      {
+        "name": "Hatebreeder",
+        "lastAppearence": 1781233200000
+      },
+      {
+        "name": "Jesse the Wicked",
+        "lastAppearence": 1778900400000
+      },
+      {
+        "name": "Mahatheb",
+        "lastAppearence": 1780023600000
+      },
+      {
+        "name": "Maw",
+        "lastAppearence": 1777604400000
+      },
+      {
+        "name": "Mindmasher",
+        "lastAppearence": 1777604400000
+      },
+      {
+        "name": "Mornenion",
+        "lastAppearence": 1770346800000
+      },
+      {
+        "name": "Robby the Reckless",
+        "lastAppearence": 1774494000000
+      },
+      {
+        "name": "Rotspit",
+        "lastAppearence": 1777604400000
+      },
+      {
+        "name": "Shadowstalker",
+        "lastAppearence": 1777518000000
+      },
+      {
+        "name": "Teleskor",
+        "lastAppearence": 1706151600000
+      },
+      {
+        "name": "The Manhunter",
+        "lastAppearence": 1775098800000
+      },
+      {
+        "name": "The Mean Masher",
+        "lastAppearence": 1780455600000
+      },
+      {
+        "name": "Yakchal",
+        "lastAppearence": 1781924400000
+      },
+      {
+        "name": "The Hungerer",
+        "lastAppearence": 1782010800000
+      },
+      {
+        "name": "Rotrender"
+      },
+      {
+        "name": "Sir Leopold",
+        "lastAppearence": 1779505200000
+      }
+    ]
+  },
+  "recentlyAppeared": [
+    {
+      "name": "Albino Dragon",
+      "lastAppearence": 1782010800000
+    },
+    {
+      "name": "Arthom The Hunter",
+      "lastAppearence": 1782010800000
+    },
+    {
+      "name": "Dreadmaw",
+      "lastAppearence": 1782010800000
+    },
+    {
+      "name": "Grorlam",
+      "lastAppearence": 1782010800000
+    },
+    {
+      "name": "Midnight Panther",
+      "lastAppearence": 1782010800000
+    },
+    {
+      "name": "The Frog Prince",
+      "lastAppearence": 1782010800000
+    },
+    {
+      "name": "Xenia",
+      "lastAppearence": 1782010800000
+    },
+    {
+      "name": "Zarabustor",
+      "lastAppearence": 1782010800000
+    },
+    {
+      "name": "The Hungerer",
+      "lastAppearence": 1782010800000
+    },
+    {
+      "name": "Big Boss Trolliver",
+      "lastAppearence": 1781924400000
+    },
+    {
+      "name": "Captain Jones",
+      "lastAppearence": 1781924400000
+    },
+    {
+      "name": "Crustacea Gigantica",
+      "lastAppearence": 1781924400000
+    },
+    {
+      "name": "Dreadful Disruptor",
+      "lastAppearence": 1781924400000
+    },
+    {
+      "name": "Flamecaller Zazrak",
+      "lastAppearence": 1781924400000
+    },
+    {
+      "name": "Rukor Zad",
+      "lastAppearence": 1781924400000
+    },
+    {
+      "name": "The Blightfather",
+      "lastAppearence": 1781924400000
+    },
+    {
+      "name": "The Welter",
+      "lastAppearence": 1781924400000
+    },
+    {
+      "name": "Tyrn",
+      "lastAppearence": 1781924400000
+    },
+    {
+      "name": "Willi Wasp",
+      "lastAppearence": 1781924400000
+    },
+    {
+      "name": "Yakchal",
+      "lastAppearence": 1781924400000
+    },
+    {
+      "name": "Burster",
+      "lastAppearence": 1781838000000
+    },
+    {
+      "name": "Diblis the Fair",
+      "lastAppearence": 1781838000000
+    },
+    {
+      "name": "Oodok Witchmaster",
+      "lastAppearence": 1781838000000
+    },
+    {
+      "name": "The Evil Eye",
+      "lastAppearence": 1781838000000
+    },
+    {
+      "name": "The Voice Of Ruin",
+      "lastAppearence": 1781838000000
+    },
+    {
+      "name": "Undead Cavebear",
+      "lastAppearence": 1781838000000
+    },
+    {
+      "name": "Zomba",
+      "lastAppearence": 1781838000000
+    }
+  ],
+  "translations": {
+    "common": {
+      "error": {
+        "P1": "oops!",
+        "P2": "page not found!",
+        "ErrorLabel": "Error, something unexpected happened"
+      },
+      "Header": {
+        "h1": {
+          "home": "Buy and sell Tibia characters on the official Char Bazaar!",
+          "calculators": "All sorts of tools and calculators for Tibia",
+          "statistics": "Find statistics for Tibia Char Bazaar characters!",
+          "highscores": "Top levels, highest skills and biggests bids on Tibia Char Bazaar!",
+          "about": "About the Exevo Pan website, disclaimers and contact information.",
+          "war": "Follow live data and statistics from Libertabra War!",
+          "advertise": "Highlight your own auction and get higher bids!",
+          "blog": "Blog",
+          "bossTracker": "Find out where and when bosses will spawn!"
+        },
+        "openMenuLabel": "Open the navigation menu",
+        "closeMenuLabel": "Close the navigation menu",
+        "openUserMenu": "Open user menu",
+        "logoLabel": "Go to homepage",
+        "nav": {
+          "charBazaar": "Char Bazaar",
+          "calculators": "Calculators",
+          "statistics": "Statistics",
+          "war": "Libertabra War",
+          "about": "About",
+          "advertise": "Advertise",
+          "blog": "Blog",
+          "bossTracker": "Bosses",
+          "exevopro": "Exevo Pro"
+        },
+        "themeSwitch": "Toggle dark theme",
+        "AccountButton": {
+          "dashboard": "Dashboard",
+          "logout": "Logout"
+        }
+      },
+      "BlogTags": {
+        "news": "News",
+        "article": "Article",
+        "tutorial": "Tutorial",
+        "tips": "Tips"
+      },
+      "or": "or",
+      "and": "and",
+      "transfer": "transfer",
+      "from": "from",
+      "to": "to",
+      "day": "day",
+      "days": "days",
+      "hour": "hour",
+      "hours": "hours",
+      "minute": "minute",
+      "minutes": "minutes",
+      "today": "today",
+      "tomorrow": "tomorrow",
+      "Month": {
+        "0": "Jan",
+        "1": "Feb",
+        "2": "Mar",
+        "3": "Apr",
+        "4": "May",
+        "5": "Jun",
+        "6": "Jul",
+        "7": "Aug",
+        "8": "Sep",
+        "9": "Oct",
+        "10": "Nov",
+        "11": "Dec"
+      },
+      "FullMonth": {
+        "0": "January",
+        "1": "February",
+        "2": "March",
+        "3": "April",
+        "4": "May",
+        "5": "June",
+        "6": "July",
+        "7": "August",
+        "8": "September",
+        "9": "October",
+        "10": "November",
+        "11": "December"
+      },
+      "Weekdays": {
+        "0": "Sun",
+        "1": "Mon",
+        "2": "Tue",
+        "3": "Wed",
+        "4": "Thu",
+        "5": "Fri",
+        "6": "Sat"
+      },
+      "FullWeekdays": {
+        "0": "Sunday",
+        "1": "Monday",
+        "2": "Tuesday",
+        "3": "Wednesday",
+        "4": "Thursday",
+        "5": "Friday",
+        "6": "Saturday"
+      },
+      "AuctionTimer": {
+        "finishedAuction": "Auction finished at",
+        "unfinishedAuction": "Auction ends at",
+        "auctionEndsIn": "Auction ends in",
+        "auctionIsOver": "Auction is over",
+        "auctionEnded": "Auction Ended!"
+      },
+      "RemoveItem": "Remove item",
+      "TibiaCoinsCta": {
+        "text": "Get Tibia Coins",
+        "link": "https://www.reidoscoins.com.br/?tracking=60b8120a1ab43"
+      },
+      "otPokemonCta": {
+        "text": "Play otPokémon",
+        "link": "https://eu.otpokemon.com/exevo"
+      },
+      "TibiaBlackjackCta": {
+        "text": "Play Tibia Blackjack"
+      },
+      "Ravendawn": {
+        "link": "https://ravenquest.io/register?utm_source=exevopan&utm_medium=wiki&utm_campaign=rq_launch&utm_term=mmorpg+ravenquest+nostalgic&utm_content=banner125x125",
+        "text": "Play Ravendawn"
+      },
+      "NoPing": {
+        "link": "https://noping.com/en",
+        "text": "Improve your ping"
+      },
+      "CloseDrawerLabel": "Close drawer",
+      "RepoLinkText": "Go to this repository",
+      "MadeBy": "made by",
+      "ClearInputLabel": "Clear input",
+      "InputIconLabels": {
+        "valid": "Field is valid",
+        "invalid": "Field is invalid",
+        "loading": "Validating..."
+      },
+      "Of": "of",
+      "Paginator": {
+        "FirstLabel": "Go to first page",
+        "PreviousLabel": "Go to previous page",
+        "NextLabel": "Go to next page",
+        "LastLabel": "Go to last page"
+      },
+      "PopoverCloseLabel": "Click here to close",
+      "ChangeValueLabel": "change value",
+      "UpdatingDataText": "Updating data...",
+      "PreferredLanguageLabel": "Change language",
+      "SpecialTags": {
+        "manyCharms": "Many charms",
+        "manyQuests": "Many quests",
+        "manyMounts": "Many mounts",
+        "manyStoreCosmetics": "Many store cosmetics 🛍️",
+        "rareMounts": "Rare mounts ✨",
+        "rareOutfits": "Rare outfits 💎",
+        "secondaryEkSkill": "Secondary skill ⚔️",
+        "soulwarAvailable": "Soul War available 💀",
+        "primalAvailable": "Primal Ordeal available 🦖"
+      },
+      "CharacterCard": {
+        "linkLabel": "Go to character page",
+        "bidLabelText": {
+          "auctionSuccessful": "Auction Successful",
+          "auctionFailed": "Auction Failed",
+          "currentBid": "Current Bid",
+          "minimumBid": "Minimum Bid"
+        },
+        "auctionEnd": "Auction end",
+        "featuredItem": "Featured item",
+        "experimentalServer": "This is an experimental server!",
+        "transferAvailable": "Regular World Transfer available",
+        "transferUnavailable": "Regular World Transfer NOT available",
+        "Tooltips": {
+          "labels": {
+            "imbuements": "Imbuements list",
+            "charms": "Charms list",
+            "quests": "Quests list",
+            "supremeGems": "Available supreme gem modifiers"
+          },
+          "quests": {
+            "utilitary": "Utilitary",
+            "access": "Access",
+            "boss": "Bosses",
+            "other": "Others"
+          }
+        },
+        "tcInvested": {
+          "prefix": "This character has invested at least",
+          "suffix": "Tibia Coins in store purchases",
+          "invested": "invested",
+          "exclusive": "Exclusive for {{exevopro}}"
+        },
+        "AuctionStatus": "Auction status",
+        "BidStatus": "Bid status",
+        "highlightLabelText": "Highlight your auction!",
+        "CharacterModal": {
+          "totalInvested": "Total invested",
+          "exclusive": "(exclusive for {{exevopro}})",
+          "SpriteBox": {
+            "firstAddon": "First addon",
+            "secondAddon": "Second addon"
+          }
+        }
+      },
+      "StepperCompletedLabel": "Step completed",
+      "CopyButton": {
+        "toCopyLabel": "Copy to clipboard",
+        "copiedLabel": "Copied to clipboard"
+      },
+      "Accordion": {
+        "open": "Open",
+        "close": "Close"
+      },
+      "Dialog": {
+        "close": "Close dialog"
+      },
+      "FooterTitle": "Exevo Pan - made by",
+      "AnchorIconLabel": "Copy link",
+      "CharacterTooltipLabel": "Go to character page",
+      "Newsticker": "Recent articles",
+      "SignIn": {
+        "title": "Sign in with",
+        "subtext": "By signing in, you agree to our"
+      },
+      "termsOfService": "Terms of Service",
+      "privacyPolicy": "Privacy Policy",
+      "SuggestedReading": {
+        "miniTitle": "Suggested reading:"
+      },
+      "RangeDatePicker": {
+        "currentMonthLabel": "Current month",
+        "nextMonthLabel": "Next month"
+      },
+      "genericError": "Oops! Something went wrong",
+      "genericLoading": "Loading...",
+      "exevoProCTA": "Get {{exevoPro}}",
+      "play": "Play",
+      "SetupNotifications": {
+        "notAuthed": "You must {{logIn}} to set up auction notifications",
+        "logIn": "log in",
+        "permission": "Please {{enableNotifications}} on this device",
+        "enableNotifications": "enable notifications",
+        "deviceReady": "This device is receiving {{notifications}}!",
+        "notifications": "notifications",
+        "testTitle": "Hey there 👋",
+        "testText": "How are you doing?",
+        "successMessage": "Device registered!"
+      },
+      "AuctionEstimationAlerts": {
+        "Disclaimer": {
+          "first": "Value is always {{subjective}}!",
+          "subjective": "subjective",
+          "second": "This estimation only considers:",
+          "server": "Server type",
+          "character": "Skills, level and vocation"
+        },
+        "Failed": {
+          "message": "Not many similar characters were found in our database"
+        },
+        "ProOnly": {
+          "message": "Auctions estimated above {{freeCap}} are only available for {{exevoPro}} members"
+        }
+      },
+      "EstimatedPriceBox": {
+        "label": "Estimated price",
+        "similarFound": "{{count}} similar auction",
+        "similarFoundPlural": "{{count}} similar auctions"
+      },
+      "Menu": {
+        "buttonLabel": "Toggle menu"
+      },
+      "BestiaryBanner": {
+        "heading": "PC/Mobile Idle Tibia: {{link}}"
+      }
+    },
+    "bosses": {
+      "Header": {
+        "bossTracker": "Boss Tracker",
+        "huntingGroups": "Hunting Groups"
+      },
+      "BossCard": {
+        "lastSeen": "Last seen",
+        "thisSS": "This server save",
+        "ago": "ago",
+        "thisCreatureHas": "This creature has",
+        "differentSpawnLocations": "different spawn locations.",
+        "itIs": "It is",
+        "possible": "possible",
+        "toSpawn": "to spawn at this spot.",
+        "thereAre": "There are",
+        "left": "left",
+        "before": "before it can spawn at this spot.",
+        "itsUpToYou": "It's up to you to figure out which spot this is",
+        "chanceToSpawn": "Chance to spawn today",
+        "unknown": "Unknown",
+        "noChance": "No chance",
+        "expectedIn": "Expected in"
+      },
+      "BossDialog": {
+        "respawns": "Respawns every {{min}}~{{max}} days",
+        "loot": "Relevant loot",
+        "raidMessages": "Raid messages",
+        "bossWillSpawn": "Boss will spawn",
+        "location": "Location",
+        "locations": "Locations",
+        "using": "using",
+        "descriptions": {
+          "Grorlam": "Several spots inside Mount Sternum (Thais)"
+        }
+      }
+    },
+    "bossTracker": {
+      "Meta": {
+        "title": "Tibia Boss Tracker",
+        "description": "Track Tibia boss spawns by server, timers, and chances."
+      },
+      "updated": {
+        "recently": "Updated a few minutes ago",
+        "hoursAgo": {
+          "prefix": "Updated",
+          "suffix": "ago"
+        }
+      },
+      "ServerNavigation": {
+        "label": "Current server:"
+      },
+      "RecentlyAppeared": {
+        "title": "Recently appeared",
+        "showMore": "Show more",
+        "ago": "ago"
+      },
+      "BossGrid": {
+        "pin": "Favorite this boss",
+        "unpin": "Unfavorite this boss",
+        "listBosses": "List bosses by:",
+        "exclusiveBosses": "Exclusive {{exevopro}} bosses 🕵️",
+        "EmptyState": "No bosses",
+        "listOptions": {
+          "chance": "Chance",
+          "name": "Name",
+          "lastSeen": "Last seen",
+          "favorites": "Favorites"
+        }
+      }
+    }
+  },
+  "locale": "en",
+  "bestiaryBannerVariant": 0.2958185983406121
+}
