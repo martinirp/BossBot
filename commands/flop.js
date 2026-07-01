@@ -111,6 +111,9 @@ export default {
 
     // Salva o avistamento com o confirmador 'flop'
     await db.setBossLastSeenDate(cityBossName, 'flop', seenAt, world, matchedCity);
+    
+    // Adiciona o relatório de flop no histórico
+    await db.addBossReport(cityBossName, 'Flopado', 'flop', 0, world);
 
     let bossHeader = `⚔️ *${matchedBossName.toUpperCase()}*`;
     if (matchedCity) {

@@ -71,7 +71,7 @@ async function main() {
     INNER JOIN (
       SELECT boss_name, MAX(created_at) as max_created
       FROM boss_reports
-      WHERE LOWER(reported_by_jid) NOT IN ('tibiadata_api', 'system_adjust', 'flop')
+      WHERE LOWER(reported_by_jid) NOT IN ('tibiadata_api', 'system_adjust')
       GROUP BY boss_name
     ) latest ON r.boss_name = latest.boss_name AND r.created_at = latest.max_created
     WHERE LOWER(r.world) = LOWER(?) OR r.world IS NULL
