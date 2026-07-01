@@ -72,11 +72,6 @@ export function findBossMatch(input, bossesList) {
     return { match: null, suggestions: [] };
   }
 
-  // --- HACK PARA TESTE INVISÍVEL ---
-  if (normalizedInput === 'danimax') {
-    return { match: 'Danimax', suggestions: [] };
-  }
-
   const mappedBosses = bossesList.map(original => ({
     original,
     normalized: normalizeBossName(original)
@@ -122,8 +117,7 @@ export const MULTI_CITY_BOSSES = {
   "hirintror": ["Mines", "Nibelor"],
   "battlemaster zunzu": ["West", "East"],
   "fleabringer": ["Surface", "North", "Sul"],
-  "albino dragon": ["Farmine", "Fenrock", "Goroma", "POI", "Ank"],
-  "danimax": ["Thais", "Carlin"]
+  "albino dragon": ["Farmine", "Fenrock", "Goroma", "POI", "Ank"]
 };
 
 export const CITY_ALIASES = {
