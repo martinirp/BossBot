@@ -24,48 +24,60 @@ const loadStats = () => {
   }
 };
 
-// Helper to format seen_at timestamp from "YYYY-MM-DD HH:mm" to "DD/MM/YYYY HH:mm"
-const formatSeenAt = (seenAtStr) => {
+// Helper to format seen_at timestamp from German time to BRT "DD/MM/YYYY HH:mm"
+const formatSeenAtBrt = (seenAtStr) => {
   if (!seenAtStr) return 'Nenhum avistamento registrado ainda';
-  const parts = seenAtStr.split(' ');
-  if (parts.length !== 2) return seenAtStr;
-  const dateParts = parts[0].split('-');
-  if (dateParts.length !== 3) return seenAtStr;
-  return `${dateParts[2]}/${dateParts[1]}/${dateParts[0]} ${parts[1]}`;
-};
-
-// Helper to format Date in "fake UTC" (matching Brazil timezone digits) to "DD/MM/YYYY"
-const formatFakeUtcDate = (date) => {
+  const germanDate = db.parseDateStr(seenAtStr);
+  if (!germanDate) return seenAtStr;
+  const brtDate = db.utcToBrt(db.germanToUtc(germanDate));
   const pad = (n) => String(n).padStart(2, '0');
-  const day = pad(date.getUTCDate());
-  const month = pad(date.getUTCMonth() + 1);
-  const year = date.getUTCFullYear();
-  return `${day}/${month}/${year}`;
+  return `${pad(brtDate.getUTCDate())}/${pad(brtDate.getUTCMonth() + 1)}/${brtDate.getUTCFullYear()} ${pad(brtDate.getUTCHours())}:${pad(brtDate.getUTCMinutes())}`;
 };
 
 // Calculates prediction based on seenDate, minDays, and maxDays
 const calculatePrediction = (seenAtStr, minDays, maxDays, confirmedBy) => {
-  const datePart = seenAtStr.split(' ')[0]; // "YYYY-MM-DD"
-  const seenDate = new Date(datePart + 'T03:00:00Z');
+  const germanSeenDate = db.parseDateStr(seenAtStr);
+  if (!germanSeenDate) return "Erro ao processar data";
+
+  const trackingStartGerman = new Date(germanSeenDate.getTime() - 10 * 60 * 60 * 1000);
+  trackingStartGerman.setUTCHours(0, 0, 0, 0);
 
   const shiftMinMs = confirmedBy === 'TibiaData_API' ? -24 * 60 * 60 * 1000 : 0;
-  const minDate = new Date(seenDate.getTime() + minDays * 24 * 60 * 60 * 1000 + shiftMinMs);
-  const maxDate = new Date(seenDate.getTime() + maxDays * 24 * 60 * 60 * 1000);
+  const minDateGerman = new Date(trackingStartGerman.getTime() + minDays * 24 * 60 * 60 * 1000 + shiftMinMs);
+  const maxDateGerman = new Date(trackingStartGerman.getTime() + maxDays * 24 * 60 * 60 * 1000);
   
-  const today = new Date();
+  minDateGerman.setUTCHours(10, 0, 0, 0);
+  maxDateGerman.setUTCHours(10, 0, 0, 0);
 
+  const minDateBrt = db.utcToBrt(db.germanToUtc(minDateGerman));
+  const maxDateBrt = db.utcToBrt(db.germanToUtc(maxDateGerman));
+
+  const formatBrtDate = (d) => {
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)}/${d.getUTCFullYear()}`;
+  };
+
+  const today = new Date();
+  
   let predictionStr = "";
   if (minDays === maxDays) {
     predictionStr = `A cada ${minDays} dia(s)`;
   } else {
-    predictionStr = `Entre ${formatFakeUtcDate(minDate)} e ${formatFakeUtcDate(maxDate)}`;
+    predictionStr = `Entre ${formatBrtDate(minDateBrt)} e ${formatBrtDate(maxDateBrt)}`;
   }
   
   let extraStr = "";
   if (minDays !== maxDays) {
-    if (today >= maxDate) {
+    const nowGerman = db.utcToGerman(today);
+    const trackingNowGerman = new Date(nowGerman.getTime() - 10 * 60 * 60 * 1000);
+    trackingNowGerman.setUTCHours(0, 0, 0, 0);
+
+    minDateGerman.setUTCHours(0, 0, 0, 0);
+    maxDateGerman.setUTCHours(0, 0, 0, 0);
+
+    if (trackingNowGerman >= maxDateGerman) {
       extraStr = " (🟢 No radar / 🟢 Alta chance)";
-    } else if (today >= minDate) {
+    } else if (trackingNowGerman >= minDateGerman) {
       extraStr = " (🟢 No radar / 🟢 Com chance)";
     } else {
       extraStr = " (🔴 Sem chance)";
@@ -123,9 +135,9 @@ const formatBossInfo = async (bossName, intervalName, record) => {
   if (record && record.seen_at) {
     const confirmer = record.confirmed_by;
     if (confirmer === 'TibiaData_API') {
-      seenLine = `👁️ *Visto:* ${formatSeenAt(record.seen_at)} (por TibiaData API)\n`;
+      seenLine = `👁️ *Visto:* ${formatSeenAtBrt(record.seen_at)} (por TibiaData API)\n`;
     } else {
-      seenLine = `👁️ *Visto:* ${formatSeenAt(record.seen_at)}\n`;
+      seenLine = `👁️ *Visto:* ${formatSeenAtBrt(record.seen_at)}\n`;
     }
   } else {
     seenLine = `👁️ *Visto:* Nenhum avistamento registrado ainda\n`;

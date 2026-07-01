@@ -7,6 +7,65 @@ dotenv.config();
 const dbFile = process.env.DB_FILE || 'bossbot.db';
 export let db;
 
+// ─── Timezone Conversion Helpers ─────────────────────────────────────────────
+
+export function isGermanDST(date) {
+  const year = date.getUTCFullYear();
+
+  // Último domingo de março (DST começa às 02:00 CET = 01:00 UTC)
+  const marchEnd = new Date(Date.UTC(year, 2, 31));
+  while (marchEnd.getUTCDay() !== 0) marchEnd.setUTCDate(marchEnd.getUTCDate() - 1);
+  const dstStart = new Date(Date.UTC(year, 2, marchEnd.getUTCDate(), 1, 0, 0));
+
+  // Último domingo de outubro (DST termina às 03:00 CEST = 01:00 UTC)
+  const octEnd = new Date(Date.UTC(year, 9, 31));
+  while (octEnd.getUTCDay() !== 0) octEnd.setUTCDate(octEnd.getUTCDate() - 1);
+  const dstEnd = new Date(Date.UTC(year, 9, octEnd.getUTCDate(), 1, 0, 0));
+
+  return date >= dstStart && date < dstEnd;
+}
+
+export function utcToGerman(date) {
+  const isDST = isGermanDST(date);
+  const offset = isDST ? 2 : 1;
+  return new Date(date.getTime() + offset * 60 * 60 * 1000);
+}
+
+export function germanToUtc(germanDate) {
+  let utcGuess = new Date(germanDate.getTime() - 1 * 60 * 60 * 1000);
+  if (isGermanDST(utcGuess)) {
+    utcGuess = new Date(germanDate.getTime() - 2 * 60 * 60 * 1000);
+  }
+  return utcGuess;
+}
+
+export function utcToBrt(date) {
+  return new Date(date.getTime() - 3 * 60 * 60 * 1000);
+}
+
+export function brtToUtc(brtDate) {
+  return new Date(brtDate.getTime() + 3 * 60 * 60 * 1000);
+}
+
+export function formatDateStr(date) {
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())} ${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}`;
+}
+
+export function parseDateStr(str) {
+  if (!str) return new Date();
+  const parts = str.trim().split(' ');
+  const dateParts = parts[0].split('-');
+  const timeParts = (parts[1] || '00:00').split(':');
+  return new Date(Date.UTC(
+    Number(dateParts[0]),
+    Number(dateParts[1]) - 1,
+    Number(dateParts[2]),
+    Number(timeParts[0]),
+    Number(timeParts[1] || 0)
+  ));
+}
+
 export function initDb() {
   return new Promise((resolve, reject) => {
     db = new sqlite3.Database(dbFile, (err) => {
@@ -275,12 +334,16 @@ export function getBossSubscriptionsForJid(jid) {
   });
 }
 
-export function addBossReport(bossName, extraText, reportedByJid, notifiedCount, world = null) {
+export function addBossReport(bossName, extraText, reportedByJid, notifiedCount, world = null, createdAtStr = null) {
   const cleanJid = jidNormalizedUser(reportedByJid);
+  let timestamp = createdAtStr;
+  if (!timestamp) {
+     timestamp = formatDateStr(utcToGerman(new Date()));
+  }
   return new Promise((resolve, reject) => {
     db.run(
-      `INSERT INTO boss_reports (boss_name, extra_text, reported_by_jid, notified_count, world) VALUES (?, ?, ?, ?, ?)`,
-      [bossName, extraText, cleanJid, notifiedCount, world],
+      `INSERT INTO boss_reports (boss_name, extra_text, reported_by_jid, notified_count, world, created_at) VALUES (?, ?, ?, ?, ?, ?)`,
+      [bossName, extraText, cleanJid, notifiedCount, world, timestamp],
       function (err) {
         if (err) return reject(err);
         resolve(this.lastID);
@@ -476,8 +539,7 @@ export function getMonthlyRank(month, year) {
 export function updateBossLastSeen(bossName, jid, world = 'Quelibra', city = null) {
   const cleanJid = jidNormalizedUser(jid);
   const now = new Date();
-  now.setUTCHours(now.getUTCHours() - 3); // Converte UTC -> BRT (UTC-3)
-  const seenAt = now.toISOString().replace('T', ' ').substring(0, 16);
+  const seenAt = formatDateStr(utcToGerman(now));
   return setBossLastSeenDate(bossName, cleanJid, seenAt, world, city);
 }
 
@@ -574,8 +636,7 @@ export function getAllBossesLastSeen(world = 'Quelibra') {
 export function updateBossCheck(bossName, jid, world = 'Quelibra', city = null) {
   const cleanJid = jidNormalizedUser(jid);
   const now = new Date();
-  now.setUTCHours(now.getUTCHours() - 3); // Converte UTC -> BRT (UTC-3)
-  const checkedAt = now.toISOString().replace('T', ' ').substring(0, 16);
+  const checkedAt = formatDateStr(utcToGerman(now));
   return new Promise((resolve, reject) => {
     db.run(
       `INSERT INTO boss_check (world, boss_name, checked_by, checked_at, city) VALUES (?, ?, ?, ?, ?)

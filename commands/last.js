@@ -1,6 +1,16 @@
 import * as db from '../database.js';
 import { findBossMatch, loadBosses, getBossCities } from '../commands.js';
 
+// Helper to format seen_at timestamp from German time to BRT "DD/MM/YYYY HH:mm"
+const formatSeenAtBrt = (seenAtStr) => {
+  if (!seenAtStr) return 'Nenhum avistamento registrado ainda';
+  const germanDate = db.parseDateStr(seenAtStr);
+  if (!germanDate) return seenAtStr;
+  const brtDate = db.utcToBrt(db.germanToUtc(germanDate));
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${pad(brtDate.getUTCDate())}/${pad(brtDate.getUTCMonth() + 1)}/${brtDate.getUTCFullYear()} ${pad(brtDate.getUTCHours())}:${pad(brtDate.getUTCMinutes())}`;
+};
+
 export default {
   name: 'last',
   aliases: ['historico', 'histórico', 'ultimo', 'último'],
@@ -59,7 +69,7 @@ export default {
         reply += `📍 *${item.city}*:\n`;
         if (item.record) {
           const confirmer = item.record.confirmed_by;
-          reply += `👁️ Último avistamento: *${item.record.seen_at}*\n`;
+          reply += `👁️ Último avistamento: *${formatSeenAtBrt(item.record.seen_at)}*\n`;
           if (!confirmer) {
             reply += `👤 Por: Desconhecido\n\n`;
           } else if (confirmer === 'flop') {
@@ -98,7 +108,7 @@ export default {
 
     const cityText = record.city ? ` (${record.city})` : '';
     const confirmer = record.confirmed_by;
-    let text = `⚔️ *${bossName}*\n\n👁️ Último avistamento: *${record.seen_at}*${cityText}\n`;
+    let text = `⚔️ *${bossName}*\n\n👁️ Último avistamento: *${formatSeenAtBrt(record.seen_at)}*${cityText}\n`;
     const singleMentions = [];
 
     if (!confirmer) {

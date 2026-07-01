@@ -25,22 +25,13 @@ export default {
       
       const bossesWithPrediction = [];
 
-      // Helper to format seen_at timestamp from "YYYY-MM-DD HH:mm" to "DD/MM/YYYY HH:mm"
-      const formatSeenAt = (seenAtStr) => {
-        const parts = seenAtStr.split(' ');
-        if (parts.length !== 2) return seenAtStr;
-        const dateParts = parts[0].split('-');
-        if (dateParts.length !== 3) return seenAtStr;
-        return `${dateParts[2]}/${dateParts[1]}/${dateParts[0]} ${parts[1]}`;
-      };
-
-      // Helper to format Date in "fake UTC" (matching Brazil timezone digits) to "DD/MM/YYYY"
-      const formatFakeUtcDate = (date) => {
-        const pad = (n) => String(n).padStart(2, '0');
-        const day = pad(date.getUTCDate());
-        const month = pad(date.getUTCMonth() + 1);
-        const year = date.getUTCFullYear();
-        return `${day}/${month}/${year}`;
+      // Helper to format seen_at timestamp from German time to BRT "DD/MM/YYYY HH:mm"
+      const formatSeenAtBrt = (seenAtStr) => {
+         const germanDate = db.parseDateStr(seenAtStr);
+         if (!germanDate) return seenAtStr;
+         const brtDate = db.utcToBrt(db.germanToUtc(germanDate));
+         const pad = (n) => String(n).padStart(2, '0');
+         return `${pad(brtDate.getUTCDate())}/${pad(brtDate.getUTCMonth() + 1)}/${brtDate.getUTCFullYear()} ${pad(brtDate.getUTCHours())}:${pad(brtDate.getUTCMinutes())}`;
       };
 
       const today = new Date();
@@ -54,33 +45,50 @@ export default {
          const minDays = stats.fixedDaysFrequency.min;
          const maxDays = stats.fixedDaysFrequency.max;
 
-         // O seen_at armazena o "dia de rastreamento" do TibiaData
-         const datePart = record.seen_at.split(' ')[0]; // "YYYY-MM-DD"
-         const seenDate = new Date(datePart + 'T03:00:00Z');
+         const germanSeenDate = db.parseDateStr(record.seen_at);
+         if (!germanSeenDate) continue;
+
+         // Subtrai 10h para alinhar a data de contagem de ciclos (Server Save às 10:00 CEST/CET)
+         const trackingStartGerman = new Date(germanSeenDate.getTime() - 10 * 60 * 60 * 1000);
+         trackingStartGerman.setUTCHours(0, 0, 0, 0); // Zera para o início do dia do ciclo
 
          const shiftMinMs = record.confirmed_by === 'TibiaData_API' ? -24 * 60 * 60 * 1000 : 0;
-         const minDate = new Date(seenDate.getTime() + minDays * 24 * 60 * 60 * 1000 + shiftMinMs);
-         const maxDate = new Date(seenDate.getTime() + maxDays * 24 * 60 * 60 * 1000);
+         const minDateGerman = new Date(trackingStartGerman.getTime() + minDays * 24 * 60 * 60 * 1000 + shiftMinMs);
+         const maxDateGerman = new Date(trackingStartGerman.getTime() + maxDays * 24 * 60 * 60 * 1000);
          
-         // Calcula dias decorridos
-         const diffTime = Math.abs(today - seenDate);
-         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) - 1; // Ajuste pra "dias desde a morte"
+         // Para converter a data do ciclo de volta pra BRT para exibição
+         minDateGerman.setUTCHours(10, 0, 0, 0);
+         maxDateGerman.setUTCHours(10, 0, 0, 0);
+
+         const minDateBrt = db.utcToBrt(db.germanToUtc(minDateGerman));
+         const maxDateBrt = db.utcToBrt(db.germanToUtc(maxDateGerman));
+
+         const formatBrtDate = (d) => {
+           const pad = (n) => String(n).padStart(2, '0');
+           return `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)}/${d.getUTCFullYear()}`;
+         };
 
          let predictionStr = "";
          if (minDays === maxDays) {
            predictionStr = `A cada ${minDays} dia(s)`;
          } else {
-           predictionStr = `Entre ${formatFakeUtcDate(minDate)} e ${formatFakeUtcDate(maxDate)}`;
+           predictionStr = `Entre ${formatBrtDate(minDateBrt)} e ${formatBrtDate(maxDateBrt)}`;
          }
          
          let extraStr = "";
          if (minDays !== maxDays) {
-           if (today >= maxDate) {
+           const nowGerman = db.utcToGerman(today);
+           const trackingNowGerman = new Date(nowGerman.getTime() - 10 * 60 * 60 * 1000);
+           trackingNowGerman.setUTCHours(0, 0, 0, 0);
+
+           minDateGerman.setUTCHours(0, 0, 0, 0);
+           maxDateGerman.setUTCHours(0, 0, 0, 0);
+
+           if (trackingNowGerman >= maxDateGerman) {
                extraStr = " (🟢 No radar / 🟢 Alta chance)";
-           } else if (today >= minDate) {
+           } else if (trackingNowGerman >= minDateGerman) {
                extraStr = " (🟢 No radar / 🟢 Com chance)";
            } else {
-               // Ainda não está na faixa que pode nascer, então pulamos
                continue;
            }
          }
@@ -89,12 +97,14 @@ export default {
           const slicedRecentTimes = recentTimes.slice(-3);
           let predictionText = predictionStr + extraStr;
           if (slicedRecentTimes && slicedRecentTimes.length > 0) {
-            predictionText += `\n⏰ *Últimas aparições:* ${slicedRecentTimes.join(', ')}`;
+             // Opcional: Aqui poderíamos formatar as datas de recentTimes para BRT também
+             const formattedRecents = slicedRecentTimes.map(t => formatSeenAtBrt(t));
+             predictionText += `\n⏰ *Últimas aparições:* ${formattedRecents.join(', ')}`;
           }
 
           bossesWithPrediction.push({
              name: bName,
-             lastSeenFormatted: formatSeenAt(record.seen_at),
+             lastSeenFormatted: formatSeenAtBrt(record.seen_at),
              prediction: predictionText
           });
       }

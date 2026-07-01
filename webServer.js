@@ -8,7 +8,11 @@ import {
   getAllBossesLastSeen, 
   getBossLastSeen, 
   getBossCheck, 
-  getUserName 
+  getUserName,
+  parseDateStr,
+  utcToGerman,
+  germanToUtc,
+  utcToBrt
 } from './database.js';
 import { syncWorldKillStatistics } from './syncTibiaData.js';
 
@@ -175,6 +179,15 @@ app.get('/api/bosses/:world', async (req, res) => {
       const kills = await getKillHistory(world, bossName);
       const totalKillsCount = kills.length;
 
+      const formatBrt = (seenAtStr) => {
+        if (!seenAtStr) return null;
+        const gDate = parseDateStr(seenAtStr);
+        if (!gDate) return seenAtStr;
+        const brtDate = utcToBrt(germanToUtc(gDate));
+        const pad = (n) => String(n).padStart(2, '0');
+        return `${brtDate.getUTCFullYear()}-${pad(brtDate.getUTCMonth() + 1)}-${pad(brtDate.getUTCDate())} ${pad(brtDate.getUTCHours())}:${pad(brtDate.getUTCMinutes())}`;
+      };
+
       const baseName = bossName.replace(/\s*\(.*?\)\s*/g, '');
       const statsInfo = bossStats[baseName] || { hp: '?', immunities: [] };
       const mapLink = getBossMapLink(bossName, bossLocations);
@@ -200,11 +213,19 @@ app.get('/api/bosses/:world', async (req, res) => {
         };
       }
 
-      const last_seen_date = lastSeen.seen_at.split(' ')[0];
-      const seenDate = new Date(last_seen_date + 'T03:00:00Z');
-      const diffTime = Math.abs(now - seenDate);
-      let daysSince = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) - 1;
-      if (daysSince < 0) daysSince = 0;
+      const germanSeenDate = parseDateStr(lastSeen.seen_at);
+      let daysSince = 0;
+      if (germanSeenDate) {
+        const trackingStartGerman = new Date(germanSeenDate.getTime() - 10 * 60 * 60 * 1000);
+        trackingStartGerman.setUTCHours(0, 0, 0, 0);
+
+        const nowGerman = utcToGerman(now);
+        const trackingNowGerman = new Date(nowGerman.getTime() - 10 * 60 * 60 * 1000);
+        trackingNowGerman.setUTCHours(0, 0, 0, 0);
+        
+        const diffTime = Math.abs(trackingNowGerman - trackingStartGerman);
+        daysSince = Math.round(diffTime / (1000 * 60 * 60 * 24));
+      }
 
       const killsYesterday = kills.filter(k => k.kill_date === yesterdayStr).length;
 
@@ -243,30 +264,28 @@ app.get('/api/bosses/:world', async (req, res) => {
       let checked_at = null;
       let checked_by = null;
       if (lastCheck) {
-        const lastSeenTime = new Date(lastSeen.seen_at.replace(' ', 'T') + ':00Z');
-        const lastCheckTime = new Date(lastCheck.checked_at.replace(' ', 'T') + ':00Z');
+        const lastSeenTime = parseDateStr(lastSeen.seen_at);
+        const lastCheckTime = parseDateStr(lastCheck.checked_at);
         if (lastCheckTime > lastSeenTime) {
           checked_at = lastCheck.checked_at;
           checked_by = await formatJidName(lastCheck.checked_by);
         }
       }
 
-      const confirmedByName = await formatJidName(lastSeen.confirmed_by);
-
       return {
         name: bossName,
-        last_seen: last_seen_date,
-        seen_at_full: lastSeen.seen_at,
-        confirmed_by: confirmedByName,
-        city: lastSeen.city || null,
+        last_seen: formatBrt(lastSeen.seen_at).split(' ')[0],
+        seen_at_full: formatBrt(lastSeen.seen_at),
+        confirmed_by: await formatJidName(lastSeen.confirmed_by),
+        city: lastSeen.city,
         days_since: daysSince,
         expected_days: expectedDays,
         chance_percent: chancePercent,
-        status: status,
+        status,
         total_kills: totalKillsCount,
         kills_yesterday: killsYesterday,
-        checked_at: checked_at,
-        checked_by: checked_by,
+        checked_at: checked_at ? formatBrt(checked_at) : null,
+        checked_by,
         hp: statsInfo.hp,
         immunities: statsInfo.immunities,
         map_link: mapLink

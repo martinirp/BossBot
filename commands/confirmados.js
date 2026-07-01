@@ -17,13 +17,14 @@ export default {
         return;
       }
 
-      // Helper to format seen_at timestamp from "YYYY-MM-DD HH:mm" to "DD/MM/YYYY HH:mm"
-      const formatSeenAt = (seenAtStr) => {
-        const parts = seenAtStr.split(' ');
-        if (parts.length !== 2) return seenAtStr;
-        const dateParts = parts[0].split('-');
-        if (dateParts.length !== 3) return seenAtStr;
-        return `${dateParts[2]}/${dateParts[1]}/${dateParts[0]} ${parts[1]}`;
+      // Helper to format seen_at timestamp from German time to BRT "DD/MM/YYYY HH:mm"
+      const formatSeenAtBrt = (seenAtStr) => {
+        if (!seenAtStr) return 'Nenhum registro';
+        const germanDate = db.parseDateStr(seenAtStr);
+        if (!germanDate) return seenAtStr;
+        const brtDate = db.utcToBrt(db.germanToUtc(germanDate));
+        const pad = (n) => String(n).padStart(2, '0');
+        return `${pad(brtDate.getUTCDate())}/${pad(brtDate.getUTCMonth() + 1)}/${brtDate.getUTCFullYear()} ${pad(brtDate.getUTCHours())}:${pad(brtDate.getUTCMinutes())}`;
       };
 
       // Sort alphabetically by boss name
@@ -34,7 +35,7 @@ export default {
 
       for (const record of allSeen) {
         const bName = record.boss_name;
-        const seenAtFormatted = formatSeenAt(record.seen_at);
+        const seenAtFormatted = formatSeenAtBrt(record.seen_at);
         const confirmer = record.confirmed_by;
 
         const isLost = !confirmer || confirmer === 'TibiaData_API';

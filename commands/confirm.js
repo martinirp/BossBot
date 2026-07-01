@@ -4,77 +4,32 @@ import { enqueueNotification } from '../notifier.js';
 import fs from 'fs';
 
 /**
- * Verifica se a Alemanha está no horário de verão (CEST = UTC+2).
- * DST europeu: último domingo de março → último domingo de outubro.
- * @param {Date} date - data UTC de referência
- * @returns {boolean}
- */
-function isGermanDST(date) {
-  const year = date.getUTCFullYear();
-
-  // Último domingo de março (DST começa às 02:00 CET = 01:00 UTC)
-  const marchEnd = new Date(Date.UTC(year, 2, 31));
-  while (marchEnd.getUTCDay() !== 0) marchEnd.setUTCDate(marchEnd.getUTCDate() - 1);
-  const dstStart = new Date(Date.UTC(year, 2, marchEnd.getUTCDate(), 1, 0, 0));
-
-  // Último domingo de outubro (DST termina às 03:00 CEST = 01:00 UTC)
-  const octEnd = new Date(Date.UTC(year, 9, 31));
-  while (octEnd.getUTCDay() !== 0) octEnd.setUTCDate(octEnd.getUTCDate() - 1);
-  const dstEnd = new Date(Date.UTC(year, 9, octEnd.getUTCDate(), 1, 0, 0));
-
-  return date >= dstStart && date < dstEnd;
-}
-
-/**
- * Retorna o horário de atualização do TibiaData em BRT (hora, minuto).
- * - Horário de verão alemão (CEST): ~22:15 BRT
- * - Horário padrão alemão (CET):   ~23:15 BRT
- * @param {Date} utcNow
- * @returns {{ hour: number, minute: number }}
- */
-function getApiUpdateTimeBRT(utcNow) {
-  return isGermanDST(utcNow) ? { hour: 22, minute: 15 } : { hour: 23, minute: 15 };
-}
-
-/**
  * Calcula o "dia de rastreamento" do kill para uso na previsão.
  *
- * Regra: O Tibia cutoff oficial para as estatísticas diárias é às 04:00 CET/CEST.
- * Kills antes das 04:00 CET/CEST pertencem ao dia anterior.
- * Kills após as 04:00 CET/CEST pertencem ao dia atual.
+ * Regra: O Tibia cutoff oficial para as estatísticas diárias é às 10:00 CET/CEST (Server Save).
  *
  * @param {Date} utcNow - data/hora UTC atual
  * @param {string} world - O mundo do Tibia (ex: Antica)
  * @returns {{ seenAt: string, trackingDateStr: string, apiUpdatedTonight: boolean, brtTimeStr: string }}
  */
 export async function calcTrackingDay(utcNow, world) {
-  // Converte para BRT (UTC-3)
-  const brtNow = new Date(utcNow);
-  brtNow.setUTCHours(brtNow.getUTCHours() - 3);
-
-  const brtHour = brtNow.getUTCHours();
-  const brtMin  = brtNow.getUTCMinutes();
-  const brtTimeStr = `${String(brtHour).padStart(2, '0')}:${String(brtMin).padStart(2, '0')}`;
-  
   const pad = (n) => String(n).padStart(2, '0');
 
-  // Determina se a Alemanha está em DST (Horário de Verão: UTC+2) ou Padrão (CET: UTC+1)
-  const isDST = isGermanDST(utcNow);
-  const offsetHours = isDST ? 2 : 1;
-
+  // Converte para BRT (UTC-3)
+  const brtNow = db.utcToBrt(utcNow);
+  const brtTimeStr = `${pad(brtNow.getUTCHours())}:${pad(brtNow.getUTCMinutes())}`;
+  
   // Calcula a hora em que o kill aconteceu na Alemanha (CET/CEST)
-  const germanTime = new Date(utcNow.getTime() + offsetHours * 60 * 60 * 1000);
+  const germanTime = db.utcToGerman(utcNow);
+  
+  // Data de salvamento no banco: hora exata na Alemanha
+  const seenAt = db.formatDateStr(germanTime);
 
   // Subtrai 10 horas para alinhar com o cutoff diário de Server Save (10:00 CEST/CET) da CipSoft
   const trackingTime = new Date(germanTime.getTime() - 10 * 60 * 60 * 1000);
 
   // Formata o dia de rastreamento final (dia do ciclo da CipSoft)
-  const trackingYear = trackingTime.getUTCFullYear();
-  const trackingMonth = pad(trackingTime.getUTCMonth() + 1);
-  const trackingDay = pad(trackingTime.getUTCDate());
-  const trackingDateStr = `${trackingYear}-${trackingMonth}-${trackingDay}`;
-
-  const seenAt = `${trackingDateStr} ${brtTimeStr}`;
+  const trackingDateStr = `${trackingTime.getUTCFullYear()}-${pad(trackingTime.getUTCMonth() + 1)}-${pad(trackingTime.getUTCDate())}`;
 
   // Se o dia de rastreamento difere do dia civil em BRT, consideramos que o ciclo "virou" hoje.
   const todayStr = `${brtNow.getUTCFullYear()}-${pad(brtNow.getUTCMonth() + 1)}-${pad(brtNow.getUTCDate())}`;

@@ -1,6 +1,16 @@
 import * as db from '../database.js';
 import { findBossMatch, loadBosses, getBossCities } from '../commands.js';
 
+// Helper to format seen_at timestamp from German time to BRT "DD/MM/YYYY HH:mm"
+const formatSeenAtBrt = (seenAtStr) => {
+  if (!seenAtStr) return 'Nenhum registro';
+  const germanDate = db.parseDateStr(seenAtStr);
+  if (!germanDate) return seenAtStr;
+  const brtDate = db.utcToBrt(db.germanToUtc(germanDate));
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${pad(brtDate.getUTCDate())}/${pad(brtDate.getUTCMonth() + 1)}/${brtDate.getUTCFullYear()} ${pad(brtDate.getUTCHours())}:${pad(brtDate.getUTCMinutes())}`;
+};
+
 export default {
   name: 'lastcheck',
   aliases: ['ultimocheck', 'últimocheck', 'uc'],
@@ -50,7 +60,7 @@ export default {
         text += `📍 *${city}*:\n`;
         if (checkRecord) {
           const phone = checkRecord.checked_by.split('@')[0];
-          text += `🕵️ Último check: *${checkRecord.checked_at}* por @${phone}\n`;
+          text += `🕵️ Último check: *${formatSeenAtBrt(checkRecord.checked_at)}* por @${phone}\n`;
           if (checkRecord.checked_by.includes('@')) mentions.push(checkRecord.checked_by);
         } else {
           text += `🕵️ Último check: Nenhum registro\n`;
@@ -58,7 +68,7 @@ export default {
         
         if (lastSeenRecord) {
           const phone = lastSeenRecord.confirmed_by.split('@')[0];
-          text += `⚔️ Último avistamento: *${lastSeenRecord.seen_at}* por @${phone}\n`;
+          text += `⚔️ Último avistamento: *${formatSeenAtBrt(lastSeenRecord.seen_at)}* por @${phone}\n`;
           if (lastSeenRecord.confirmed_by.includes('@')) mentions.push(lastSeenRecord.confirmed_by);
         } else {
           text += `⚔️ Último avistamento: Nenhum registro\n`;
@@ -82,7 +92,7 @@ export default {
 
     if (checkRecord) {
       const phone = checkRecord.checked_by.split('@')[0];
-      text += `🕵️ Último check: *${checkRecord.checked_at}*\n👤 Por: @${phone}\n❌ Boss não estava lá\n`;
+      text += `🕵️ Último check: *${formatSeenAtBrt(checkRecord.checked_at)}*\n👤 Por: @${phone}\n❌ Boss não estava lá\n`;
     } else {
       text += `🕵️ Último check: Nenhum registro\n`;
     }
@@ -91,7 +101,7 @@ export default {
 
     if (lastSeenRecord) {
       const phone = lastSeenRecord.confirmed_by.split('@')[0];
-      text += `⚔️ Último avistamento: *${lastSeenRecord.seen_at}*\n👤 Por: @${phone}`;
+      text += `⚔️ Último avistamento: *${formatSeenAtBrt(lastSeenRecord.seen_at)}*\n👤 Por: @${phone}`;
     } else {
       text += `⚔️ Último avistamento: Nenhum registro`;
     }

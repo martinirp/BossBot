@@ -2,7 +2,7 @@ import cron from 'node-cron';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
-import { getAllBossesLastSeen, setBossLastSeenDate, getUniqueWorlds, setGlobalSetting, getGlobalSetting, revertBossLastSeen, getBossLastSeen, getAllowedGroups, getGroupWorld, addBossReport } from './database.js';
+import { getAllBossesLastSeen, setBossLastSeenDate, getUniqueWorlds, setGlobalSetting, getGlobalSetting, revertBossLastSeen, getBossLastSeen, getAllowedGroups, getGroupWorld, addBossReport, parseDateStr, utcToGerman } from './database.js';
 import { sendGroupMessage } from './whatsapp.js';
 
 dotenv.config();
@@ -31,21 +31,7 @@ export async function syncKillStatistics() {
     }
 }
 
-function isGermanDST(date) {
-  const year = date.getUTCFullYear();
-
-  // Último domingo de março (DST começa às 02:00 CET = 01:00 UTC)
-  const marchEnd = new Date(Date.UTC(year, 2, 31));
-  while (marchEnd.getUTCDay() !== 0) marchEnd.setUTCDate(marchEnd.getUTCDate() - 1);
-  const dstStart = new Date(Date.UTC(year, 2, marchEnd.getUTCDate(), 1, 0, 0));
-
-  // Último domingo de outubro (DST termina às 03:00 CEST = 01:00 UTC)
-  const octEnd = new Date(Date.UTC(year, 9, 31));
-  while (octEnd.getUTCDay() !== 0) octEnd.setUTCDate(octEnd.getUTCDate() - 1);
-  const dstEnd = new Date(Date.UTC(year, 9, octEnd.getUTCDate(), 1, 0, 0));
-
-  return date >= dstStart && date < dstEnd;
-}
+// isGermanDST is now imported from database.js
 
 export async function syncWorldKillStatistics(targetWorld) {
     console.log(`[SYNC] Sincronizando mundo: ${targetWorld}`);
@@ -70,13 +56,8 @@ export async function syncWorldKillStatistics(targetWorld) {
         const killedYesterday = entries.filter(e => e.last_day_killed > 0);
         const allLocal = await getAllBossesLastSeen(targetWorld);
 
-        // Determina se a Alemanha está em DST (Horário de Verão: UTC+2) ou Padrão (CET: UTC+1)
         const utcNow = new Date();
-        const isDST = isGermanDST(utcNow);
-        const offsetHours = isDST ? 2 : 1;
-
-        // Calcula a hora atual na Alemanha (CET/CEST)
-        const germanTime = new Date(utcNow.getTime() + offsetHours * 60 * 60 * 1000);
+        const germanTime = utcToGerman(utcNow);
         const germanHour = germanTime.getUTCHours();
         const statsDate = new Date(germanTime.getTime());
 
@@ -103,32 +84,13 @@ export async function syncWorldKillStatistics(targetWorld) {
         }
 
         function getActualKillCalendarDate(seenAtStr) {
-            const [trackingDateStr, brtTimeStr] = seenAtStr.split(' ');
-            const [brtHour, brtMin] = brtTimeStr.split(':').map(Number);
-            const [tYear, tMonth, tDay] = trackingDateStr.split('-').map(Number);
-            
-            let brtYear = tYear;
-            let brtMonth = tMonth;
-            let brtDay = tDay;
-            
-            const approxUtc = new Date(Date.UTC(tYear, tMonth - 1, tDay, 12, 0));
-            const isDST = isGermanDST(approxUtc);
-            const serverSaveBrtHour = isDST ? 5 : 6;
-            
-            if (brtHour < serverSaveBrtHour) {
-                const nextBrt = new Date(Date.UTC(tYear, tMonth - 1, tDay + 1));
-                brtYear = nextBrt.getUTCFullYear();
-                brtMonth = nextBrt.getUTCMonth() + 1;
-                brtDay = nextBrt.getUTCDate();
-            }
-            
-            const utcDate = new Date(Date.UTC(brtYear, brtMonth - 1, brtDay, brtHour + 3, brtMin));
-            const dstActive = isGermanDST(utcDate);
-            const offsetHours = dstActive ? 2 : 1;
-            const germanTime = new Date(utcDate.getTime() + offsetHours * 60 * 60 * 1000);
+            const germanDate = parseDateStr(seenAtStr);
+            if (!germanDate) return null;
+            // Subtrai 10 horas para obter o dia de rastreamento do Server Save (10:00 CEST/CET)
+            const trackingStart = new Date(germanDate.getTime() - 10 * 60 * 60 * 1000);
             
             const pad = (n) => String(n).padStart(2, '0');
-            return `${germanTime.getUTCFullYear()}-${pad(germanTime.getUTCMonth() + 1)}-${pad(germanTime.getUTCDate())}`;
+            return `${trackingStart.getUTCFullYear()}-${pad(trackingStart.getUTCMonth() + 1)}-${pad(trackingStart.getUTCDate())}`;
         }
 
         const revertedBosses = [];
