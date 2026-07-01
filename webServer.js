@@ -233,12 +233,18 @@ app.get('/api/bosses/:world', async (req, res) => {
       let expectedDays = null;
       let chancePercent = 0;
       let status = 'Aguardando';
+      // TibiaData parallel fields
+      let tibiaChancePercent = null;
+      let tibiaStatus = null;
+      let tibiaMinDate = null;
+      let tibiaMaxDate = null;
 
       if (stats && stats.fixedDaysFrequency) {
         const minDays = stats.fixedDaysFrequency.min;
         const maxDays = stats.fixedDaysFrequency.max;
         expectedDays = maxDays;
 
+        // ── Group prediction ────────────────────────────────────────────
         const shiftMinDays = lastSeen.confirmed_by === 'TibiaData_API' ? -1 : 0;
         const adjustedMin = minDays + shiftMinDays;
 
@@ -258,6 +264,39 @@ app.get('/api/bosses/:world', async (req, res) => {
         } else {
           chancePercent = 100;
           status = 'Pode nascer';
+        }
+
+        // ── TibiaData prediction ────────────────────────────────────────
+        if (lastSeen.tibiadata_seen_at) {
+          const tibiaSeenDate = new Date(lastSeen.tibiadata_seen_at.split(' ')[0] + 'T03:00:00Z');
+          const tibiaDiffTime = Math.abs(now - tibiaSeenDate);
+          let tibiaDaysSince = Math.ceil(tibiaDiffTime / (1000 * 60 * 60 * 24)) - 1;
+          if (tibiaDaysSince < 0) tibiaDaysSince = 0;
+
+          // TibiaData always applies -1 shift on minDays
+          const tibiaAdjustedMin = minDays - 1;
+
+          if (tibiaDaysSince < tibiaAdjustedMin) {
+            tibiaChancePercent = tibiaAdjustedMin > 0 ? Math.floor((tibiaDaysSince / tibiaAdjustedMin) * 49) : 0;
+            tibiaStatus = 'Aguardando';
+          } else if (tibiaDaysSince >= tibiaAdjustedMin && tibiaDaysSince <= maxDays) {
+            const range = maxDays - tibiaAdjustedMin || 1;
+            tibiaChancePercent = 50 + Math.floor(((tibiaDaysSince - tibiaAdjustedMin) / range) * 50);
+            if (tibiaChancePercent >= 90) {
+              tibiaStatus = 'Pode nascer';
+            } else if (tibiaChancePercent >= 80) {
+              tibiaStatus = 'Alta chance';
+            } else {
+              tibiaStatus = 'No radar';
+            }
+          } else {
+            tibiaChancePercent = 100;
+            tibiaStatus = 'Pode nascer';
+          }
+
+          const shiftMinMs = -24 * 60 * 60 * 1000;
+          tibiaMinDate = new Date(tibiaSeenDate.getTime() + minDays * 24 * 60 * 60 * 1000 + shiftMinMs).toISOString().split('T')[0];
+          tibiaMaxDate = new Date(tibiaSeenDate.getTime() + maxDays * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
         }
       }
 
@@ -288,7 +327,13 @@ app.get('/api/bosses/:world', async (req, res) => {
         checked_by,
         hp: statsInfo.hp,
         immunities: statsInfo.immunities,
-        map_link: mapLink
+        map_link: mapLink,
+        // TibiaData parallel prediction
+        tibiadata_seen_at: lastSeen.tibiadata_seen_at || null,
+        tibiadata_chance_percent: tibiaChancePercent,
+        tibiadata_status: tibiaStatus,
+        tibiadata_min_date: tibiaMinDate,
+        tibiadata_max_date: tibiaMaxDate
       };
     });
 

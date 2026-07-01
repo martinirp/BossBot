@@ -181,6 +181,9 @@ export function initDb() {
         db.run(`ALTER TABLE boss_last_seen ADD COLUMN prev_seen_at TEXT`, () => {});
         db.run(`ALTER TABLE boss_last_seen ADD COLUMN prev_city TEXT`, () => {});
 
+        // Migrate boss_last_seen to store TibiaData's own date independently
+        db.run(`ALTER TABLE boss_last_seen ADD COLUMN tibiadata_seen_at TEXT`, () => {});
+
         // Migrate boss_reports to include world column
         db.run(`ALTER TABLE boss_reports ADD COLUMN world TEXT`, () => {});
 
@@ -608,7 +611,7 @@ export function revertBossLastSeen(bossName, world = 'Quelibra') {
 export function getBossLastSeen(bossName, world = 'Quelibra') {
   return new Promise((resolve, reject) => {
     db.get(
-      `SELECT confirmed_by, seen_at, city FROM boss_last_seen WHERE boss_name = ? AND world = ?`,
+      `SELECT confirmed_by, seen_at, city, tibiadata_seen_at FROM boss_last_seen WHERE boss_name = ? AND world = ?`,
       [bossName, world],
       (err, row) => {
         if (err) return reject(err);
@@ -621,11 +624,37 @@ export function getBossLastSeen(bossName, world = 'Quelibra') {
 export function getAllBossesLastSeen(world = 'Quelibra') {
   return new Promise((resolve, reject) => {
     db.all(
-      `SELECT boss_name, confirmed_by, seen_at, city FROM boss_last_seen WHERE world = ?`,
+      `SELECT boss_name, confirmed_by, seen_at, city, tibiadata_seen_at FROM boss_last_seen WHERE world = ?`,
       [world],
       (err, rows) => {
         if (err) return reject(err);
         resolve(rows || []);
+      }
+    );
+  });
+}
+
+export function setTibiadataSeenAt(bossName, world, seenAt) {
+  return new Promise((resolve, reject) => {
+    db.run(
+      `UPDATE boss_last_seen SET tibiadata_seen_at = ? WHERE boss_name = ? AND world = ?`,
+      [seenAt, bossName, world],
+      function (err) {
+        if (err) return reject(err);
+        // If no row was updated, the boss doesn't exist locally yet — insert it
+        if (this.changes === 0) {
+          db.run(
+            `INSERT OR IGNORE INTO boss_last_seen (world, boss_name, confirmed_by, seen_at, tibiadata_seen_at)
+             VALUES (?, ?, 'TibiaData_API', ?, ?)`,
+            [world, bossName, seenAt, seenAt],
+            function (err2) {
+              if (err2) return reject(err2);
+              resolve();
+            }
+          );
+        } else {
+          resolve();
+        }
       }
     );
   });

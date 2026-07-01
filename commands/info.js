@@ -35,17 +35,18 @@ const formatSeenAtBrt = (seenAtStr) => {
 };
 
 // Calculates prediction based on seenDate, minDays, and maxDays
-const calculatePrediction = (seenAtStr, minDays, maxDays, confirmedBy) => {
+// Returns { predictionStr, extraStr }
+const calculatePrediction = (seenAtStr, minDays, maxDays, isTibiaData = false) => {
   const germanSeenDate = db.parseDateStr(seenAtStr);
-  if (!germanSeenDate) return "Erro ao processar data";
+  if (!germanSeenDate) return { predictionStr: 'Erro ao processar data', extraStr: '' };
 
   const trackingStartGerman = new Date(germanSeenDate.getTime() - 10 * 60 * 60 * 1000);
   trackingStartGerman.setUTCHours(0, 0, 0, 0);
 
-  const shiftMinMs = confirmedBy === 'TibiaData_API' ? -24 * 60 * 60 * 1000 : 0;
+  const shiftMinMs = isTibiaData ? -24 * 60 * 60 * 1000 : 0;
   const minDateGerman = new Date(trackingStartGerman.getTime() + minDays * 24 * 60 * 60 * 1000 + shiftMinMs);
   const maxDateGerman = new Date(trackingStartGerman.getTime() + maxDays * 24 * 60 * 60 * 1000);
-  
+
   minDateGerman.setUTCHours(10, 0, 0, 0);
   maxDateGerman.setUTCHours(10, 0, 0, 0);
 
@@ -58,35 +59,33 @@ const calculatePrediction = (seenAtStr, minDays, maxDays, confirmedBy) => {
   };
 
   const today = new Date();
-  
-  let predictionStr = "";
+
+  let predictionStr = '';
   if (minDays === maxDays) {
     predictionStr = `A cada ${minDays} dia(s)`;
   } else {
     predictionStr = `Entre ${formatBrtDate(minDateBrt)} e ${formatBrtDate(maxDateBrt)}`;
   }
-  
-  let extraStr = "";
+
+  let extraStr = '';
   if (minDays !== maxDays) {
     const nowGerman = db.utcToGerman(today);
     const trackingNowGerman = new Date(nowGerman.getTime() - 10 * 60 * 60 * 1000);
     trackingNowGerman.setUTCHours(0, 0, 0, 0);
 
-    minDateGerman.setUTCHours(0, 0, 0, 0);
-    maxDateGerman.setUTCHours(0, 0, 0, 0);
+    const minCmp = new Date(minDateGerman); minCmp.setUTCHours(0, 0, 0, 0);
+    const maxCmp = new Date(maxDateGerman); maxCmp.setUTCHours(0, 0, 0, 0);
 
-    if (trackingNowGerman >= maxDateGerman) {
-      extraStr = " (🟢 No radar / 🟢 Alta chance)";
-    } else if (trackingNowGerman >= minDateGerman) {
-      extraStr = " (🟢 No radar / 🟢 Com chance)";
+    if (trackingNowGerman >= maxCmp) {
+      extraStr = ' (🟢 No radar / 🟢 Alta chance)';
+    } else if (trackingNowGerman >= minCmp) {
+      extraStr = ' (🟢 No radar / 🟢 Com chance)';
     } else {
-      extraStr = " (🔴 Sem chance)";
+      extraStr = ' (🔴 Sem chance)';
     }
   }
-  return predictionStr + extraStr;
+  return { predictionStr, extraStr };
 };
-
-// getLinkForCity imported from commands.js
 
 // Helper to format the boss details block
 const formatBossInfo = async (bossName, intervalName, record) => {
@@ -99,7 +98,27 @@ const formatBossInfo = async (bossName, intervalName, record) => {
     const max = interval.fixedDaysFrequency.max;
 
     if (record && record.seen_at) {
-      predictionText = calculatePrediction(record.seen_at, min, max, record.confirmed_by);
+      const isTibiadataSource = record.confirmed_by === 'TibiaData_API';
+      const groupPred = calculatePrediction(record.seen_at, min, max, isTibiadataSource);
+
+      // TibiaData independent prediction
+      let tibiaPred = null;
+      if (record.tibiadata_seen_at && record.tibiadata_seen_at !== record.seen_at) {
+        tibiaPred = calculatePrediction(record.tibiadata_seen_at, min, max, true);
+      }
+
+      const sameWindow = tibiaPred &&
+        groupPred.predictionStr === tibiaPred.predictionStr &&
+        groupPred.extraStr === tibiaPred.extraStr;
+
+      if (sameWindow) {
+        predictionText = `👥📡 Grupo & TibiaData: ${groupPred.predictionStr}${groupPred.extraStr}`;
+      } else {
+        predictionText = `👥 Grupo: ${groupPred.predictionStr}${groupPred.extraStr}`;
+        if (tibiaPred) {
+          predictionText += `\n   📡 TibiaData: ${tibiaPred.predictionStr}${tibiaPred.extraStr}`;
+        }
+      }
     }
   } else {
     predictionText = 'Sem previsão disponível';

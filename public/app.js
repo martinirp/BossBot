@@ -38,11 +38,27 @@ async function loadPredictions() {
     }
 }
 
-function getCategory(p) {
+function getGroupCategory(p) {
     if (!p.total_kills || p.last_seen === null) return 'none';
     if (p.chance_percent >= 90) return 'hot';
     if (p.chance_percent >= 50) return 'high';
     return 'wait';
+}
+
+function getTibiaCategory(p) {
+    if (p.tibiadata_chance_percent === null) return null;
+    if (p.tibiadata_chance_percent >= 90) return 'hot';
+    if (p.tibiadata_chance_percent >= 50) return 'high';
+    return 'wait';
+}
+
+// Primary category: best of group and tibia (for card color)
+function getCategory(p) {
+    const g = getGroupCategory(p);
+    const t = getTibiaCategory(p);
+    if (!t) return g;
+    const order = ['none', 'wait', 'high', 'hot'];
+    return order.indexOf(g) >= order.indexOf(t) ? g : t;
 }
 
 function renderGrid() {
@@ -54,11 +70,14 @@ function renderGrid() {
 
     let filtered = allPredictions;
 
-    // Apply Tab Filter
+    // Apply Tab Filter — each filter checks BOTH group and TibiaData predictions independently
     if (currentFilter === 'hot') {
-        filtered = allPredictions.filter(p => p.chance_percent >= 90);
+        filtered = allPredictions.filter(p => p.chance_percent >= 90 || p.tibiadata_chance_percent >= 90);
     } else if (currentFilter === 'high') {
-        filtered = allPredictions.filter(p => p.chance_percent >= 50 && p.chance_percent < 90);
+        filtered = allPredictions.filter(p =>
+            (p.chance_percent >= 50 && p.chance_percent < 90) ||
+            (p.tibiadata_chance_percent !== null && p.tibiadata_chance_percent >= 50 && p.tibiadata_chance_percent < 90)
+        );
     } else if (currentFilter === 'recent') {
         filtered = allPredictions.filter(p => p.kills_yesterday > 0);
     }
@@ -75,6 +94,23 @@ function renderGrid() {
 
     filtered.forEach(p => {
         const cat = getCategory(p);
+        const groupCat = getGroupCategory(p);
+        const tibiaCat = getTibiaCategory(p);
+
+        // Build dual prediction rows for the card
+        const sameChance = tibiaCat !== null && p.chance_percent === p.tibiadata_chance_percent;
+        let predRows = '';
+        if (sameChance || tibiaCat === null) {
+            // Single unified row
+            const label = tibiaCat !== null ? '👥📡' : '👥';
+            predRows = `<div class="pred-row">${label} <span class="chance-value color-${groupCat}">${p.chance_percent}%</span></div>`;
+        } else {
+            predRows = `
+                <div class="pred-row">👥 <span class="chance-value color-${groupCat}">${p.chance_percent}%</span></div>
+                <div class="pred-row">📡 <span class="chance-value color-${tibiaCat}">${p.tibiadata_chance_percent}%</span></div>
+            `;
+        }
+
         const col = document.createElement('div');
         col.className = 'boss-card-col';
         col.innerHTML = `
@@ -85,9 +121,9 @@ function renderGrid() {
                          class="boss-sprite" alt="${p.name}">
                 </div>
                 <h3 class="boss-name" title="${p.name}">${p.name}</h3>
-                <span class="chance-value">${p.chance_percent}%</span>
+                ${predRows}
                 <div class="p-bar-track">
-                    <div class="p-bar-fill" style="width: ${p.chance_percent}%"></div>
+                    <div class="p-bar-fill" style="width: ${Math.max(p.chance_percent, p.tibiadata_chance_percent ?? 0)}%"></div>
                 </div>
                 <div class="tags-row">
                     ${p.kills_yesterday > 0 ? `<span class="tag-badge badge-danger">${p.kills_yesterday} Kill${p.kills_yesterday !== 1 ? 's' : ''}</span>` : ''}
@@ -142,6 +178,7 @@ async function openModal(p) {
     document.body.style.overflow = 'hidden';
 
     const cat = getCategory(p);
+    const groupCat = getGroupCategory(p);
     const cleanImgName = p.name.replace(/\s*\(.*?\)\s*/g, '');
 
     document.getElementById('modalImg').src = `/assets/bosses/${encodeURIComponent(cleanImgName)}.webp`;
@@ -158,7 +195,44 @@ async function openModal(p) {
 
     // Metrics
     document.getElementById('modalChanceVal').innerText = `${p.chance_percent}%`;
-    document.getElementById('modalChanceVal').className = `metric-value color-${cat}`;
+    document.getElementById('modalChanceVal').className = `metric-value color-${groupCat}`;
+
+    // Dual prediction block
+    const predBlock = document.getElementById('modalPredBlock');
+    if (predBlock) {
+        const tibiaCatModal = getTibiaCategory(p);
+        const sameChance = tibiaCatModal !== null && p.chance_percent === p.tibiadata_chance_percent;
+        if (sameChance) {
+            predBlock.innerHTML = `
+                <div class="dual-pred-row unified">
+                    <span class="pred-source">👥📡 Grupo &amp; TibiaData</span>
+                    <span class="pred-pct color-${groupCat}">${p.chance_percent}%</span>
+                    <span class="pred-status">${p.status}</span>
+                </div>`;
+        } else {
+            let html = `
+                <div class="dual-pred-row">
+                    <span class="pred-source">👥 Grupo</span>
+                    <span class="pred-pct color-${groupCat}">${p.chance_percent}%</span>
+                    <span class="pred-status">${p.status}</span>
+                </div>`;
+            if (tibiaCatModal !== null) {
+                html += `
+                <div class="dual-pred-row tibia">
+                    <span class="pred-source">📡 TibiaData</span>
+                    <span class="pred-pct color-${tibiaCatModal}">${p.tibiadata_chance_percent}%</span>
+                    <span class="pred-status">${p.tibiadata_status}</span>
+                </div>`;
+                if (p.tibiadata_min_date && p.tibiadata_max_date) {
+                    html += `
+                <div class="dual-pred-window">
+                    📅 Janela TibiaData: ${formatDateBR(p.tibiadata_min_date)} – ${formatDateBR(p.tibiadata_max_date)}
+                </div>`;
+                }
+            }
+            predBlock.innerHTML = html;
+        }
+    }
 
     if (p.last_seen) {
         let lastSeenStr = formatDateBR(p.last_seen);

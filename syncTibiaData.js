@@ -2,7 +2,7 @@ import cron from 'node-cron';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
-import { getAllBossesLastSeen, setBossLastSeenDate, getUniqueWorlds, setGlobalSetting, getGlobalSetting, revertBossLastSeen, getBossLastSeen, getAllowedGroups, getGroupWorld, addBossReport, parseDateStr, utcToGerman } from './database.js';
+import { getAllBossesLastSeen, setBossLastSeenDate, getUniqueWorlds, setGlobalSetting, getGlobalSetting, revertBossLastSeen, getBossLastSeen, getAllowedGroups, getGroupWorld, addBossReport, parseDateStr, utcToGerman, setTibiadataSeenAt } from './database.js';
 import { sendGroupMessage } from './whatsapp.js';
 
 dotenv.config();
@@ -203,6 +203,11 @@ export async function syncWorldKillStatistics(targetWorld) {
                 await setBossLastSeenDate(finalBossName, 'TibiaData_API', fallbackDate, targetWorld);
                 await addBossReport(finalBossName, 'Detectado via TibiaData API', 'TibiaData_API', 0, targetWorld);
                 syncCount++;
+            } else {
+                // Even when the human record is kept, always update tibiadata_seen_at
+                // so the dual-prediction system can show what TibiaData knows
+                const finalBossName = bossName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                await setTibiadataSeenAt(finalBossName, targetWorld, fallbackDate);
             }
         }
         console.log(`[SYNC] Sincronização de ${targetWorld} finalizada. ${syncCount} bosses recuperados.`);
