@@ -54,18 +54,17 @@ export async function syncWorldKillStatistics(targetWorld) {
         const killedYesterday = entries.filter(e => e.last_day_killed > 0);
         const allLocal = await getAllBossesLastSeen(targetWorld);
 
-        // O TibiaData atualiza Kill Statistics uma vez por dia:
-        //   - ~22:15 BRT durante o horário de verão europeu (CEST = UTC+2)
-        //   - ~23:15 BRT no horário padrão europeu (CET = UTC+1)
-        //
-        // O cron roda às 06:30 BRT do dia D+1. A API foi atualizada às ~22:15/23:15 do dia D,
-        // trazendo os dados referentes ao ciclo de rastreamento D.
-        // Portanto, daysAgo = 1: o registro deve apontar para o dia D.
-        const daysAgo = 1;
+        // Converte hora atual para BRT (UTC-3)
+        const brtNow = new Date();
+        brtNow.setUTCHours(brtNow.getUTCHours() - 3);
+        const brtHour = brtNow.getUTCHours();
 
-        const targetDate = new Date();
-        // Converte para horário de Brasília (UTC-3)
-        targetDate.setUTCHours(targetDate.getUTCHours() - 3);
+        // O TibiaData atualiza Kill Statistics uma vez por dia (~22:15 / ~23:15 BRT).
+        // Se a sincronização roda à noite (após as 21:00 BRT), a API já virou e traz os dados do próprio dia atual civil.
+        // Se roda no dia seguinte de manhã/tarde (antes das 21:00 BRT), a API traz os dados do dia civil anterior (daysAgo = 1).
+        const daysAgo = brtHour >= 21 ? 0 : 1;
+
+        const targetDate = new Date(brtNow);
         targetDate.setUTCDate(targetDate.getUTCDate() - daysAgo);
         
         const year = targetDate.getUTCFullYear();
