@@ -98,26 +98,35 @@ const formatBossInfo = async (bossName, intervalName, record) => {
     const max = interval.fixedDaysFrequency.max;
 
     if (record && record.seen_at) {
-      const isTibiadataSource = record.confirmed_by === 'TibiaData_API';
-      const groupPred = calculatePrediction(record.seen_at, min, max, isTibiadataSource);
+      const confirmedByHuman = record.confirmed_by !== 'TibiaData_API' &&
+                               record.confirmed_by !== 'system_adjust' &&
+                               record.confirmed_by !== 'flop';
 
-      // TibiaData independent prediction
-      let tibiaPred = null;
-      if (record.tibiadata_seen_at && record.tibiadata_seen_at !== record.seen_at) {
-        tibiaPred = calculatePrediction(record.tibiadata_seen_at, min, max, true);
-      }
+      if (confirmedByHuman) {
+        // Human confirmed: group prediction (no shift) + optional TibiaData prediction
+        const groupPred = calculatePrediction(record.seen_at, min, max, false);
 
-      const sameWindow = tibiaPred &&
-        groupPred.predictionStr === tibiaPred.predictionStr &&
-        groupPred.extraStr === tibiaPred.extraStr;
-
-      if (sameWindow) {
-        predictionText = `👥📡 Grupo & TibiaData: ${groupPred.predictionStr}${groupPred.extraStr}`;
-      } else {
-        predictionText = `👥 Grupo: ${groupPred.predictionStr}${groupPred.extraStr}`;
-        if (tibiaPred) {
-          predictionText += `\n   📡 TibiaData: ${tibiaPred.predictionStr}${tibiaPred.extraStr}`;
+        let tibiaPred = null;
+        if (record.tibiadata_seen_at && record.tibiadata_seen_at !== record.seen_at) {
+          tibiaPred = calculatePrediction(record.tibiadata_seen_at, min, max, true);
         }
+
+        const sameWindow = tibiaPred &&
+          groupPred.predictionStr === tibiaPred.predictionStr &&
+          groupPred.extraStr === tibiaPred.extraStr;
+
+        if (sameWindow) {
+          predictionText = `👥📡 Grupo & TibiaData: ${groupPred.predictionStr}${groupPred.extraStr}`;
+        } else {
+          predictionText = `👥 Grupo: ${groupPred.predictionStr}${groupPred.extraStr}`;
+          if (tibiaPred) {
+            predictionText += `\n   📡 TibiaData: ${tibiaPred.predictionStr}${tibiaPred.extraStr}`;
+          }
+        }
+      } else {
+        // Only TibiaData knows this boss — label it as such
+        const tibiaPred = calculatePrediction(record.seen_at, min, max, true);
+        predictionText = `📡 TibiaData: ${tibiaPred.predictionStr}${tibiaPred.extraStr}`;
       }
     }
   } else {

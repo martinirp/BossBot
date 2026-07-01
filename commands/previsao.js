@@ -103,14 +103,23 @@ export default {
         const minDays = stats.fixedDaysFrequency.min;
         const maxDays = stats.fixedDaysFrequency.max;
 
-        // ── Previsão do Grupo ────────────────────────────────────────────
-        const isTibiadataSource = record.confirmed_by === 'TibiaData_API';
-        const groupResult = buildPrediction(record.seen_at, minDays, maxDays, isTibiadataSource);
+        const confirmedByHuman = record.confirmed_by !== 'TibiaData_API' &&
+                                 record.confirmed_by !== 'system_adjust' &&
+                                 record.confirmed_by !== 'flop';
 
-        // ── Previsão TibiaData ───────────────────────────────────────────
+        let groupResult = null;
         let tibiaResult = null;
-        if (record.tibiadata_seen_at && record.tibiadata_seen_at !== record.seen_at) {
-          tibiaResult = buildPrediction(record.tibiadata_seen_at, minDays, maxDays, true);
+
+        if (confirmedByHuman) {
+          // Human confirmed: group uses seen_at (no shift); TibiaData uses tibiadata_seen_at if different
+          groupResult = buildPrediction(record.seen_at, minDays, maxDays, false);
+
+          if (record.tibiadata_seen_at && record.tibiadata_seen_at !== record.seen_at) {
+            tibiaResult = buildPrediction(record.tibiadata_seen_at, minDays, maxDays, true);
+          }
+        } else {
+          // Only TibiaData confirmed this boss — treat seen_at as the TibiaData date
+          tibiaResult = buildPrediction(record.seen_at, minDays, maxDays, true);
         }
 
         // Skip boss entirely if neither prediction is in the spawn window
