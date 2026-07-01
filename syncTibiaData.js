@@ -78,6 +78,7 @@ export async function syncWorldKillStatistics(targetWorld) {
 
         // ─── DETECÇÃO E REVERSÃO DE FALSOS ALARMES ───
         const killedBossNames = new Set(killedYesterday.map(k => k.race.toLowerCase()));
+        const apiKnownRaces = new Set(entries.map(e => e.race.toLowerCase()));
         
         function getBaseBossName(fullName) {
             const match = fullName.match(/^(.+?)\s*\(/);
@@ -95,7 +96,9 @@ export async function syncWorldKillStatistics(targetWorld) {
             if (localDayStr === fallbackDayStr) {
                 const baseName = getBaseBossName(localRecord.boss_name).toLowerCase();
                 
-                if (!killedBossNames.has(baseName)) {
+                // Só acusa falso alarme se a criatura existe no relatório da API e consta com 0 mortes.
+                // Isso evita reverter falsos alarmes para bosses que não são listados na página de Kill Statistics (ex: Dire Penguin).
+                if (apiKnownRaces.has(baseName) && !killedBossNames.has(baseName)) {
                     console.log(`[SYNC-WARN] Falso alarme detectado em ${targetWorld}: ${localRecord.boss_name} por ${localRecord.confirmed_by}. Revertendo...`);
                     
                     // Reverter o boss no banco
