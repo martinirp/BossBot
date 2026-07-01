@@ -70,11 +70,6 @@ export async function syncWorldKillStatistics(targetWorld) {
         const killedYesterday = entries.filter(e => e.last_day_killed > 0);
         const allLocal = await getAllBossesLastSeen(targetWorld);
 
-        // Converte hora atual para BRT (UTC-3)
-        const brtNow = new Date();
-        brtNow.setUTCHours(brtNow.getUTCHours() - 3);
-        const brtHour = brtNow.getUTCHours();
-
         // Determina se a Alemanha está em DST (Horário de Verão: UTC+2) ou Padrão (CET: UTC+1)
         const utcNow = new Date();
         const isDST = isGermanDST(utcNow);
@@ -82,25 +77,21 @@ export async function syncWorldKillStatistics(targetWorld) {
 
         // Calcula a hora atual na Alemanha (CET/CEST)
         const germanTime = new Date(utcNow.getTime() + offsetHours * 60 * 60 * 1000);
+        const germanHour = germanTime.getUTCHours();
+        const statsDate = new Date(germanTime.getTime());
 
-        // Subtrai 10 horas para obter a data do ciclo de Server Save correspondente
-        const trackingTime = new Date(germanTime.getTime() - 10 * 60 * 60 * 1000);
+        // As estatísticas da CipSoft atualizam diariamente às 03:00 CEST/CET (Alemanha).
+        // Se a hora alemã atual for >= 3, a API já atualizou hoje e exibe dados de ontem (D-1).
+        // Se for < 3, a API ainda está exibindo dados de antes de ontem (D-2).
+        const daysAgo = germanHour >= 3 ? 1 : 2;
+        statsDate.setUTCDate(statsDate.getUTCDate() - daysAgo);
 
-        // O TibiaData atualiza Kill Statistics uma vez por dia (~22:15 / ~23:15 BRT).
-        // Se a sincronização roda à noite (após as 21:00 BRT), a API já virou e traz os dados do ciclo anterior (daysAgo = 1).
-        // Se roda no dia seguinte de manhã/tarde (antes das 21:00 BRT), a API traz os dados de 2 ciclos atrás (daysAgo = 2).
-        const daysAgo = brtHour >= 21 ? 1 : 2;
+        const year = statsDate.getUTCFullYear();
+        const month = String(statsDate.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(statsDate.getUTCDate()).padStart(2, '0');
 
-        const targetDate = new Date(trackingTime.getTime());
-        targetDate.setUTCDate(targetDate.getUTCDate() - daysAgo);
-        
-        const year = targetDate.getUTCFullYear();
-        const month = String(targetDate.getUTCMonth() + 1).padStart(2, '0');
-        const day = String(targetDate.getUTCDate()).padStart(2, '0');
-        
-        // Registra como 00:00 do dia D: a API informa apenas a DATA do ciclo, não a hora exata.
-        const fallbackDate = `${year}-${month}-${day} 00:00`;
         const fallbackDayStr = `${year}-${month}-${day}`;
+        const fallbackDate = `${fallbackDayStr} 00:00`;
 
         // ─── DETECÇÃO E REVERSÃO DE FALSOS ALARMES ───
         const killedBossNames = new Set(killedYesterday.map(k => k.race.toLowerCase()));
