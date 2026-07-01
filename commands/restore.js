@@ -1,40 +1,13 @@
 import * as db from '../database.js';
 import { db as rawDb } from '../database.js';
 
-// Helper to check if Germany is in DST
-function isGermanDST(date) {
-  const year = date.getUTCFullYear();
-  const marchEnd = new Date(Date.UTC(year, 2, 31));
-  while (marchEnd.getUTCDay() !== 0) marchEnd.setUTCDate(marchEnd.getUTCDate() - 1);
-  const dstStart = new Date(Date.UTC(year, 2, marchEnd.getUTCDate(), 1, 0, 0));
+import { formatSeenAtBrt, utcToGerman } from '../database.js';
 
-  const octEnd = new Date(Date.UTC(year, 9, 31));
-  while (octEnd.getUTCDay() !== 0) octEnd.setUTCDate(octEnd.getUTCDate() - 1);
-  const dstEnd = new Date(Date.UTC(year, 9, octEnd.getUTCDate(), 1, 0, 0));
-
-  return date >= dstStart && date < dstEnd;
-}
-
-function calcTrackingDayForDate(utcDate) {
-  const brtNow = new Date(utcDate.getTime() - 3 * 60 * 60 * 1000);
-  const brtHour = brtNow.getUTCHours();
-  const brtMin  = brtNow.getUTCMinutes();
-  const brtTimeStr = `${String(brtHour).padStart(2, '0')}:${String(brtMin).padStart(2, '0')}`;
-  
+function getGermanTimeStr(utcDate) {
+  const germanTime = utcToGerman(utcDate);
   const pad = (n) => String(n).padStart(2, '0');
-
-  const isDST = isGermanDST(utcDate);
-  const offsetHours = isDST ? 2 : 1;
-  const germanTime = new Date(utcDate.getTime() + offsetHours * 60 * 60 * 1000);
-  const trackingTime = new Date(germanTime.getTime() - 10 * 60 * 60 * 1000);
-
-  const trackingYear = trackingTime.getUTCFullYear();
-  const trackingMonth = pad(trackingTime.getUTCMonth() + 1);
-  const trackingDay = pad(trackingTime.getUTCDate());
-  const trackingDateStr = `${trackingYear}-${trackingMonth}-${trackingDay}`;
-
-  const seenAt = `${trackingDateStr} ${brtTimeStr}`;
-  return { seenAt, trackingDateStr };
+  
+  return `${germanTime.getUTCFullYear()}-${pad(germanTime.getUTCMonth() + 1)}-${pad(germanTime.getUTCDate())} ${pad(germanTime.getUTCHours())}:${pad(germanTime.getUTCMinutes())}`;
 }
 
 function runQuery(query, params = []) {
@@ -117,7 +90,7 @@ export default {
         const utcDate = new Date(report.created_at.replace(' ', 'T') + 'Z');
         if (isNaN(utcDate.getTime())) continue;
 
-        const { seenAt } = calcTrackingDayForDate(utcDate);
+        const seenAt = getGermanTimeStr(utcDate);
         const cleanJid = report.reported_by_jid;
 
         let bossName = report.boss_name;
@@ -145,10 +118,9 @@ export default {
           // Get phone/user name for formatting
           const phone = cleanJid.split('@')[0];
           const name = await db.getUserName(cleanJid) || `@${phone}`;
-          const formattedDate = seenAt.split(' ')[0].split('-').reverse().join('/');
-          const time = seenAt.split(' ')[1];
+          const formattedDateBrt = formatSeenAtBrt(seenAt);
 
-          restoredList.push(`- *${report.boss_name}* (Visto: ${formattedDate} às ${time} por ${name})`);
+          restoredList.push(`- *${report.boss_name}* (Visto: ${formattedDateBrt} por ${name})`);
         }
       }
 
