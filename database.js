@@ -784,7 +784,11 @@ export function getAllUserNames() {
 export function getBossRecentTimes(bossName) {
   return new Promise((resolve, reject) => {
     db.all(
-      `SELECT created_at FROM boss_reports WHERE boss_name = ? OR boss_name LIKE ? ORDER BY created_at DESC`,
+      // Exclude API/system entries — "Últimas aparições" shows only human group sightings
+      `SELECT created_at FROM boss_reports
+       WHERE (boss_name = ? OR boss_name LIKE ?)
+         AND reported_by_jid NOT IN ('TibiaData_API', 'system_adjust', 'flop')
+       ORDER BY created_at DESC`,
       [bossName, `${bossName} (%`],
       (err, rows) => {
         if (err) return reject(err);
@@ -794,17 +798,16 @@ export function getBossRecentTimes(bossName) {
         const seen = new Set();
         for (const row of rows) {
           if (!row.created_at) continue;
-          // SQLite CURRENT_TIMESTAMP is UTC "YYYY-MM-DD HH:MM:SS"
-          const utcDate = new Date(row.created_at.replace(' ', 'T') + 'Z');
-          if (isNaN(utcDate.getTime())) continue;
+          // created_at is stored in German time (CEST/CET) since the German-time migration.
+          // Parse as German → convert to UTC → convert to BRT for display.
+          const germanDate = parseDateStr(row.created_at);
+          if (!germanDate || isNaN(germanDate.getTime())) continue;
+          const brtDate = utcToBrt(germanToUtc(germanDate));
 
-          // Convert to BRT (UTC-3)
-          const brtDate = new Date(utcDate.getTime() - 3 * 60 * 60 * 1000);
-          
-          const day = String(brtDate.getUTCDate()).padStart(2, '0');
-          const month = String(brtDate.getUTCMonth() + 1).padStart(2, '0');
-          const year = brtDate.getUTCFullYear();
-          const hours = String(brtDate.getUTCHours()).padStart(2, '0');
+          const day     = String(brtDate.getUTCDate()).padStart(2, '0');
+          const month   = String(brtDate.getUTCMonth() + 1).padStart(2, '0');
+          const year    = brtDate.getUTCFullYear();
+          const hours   = String(brtDate.getUTCHours()).padStart(2, '0');
           const minutes = String(brtDate.getUTCMinutes()).padStart(2, '0');
           const formatted = `${day}/${month}/${year} às ${hours}:${minutes}`;
           if (!seen.has(formatted)) {
