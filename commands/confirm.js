@@ -198,7 +198,7 @@ export default {
     const trackingDateDisplay = `${tDay}/${tMonth}/${tYear}`;
 
     // ── 2. Alertar imediatamente ──────────────────────────────────────────
-    await db.addBossReport(cityBossName, extraText, senderJid, subscribers.length);
+    await db.addBossReport(cityBossName, extraText, senderJid, subscribers.length, world);
     await db.incrementRank(senderJid);
 
     // Nota informativa se a API já atualizou esta noite

@@ -63,6 +63,7 @@ export function initDb() {
             extra_text TEXT,
             reported_by_jid TEXT NOT NULL,
             notified_count INTEGER DEFAULT 0,
+            world TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
           )
         `);
@@ -120,6 +121,9 @@ export function initDb() {
         db.run(`ALTER TABLE boss_last_seen ADD COLUMN prev_confirmed_by TEXT`, () => {});
         db.run(`ALTER TABLE boss_last_seen ADD COLUMN prev_seen_at TEXT`, () => {});
         db.run(`ALTER TABLE boss_last_seen ADD COLUMN prev_city TEXT`, () => {});
+
+        // Migrate boss_reports to include world column
+        db.run(`ALTER TABLE boss_reports ADD COLUMN world TEXT`, () => {});
 
         // Migrate allowed_groups: add tibia_world column if not exists
         db.run(`ALTER TABLE allowed_groups ADD COLUMN tibia_world TEXT`, () => {
@@ -271,12 +275,12 @@ export function getBossSubscriptionsForJid(jid) {
   });
 }
 
-export function addBossReport(bossName, extraText, reportedByJid, notifiedCount) {
+export function addBossReport(bossName, extraText, reportedByJid, notifiedCount, world = null) {
   const cleanJid = jidNormalizedUser(reportedByJid);
   return new Promise((resolve, reject) => {
     db.run(
-      `INSERT INTO boss_reports (boss_name, extra_text, reported_by_jid, notified_count) VALUES (?, ?, ?, ?)`,
-      [bossName, extraText, cleanJid, notifiedCount],
+      `INSERT INTO boss_reports (boss_name, extra_text, reported_by_jid, notified_count, world) VALUES (?, ?, ?, ?, ?)`,
+      [bossName, extraText, cleanJid, notifiedCount, world],
       function (err) {
         if (err) return reject(err);
         resolve(this.lastID);

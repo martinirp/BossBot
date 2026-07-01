@@ -2,7 +2,7 @@ import cron from 'node-cron';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
-import { getAllBossesLastSeen, setBossLastSeenDate, getUniqueWorlds, setGlobalSetting, getGlobalSetting, revertBossLastSeen, getBossLastSeen, getAllowedGroups, getGroupWorld } from './database.js';
+import { getAllBossesLastSeen, setBossLastSeenDate, getUniqueWorlds, setGlobalSetting, getGlobalSetting, revertBossLastSeen, getBossLastSeen, getAllowedGroups, getGroupWorld, addBossReport } from './database.js';
 import { sendGroupMessage } from './whatsapp.js';
 
 dotenv.config();
@@ -208,6 +208,7 @@ export async function syncWorldKillStatistics(targetWorld) {
                 const finalBossName = bossName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
                 await setBossLastSeenDate(finalBossName, 'TibiaData_API', fallbackDate, targetWorld);
+                await addBossReport(finalBossName, 'Detectado via TibiaData API', 'TibiaData_API', 0, targetWorld);
                 syncCount++;
             }
         }
