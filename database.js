@@ -5,7 +5,7 @@ import { jidNormalizedUser } from '@whiskeysockets/baileys';
 dotenv.config();
 
 const dbFile = process.env.DB_FILE || 'bossbot.db';
-let db;
+export let db;
 
 export function initDb() {
   return new Promise((resolve, reject) => {
