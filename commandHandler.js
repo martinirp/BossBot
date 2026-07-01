@@ -9,6 +9,29 @@ class CommandHandler {
   constructor() {
     this.commands = new Map();
     this.aliases = new Map();
+    this.pendingPrompts = new Map();
+  }
+
+  setPrompt(remoteJid, senderJid, promptData) {
+    const key = `${remoteJid}:${senderJid}`;
+    this.pendingPrompts.set(key, { ...promptData, timestamp: Date.now() });
+  }
+
+  getPrompt(remoteJid, senderJid) {
+    const key = `${remoteJid}:${senderJid}`;
+    const prompt = this.pendingPrompts.get(key);
+    if (!prompt) return null;
+    // Timeout of 2 minutes
+    if (Date.now() - prompt.timestamp > 120000) {
+      this.pendingPrompts.delete(key);
+      return null;
+    }
+    return prompt;
+  }
+
+  clearPrompt(remoteJid, senderJid) {
+    const key = `${remoteJid}:${senderJid}`;
+    this.pendingPrompts.delete(key);
   }
 
   async loadCommands() {
@@ -55,25 +78,57 @@ class CommandHandler {
     if (!text) return;
     const trimmed = text.trim();
 
+    const remoteJid = msg.key.remoteJid;
+    const isGroup = remoteJid.endsWith('@g.us');
+    const senderJid = jidNormalizedUser(msg.key.participant || remoteJid);
+    const senderPhone = senderJid.split('@')[0];
+    const senderName = msg.pushName || '';
+    if (senderName) {
+      db.upsertUser(senderJid, senderName).catch(() => {});
+    }
+    const allowedGroups = await db.getAllowedGroups();
+
+    const context = {
+      sock, msg, text, trimmed,
+      remoteJid, isGroup, senderJid, senderPhone, allowedGroups,
+      commandHandler: this
+    };
+
+    // --- Interactive Prompt Interception ---
+    const prompt = this.getPrompt(remoteJid, senderJid);
+    if (prompt) {
+      const optionIndex = parseInt(trimmed, 10);
+      this.clearPrompt(remoteJid, senderJid); // Clear prompt regardless of input
+      
+      if (!isNaN(optionIndex) && optionIndex >= 1 && optionIndex <= prompt.cities.length) {
+        const selectedCity = prompt.cities[optionIndex - 1];
+        // Reconstruct the confirmation command (e.g., "!confirm danimax, Thais")
+        const reconstructedCommandText = `${prompt.prefix}confirm ${prompt.bossName}, ${selectedCity}`;
+        console.log(`[CommandHandler] Intercepted prompt reply from ${senderPhone}: ${reconstructedCommandText}`);
+        
+        const args = reconstructedCommandText.slice(1).trim().split(/\s+/);
+        const cmdName = args.shift().toLowerCase();
+        
+        context.text = reconstructedCommandText;
+        context.trimmed = reconstructedCommandText;
+        context.withoutPrefix = reconstructedCommandText.slice(1).trim();
+        context.prefix = prompt.prefix;
+        
+        const command = this.getCommand(cmdName);
+        if (command) {
+          await this.executeCommand(command, args, context);
+          return;
+        }
+      } else {
+        console.log(`[CommandHandler] Prompt cancelled by ${senderPhone} due to invalid/non-numeric input.`);
+        // Fall through to process the message normally
+      }
+    }
+
     // Auto-calculador do Hive (Loot of a spidris elite / hive overseer)
     const hiveRegex = /(?:^|\s)(\d{1,2}):(\d{2})(?::(\d{2}))?\s+Loot\s+of\s+a\s+(spidris\s+elite|hive\s+overseer):/i;
     const match = trimmed.match(hiveRegex);
     if (match) {
-      const remoteJid = msg.key.remoteJid;
-      const isGroup = remoteJid.endsWith('@g.us');
-      const senderJid = jidNormalizedUser(msg.key.participant || remoteJid);
-      const senderPhone = senderJid.split('@')[0];
-      const senderName = msg.pushName || '';
-      if (senderName) {
-        db.upsertUser(senderJid, senderName).catch(() => {});
-      }
-      const allowedGroups = await db.getAllowedGroups();
-
-      const context = {
-        sock, msg, text, trimmed,
-        remoteJid, isGroup, senderJid, senderPhone, allowedGroups
-      };
-
       const allowed = await this.checkPermission(context);
       if (!allowed) return;
 
@@ -142,21 +197,9 @@ class CommandHandler {
     const args = withoutPrefix.split(/\s+/);
     const cmdName = args.shift().toLowerCase();
     
-    // Prepara o contexto
-    const remoteJid = msg.key.remoteJid;
-    const isGroup = remoteJid.endsWith('@g.us');
-    const senderJid = jidNormalizedUser(msg.key.participant || remoteJid);
-    const senderPhone = senderJid.split('@')[0];
-    const senderName = msg.pushName || '';
-    if (senderName) {
-      db.upsertUser(senderJid, senderName).catch(() => {});
-    }
-    const allowedGroups = await db.getAllowedGroups();
-
-    const context = {
-      sock, msg, text, trimmed, withoutPrefix, prefix,
-      remoteJid, isGroup, senderJid, senderPhone, allowedGroups
-    };
+    // Atualiza o context com prefix e withoutPrefix
+    context.prefix = prefix;
+    context.withoutPrefix = withoutPrefix;
 
     const command = this.getCommand(cmdName);
 

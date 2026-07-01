@@ -117,7 +117,8 @@ export const MULTI_CITY_BOSSES = {
   "hirintror": ["Mines", "Nibelor"],
   "battlemaster zunzu": ["West", "East"],
   "fleabringer": ["Surface", "North", "Sul"],
-  "albino dragon": ["Farmine", "Fenrock", "Goroma", "POI", "Ank"]
+  "albino dragon": ["Farmine", "Fenrock", "Goroma", "POI", "Ank"],
+  "danimax": ["Thais", "Carlin"]
 };
 
 export const CITY_ALIASES = {

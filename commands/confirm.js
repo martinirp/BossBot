@@ -93,9 +93,19 @@ export default {
 
     if (validCities) {
       if (!extraText.trim()) {
+        const menuOptions = validCities.map((c, i) => `[ ${i + 1} ] ${c}`).join('\n');
+        
         await sock.sendMessage(remoteJid, {
-          text: `⚠️ O boss *${matchedBossName}* nasce em várias cidades. Por favor, especifique a cidade como argumento.\nExemplo: \`${context.prefix}boss ${matchedBossName}, Ankrahmun\`\nCidades válidas: ${validCities.join(', ')}`
+          text: `⚠️ O boss *${matchedBossName}* nasce em várias cidades. Responda com o número do local correto:\n\n${menuOptions}`
         }, { quoted: msg });
+        
+        if (context.commandHandler) {
+          context.commandHandler.setPrompt(remoteJid, senderJid, {
+            bossName: matchedBossName,
+            cities: validCities,
+            prefix: context.prefix || '!'
+          });
+        }
         return;
       }
 
