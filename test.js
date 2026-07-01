@@ -632,8 +632,8 @@ async function runTests() {
     // Test 10: Recent Spawn Times Display
     console.log('--- Test 10: Recent Spawn Times ---');
     
-    await dbModule.addBossReport('The Voice Of Ruin (Esquerda)', 'extra text', '123@s.whatsapp.net', 0);
-    await dbModule.addBossReport('The Voice Of Ruin (Esquerda)', 'extra text 2', '123@s.whatsapp.net', 0);
+    await dbModule.addBossReport('The Voice Of Ruin (Esquerda)', 'extra text', '123@s.whatsapp.net', 0, 'Quelibra');
+    await dbModule.addBossReport('The Voice Of Ruin (Esquerda)', 'extra text 2', '123@s.whatsapp.net', 0, 'Quelibra');
     
     const recentTimes = await dbModule.getBossRecentTimes('The Voice Of Ruin (Esquerda)');
     console.log('getBossRecentTimes output:', recentTimes);
@@ -651,6 +651,29 @@ async function runTests() {
     }
     
     console.log('Recent Spawn Times tests passed ✅\n');
+    
+    // Test 11: Restore Command
+    console.log('--- Test 11: Restore Command ---');
+    
+    // Remove last seen record of The Voice Of Ruin (Esquerda) to mock a reversion
+    await dbModule.revertBossLastSeen('The Voice Of Ruin (Esquerda)', 'Quelibra');
+    
+    sentMessages = [];
+    await commandHandler.handleMessage(mockSock, mockMsg3, '!restore');
+    const restoreOutputText = sentMessages.map(m => m.content?.text).join(' ');
+    console.log('!restore response:\n', restoreOutputText);
+    
+    if (!restoreOutputText.includes('RESTAURAÇÃO CONCLUÍDA') || !restoreOutputText.includes('The Voice Of Ruin (Esquerda)')) {
+      throw new Error('Restore command did not correctly restore The Voice Of Ruin (Esquerda)');
+    }
+    
+    // Check if db record is restored
+    const rqRestoredRecord = await dbModule.getBossLastSeen('The Voice Of Ruin (Esquerda)', 'Quelibra');
+    if (!rqRestoredRecord) {
+      throw new Error('Database record was not successfully restored');
+    }
+    
+    console.log('Restore command tests passed ✅\n');
 
   } finally {
     if (statsBackup !== null) {
