@@ -72,9 +72,13 @@ async function main() {
       SELECT boss_name, MAX(created_at) as max_created
       FROM boss_reports
       WHERE created_at >= datetime('now', '-2 days')
+        AND reported_by_jid != 'TibiaData_API'
+        AND reported_by_jid != 'system_adjust'
+        AND reported_by_jid != 'flop'
       GROUP BY boss_name
     ) latest ON r.boss_name = latest.boss_name AND r.created_at = latest.max_created
-  `);
+    WHERE r.world = ? OR r.world IS NULL
+  `, [world]);
 
   if (recentReports.length === 0) {
     console.log('No recent reports found in the last 48 hours.');

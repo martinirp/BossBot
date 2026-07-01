@@ -89,7 +89,7 @@ export default {
             AND reported_by_jid != 'flop'
           GROUP BY boss_name
         ) latest ON r.boss_name = latest.boss_name AND r.created_at = latest.max_created
-        WHERE r.world = ?
+        WHERE r.world = ? OR r.world IS NULL
       `, [world]);
 
       if (recentReports.length === 0) {
