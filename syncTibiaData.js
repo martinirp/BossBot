@@ -2,7 +2,7 @@ import cron from 'node-cron';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
-import { getAllBossesLastSeen, setBossLastSeenDate, getUniqueWorlds, setGlobalSetting, getGlobalSetting, revertBossLastSeen, getBossLastSeen, getAllowedGroups, getGroupWorld, addBossReport, parseDateStr, utcToGerman, setTibiadataSeenAt } from './database.js';
+import { getAllBossesLastSeen, setBossLastSeenDate, getUniqueWorlds, setGlobalSetting, getGlobalSetting, revertBossLastSeen, getBossLastSeen, getAllowedGroups, getGroupWorld, addBossReport, parseDateStr, utcToGerman, germanToUtc, setTibiadataSeenAt } from './database.js';
 import { sendGroupMessage } from './whatsapp.js';
 
 dotenv.config();
@@ -201,7 +201,13 @@ export async function syncWorldKillStatistics(targetWorld) {
                 const finalBossName = bossName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
                 await setBossLastSeenDate(finalBossName, 'TibiaData_API', fallbackDate, targetWorld);
-                await addBossReport(finalBossName, 'Detectado via TibiaData API', 'TibiaData_API', 0, targetWorld);
+                
+                // fallbackDate is German time (e.g. YYYY-MM-DD 00:00). We must convert it to UTC for the report log.
+                const fallbackDateGerman = parseDateStr(fallbackDate);
+                const fallbackDateUtc = germanToUtc(fallbackDateGerman);
+                const fallbackDateUtcStr = fallbackDateUtc.toISOString().replace('T', ' ').substring(0, 19);
+
+                await addBossReport(finalBossName, 'Detectado via TibiaData API', 'TibiaData_API', 0, targetWorld, fallbackDateUtcStr);
                 syncCount++;
             } else {
                 // Even when the human record is kept, always update tibiadata_seen_at

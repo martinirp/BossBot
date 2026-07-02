@@ -123,7 +123,10 @@ function getKillHistory(world, bossName) {
       for (const row of rows) {
         const utcDate = new Date(row.created_at.replace(' ', 'T') + 'Z');
         const brtDate = new Date(utcDate.getTime() - 3 * 60 * 60 * 1000);
-        const kill_date = `${brtDate.getUTCFullYear()}-${String(brtDate.getUTCMonth() + 1).padStart(2, '0')}-${String(brtDate.getUTCDate()).padStart(2, '0')}`;
+        
+        const pad = (n) => String(n).padStart(2, '0');
+        const kill_date = `${brtDate.getUTCFullYear()}-${pad(brtDate.getUTCMonth() + 1)}-${pad(brtDate.getUTCDate())}`;
+        const brtTimeStr = `${kill_date} ${pad(brtDate.getUTCHours())}:${pad(brtDate.getUTCMinutes())}:${pad(brtDate.getUTCSeconds())}`;
         
         const confirmed_by = await formatJidName(row.reported_by_jid);
         mapped.push({
@@ -131,7 +134,7 @@ function getKillHistory(world, bossName) {
           amount_killed: 1,
           confirmed_by,
           extra_text: row.extra_text,
-          created_at: row.created_at
+          created_at: brtTimeStr
         });
       }
       resolve(mapped);
