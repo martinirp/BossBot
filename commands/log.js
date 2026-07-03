@@ -52,11 +52,19 @@ export default {
       }
     }
 
+    const playersGainingXp = new Set();
+    for (const ev of events) {
+      if (ev.type === 'xp') {
+        playersGainingXp.add(ev.player.toLowerCase());
+      }
+    }
+    playersGainingXp.add('você');
+    playersGainingXp.add('you');
+
     let possibleBosses = [];
     for (const target of Object.keys(damageDealtTo)) {
-      // Diferente de antes, não excluímos quem ganhou XP ainda, 
-      // mas monstros não devem dar dano neles mesmos (geralmente).
-      // Vamos assumir quem tomou o maior dano absoluto como o boss.
+      if (playersGainingXp.has(target.toLowerCase())) continue; // Exclui players
+
       let totalDmg = 0;
       for (const atk of Object.keys(damageDealtTo[target])) {
         totalDmg += damageDealtTo[target][atk];
