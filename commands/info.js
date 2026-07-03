@@ -133,7 +133,7 @@ const formatBossInfo = async (bossName, intervalName, record) => {
     predictionText = 'Sem previsão disponível';
   }
 
-  // 1. Build map line
+  // 1. Build map line — mostra o nome do local como link clicável
   let mapLine = '';
   const bossLocations = loadLocations();
   const locations = bossLocations[bossName] || [];
@@ -147,11 +147,15 @@ const formatBossInfo = async (bossName, intervalName, record) => {
     if (city) {
       const link = getLinkForCity(bossName, locations, city);
       if (link) {
-        mapLine = `🗺️ *Mapa:* ${link}\n`;
+        // Busca a descrição do local correspondente
+        const locObj = locations.find(l => l.link === link);
+        const label = locObj ? locObj.description : city;
+        mapLine = `🗺️ *Local:* [${label}](${link})\n`;
       }
     } else {
-      const links = locations.map(l => l.link);
-      mapLine = `🗺️ *Mapa:* ${links.join(', ')}\n`;
+      // Múltiplos locais — cada um com nome e link
+      const linkParts = locations.map(l => `[${l.description}](${l.link})`);
+      mapLine = `🗺️ *Local:* ${linkParts.join(' | ')}\n`;
     }
   }
 

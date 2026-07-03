@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BossBot · X — Painel de Monitoramento</title>
-    <!-- Google Fonts: Outfit & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -12,17 +11,96 @@
 </head>
 <body>
 
-    <!-- Background Noir com Grid e Orbs de Brilho -->
+    <!-- Background Noir -->
     <div class="noir-background">
         <div class="glow-orb target-orb-1"></div>
         <div class="glow-orb target-orb-2"></div>
         <div class="bg-grid"></div>
     </div>
 
-    <!-- Container Principal -->
-    <main class="container">
-        
-        <!-- Header da Aplicação -->
+    <!-- ═══ TELA DE LOGIN ══════════════════════════════════════════════════════ -->
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-card glass-panel">
+            <div class="login-logo">
+                <span class="logo-symbol">BOSSBOT</span><span class="logo-accent">·X</span>
+            </div>
+            <p class="login-subtitle">Monitoramento Preditivo de Bosses</p>
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="login-field">
+                    <label for="loginUser">Usuário</label>
+                    <input type="text" id="loginUser" autocomplete="username" placeholder="Digite seu usuário" required>
+                </div>
+                <div class="login-field">
+                    <label for="loginPass">Senha</label>
+                    <input type="password" id="loginPass" autocomplete="current-password" placeholder="••••••••" required>
+                </div>
+                <p id="loginError" class="login-error"></p>
+                <button type="submit" class="btn-login" id="loginBtn">Entrar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ═══ PAINEL ADMIN (sidebar) ════════════════════════════════════════════ -->
+    <div id="adminSidebarOverlay" class="admin-overlay" onclick="closeAdminPanel()"></div>
+    <aside id="adminSidebar" class="admin-sidebar glass-panel">
+        <div class="admin-sidebar-header">
+            <span>⚙️ Painel Administrativo</span>
+            <button class="admin-close-btn" onclick="closeAdminPanel()">✕</button>
+        </div>
+        <div class="admin-sidebar-content">
+
+            <!-- Adicionar Boss -->
+            <div class="admin-section">
+                <h4 class="admin-section-title">➕ Adicionar Boss</h4>
+                <div class="admin-form-row">
+                    <input type="text" id="adminAddName" placeholder="Nome do novo boss" class="admin-input">
+                    <button class="btn-admin-action" onclick="adminAddBoss()">Adicionar</button>
+                </div>
+                <p id="adminAddMsg" class="admin-feedback"></p>
+            </div>
+
+            <!-- Renomear Boss -->
+            <div class="admin-section">
+                <h4 class="admin-section-title">✏️ Renomear Boss</h4>
+                <div class="admin-form-col">
+                    <input type="text" id="adminRenameOld" placeholder="Nome atual (exato)" class="admin-input">
+                    <input type="text" id="adminRenameNew" placeholder="Novo nome" class="admin-input">
+                    <button class="btn-admin-action" onclick="adminRenameBoss()">Renomear</button>
+                </div>
+                <p id="adminRenameMsg" class="admin-feedback"></p>
+            </div>
+
+            <!-- Upload de Imagem -->
+            <div class="admin-section">
+                <h4 class="admin-section-title">🖼️ Trocar Imagem do Boss</h4>
+                <div class="admin-form-col">
+                    <input type="text" id="adminImgBossName" placeholder="Nome exato do boss" class="admin-input">
+                    <label class="admin-file-label">
+                        <input type="file" id="adminImgFile" accept=".webp,.gif,.png" onchange="previewAdminImage(event)">
+                        <span id="adminImgFileLabel">Selecionar imagem (.webp, .gif, .png)</span>
+                    </label>
+                    <img id="adminImgPreview" class="admin-img-preview" src="" alt="" style="display:none">
+                    <button class="btn-admin-action" onclick="adminUploadImage()">Enviar Imagem</button>
+                </div>
+                <p id="adminImgMsg" class="admin-feedback"></p>
+            </div>
+
+            <!-- Remover Boss -->
+            <div class="admin-section admin-section-danger">
+                <h4 class="admin-section-title">🗑️ Remover Boss</h4>
+                <div class="admin-form-row">
+                    <input type="text" id="adminRemoveName" placeholder="Nome exato do boss" class="admin-input">
+                    <button class="btn-admin-danger" onclick="adminRemoveBoss()">Remover</button>
+                </div>
+                <p id="adminRemoveMsg" class="admin-feedback"></p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ═══ DASHBOARD PRINCIPAL ═══════════════════════════════════════════════ -->
+    <main class="container" id="mainDashboard" style="display:none">
+
+        <!-- Header -->
         <header class="app-header">
             <div class="header-left">
                 <div class="logo">
@@ -36,11 +114,18 @@
                     <span class="status-dot pulse"></span>
                     <span id="worldName" class="world-name">Quelibra</span>
                 </div>
+                <!-- Botão Admin (visível somente para admin) -->
+                <button class="btn-admin-toggle" id="adminBtn" onclick="openAdminPanel()" style="display:none" title="Painel Administrativo">
+                    ⚙️
+                </button>
                 <button class="btn-sync" id="syncBtn" onclick="forceSync()">
                     <svg class="sync-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
                     </svg>
                     <span id="syncLabel">Sincronizar</span>
+                </button>
+                <button class="btn-logout" id="logoutBtn" onclick="handleLogout()" title="Sair">
+                    Sair
                 </button>
             </div>
         </header>
@@ -65,7 +150,6 @@
         <!-- Grid de Bosses -->
         <section class="boss-grid-container">
             <div id="bossGrid" class="boss-grid">
-                <!-- Loader Animado -->
                 <div class="loader-wrapper">
                     <div class="spinner"></div>
                     <p class="loader-text">Consultando arquivos do banco de dados...</p>
@@ -80,7 +164,7 @@
 
     </main>
 
-    <!-- Modal de Detalhes do Boss -->
+    <!-- ═══ MODAL DE DETALHES DO BOSS ════════════════════════════════════════ -->
     <div id="bossModalOverlay" class="modal-overlay">
         <div class="modal-card glass-panel" id="modalPanel">
             <button class="modal-close-btn" onclick="closeModal()">
@@ -89,7 +173,10 @@
                     <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
             </button>
-            
+
+            <!-- Tabs de cidade (multi-local) -->
+            <div id="modalCityTabs" class="modal-city-tabs" style="display:none"></div>
+
             <div class="modal-header">
                 <div class="modal-avatar-wrap">
                     <img id="modalImg" src="" class="modal-avatar" alt="Boss Sprite">
@@ -100,7 +187,7 @@
                 </div>
             </div>
 
-            <!-- Grid de Métricas Principais -->
+            <!-- Grid de Métricas -->
             <div class="modal-metrics-grid">
                 <div class="metric-box">
                     <span class="metric-label">Spawn Chance</span>
@@ -120,10 +207,10 @@
                 </div>
             </div>
 
-            <!-- Dual Prediction Block (Grupo vs TibiaData) -->
+            <!-- Dual Prediction Block -->
             <div id="modalPredBlock" class="modal-pred-block"></div>
 
-            <!-- Dados Estatísticos e Combate -->
+            <!-- Atributos & Ciclo -->
             <div class="modal-stats-section">
                 <div class="stats-column">
                     <h3>Atributos e Resistências</h3>
@@ -142,7 +229,7 @@
                     <h3>Ciclo Estimado</h3>
                     <div class="stats-list">
                         <div class="stat-item">
-                            <span class="label">Frequência Média</span>
+                            <span class="label">Frequência de Spawn</span>
                             <span class="value" id="modalFreqVal">-</span>
                         </div>
                         <div class="stat-item">
@@ -153,7 +240,7 @@
                 </div>
             </div>
 
-            <!-- Seção do Check e Mapa Interativo -->
+            <!-- Mapa Interativo -->
             <div class="modal-map-section" id="modalMapSection">
                 <h3>Localização de Nascimento</h3>
                 <div class="map-container-wrap">
@@ -161,13 +248,13 @@
                 </div>
             </div>
 
-            <!-- Histórico Recente (7 dias) -->
+            <!-- Histórico 7 dias -->
             <div class="modal-history-7d">
                 <h3>Monitoramento Semanal</h3>
                 <div id="history7dGrid" class="history-7d-grid"></div>
             </div>
 
-            <!-- Histórico Completo de Inserções -->
+            <!-- Histórico Completo -->
             <div class="modal-full-history">
                 <h3>Linha do Tempo de Sighting</h3>
                 <div id="fullHistoryList" class="full-history-list"></div>

@@ -170,7 +170,9 @@ class CommandHandler {
 
       try {
         const now = new Date();
-        now.setHours(now.getHours() - 3); // UTC-3 Brazil
+        // ✅ FIX: usa getUTCHours() para calcular BRT corretamente,
+        // independente do fuso da máquina onde o bot está rodando.
+        now.setUTCHours(now.getUTCHours() - 3); // UTC → BRT (UTC-3)
         const savedAt = now.toISOString().replace('T', ' ').substring(0, 16);
         const hiveData = {
           response,
