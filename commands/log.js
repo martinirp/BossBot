@@ -10,44 +10,35 @@ export default {
       return sock.sendMessage(remoteJid, { text: '⚠️ Envie o log do servidor após o comando. Exemplo:\n' + prefix + 'log 17:58:47 Mr. Punish loses 448 hitpoints...' }, { quoted: msg });
     }
 
-    const lines = logText.split('\n');
     const damageDealtTo = {}; 
     const xpGainedBy = {}; 
 
-    for (let line of lines) {
-      line = line.trim();
-      if (!line) continue;
-      
-      // XP
-      let m = line.match(/(?:[0-9]{2}:[0-9]{2}:[0-9]{2}\s+)?(.+?) gained ([0-9]+) experience points/i);
-      if (m) {
-        let player = m[1].toLowerCase() === 'you' ? 'Você' : m[1];
-        let xp = parseInt(m[2], 10);
-        xpGainedBy[player] = (xpGainedBy[player] || 0) + xp;
-        continue;
-      }
-      
-      // Damage
-      m = line.match(/(?:[0-9]{2}:[0-9]{2}:[0-9]{2}\s+)?(.+?) loses ([0-9]+) hitpoints due to (?:an|a critical) attack by (.+?)\./i);
-      if (m) {
-        let target = m[1];
-        let dmg = parseInt(m[2], 10);
-        let attacker = m[3];
-        if (!damageDealtTo[target]) damageDealtTo[target] = {};
-        damageDealtTo[target][attacker] = (damageDealtTo[target][attacker] || 0) + dmg;
-        continue;
-      }
+    // Extrair XP
+    const xpRegex = /(?:[0-9]{2}:[0-9]{2}:[0-9]{2}\s+)?(.+?) gained ([0-9]+) experience points/gi;
+    for (const m of logText.matchAll(xpRegex)) {
+      let player = m[1].toLowerCase() === 'you' ? 'Você' : m[1];
+      let xp = parseInt(m[2], 10);
+      xpGainedBy[player] = (xpGainedBy[player] || 0) + xp;
+    }
 
-      // Your damage
-      m = line.match(/(?:[0-9]{2}:[0-9]{2}:[0-9]{2}\s+)?(.+?) loses ([0-9]+) hitpoints due to your (?:critical )?attack\./i);
-      if (m) {
-        let target = m[1];
-        let dmg = parseInt(m[2], 10);
-        let attacker = 'Você';
-        if (!damageDealtTo[target]) damageDealtTo[target] = {};
-        damageDealtTo[target][attacker] = (damageDealtTo[target][attacker] || 0) + dmg;
-        continue;
-      }
+    // Extrair Dano normal
+    const dmgRegex = /(?:[0-9]{2}:[0-9]{2}:[0-9]{2}\s+)?(.+?) loses ([0-9]+) hitpoints due to (?:an|a critical) attack by (.+)\.(?:\s|$)/gi;
+    for (const m of logText.matchAll(dmgRegex)) {
+      let target = m[1].trim();
+      let dmg = parseInt(m[2], 10);
+      let attacker = m[3].trim();
+      if (!damageDealtTo[target]) damageDealtTo[target] = {};
+      damageDealtTo[target][attacker] = (damageDealtTo[target][attacker] || 0) + dmg;
+    }
+
+    // Extrair "Your" damage
+    const yourDmgRegex = /(?:[0-9]{2}:[0-9]{2}:[0-9]{2}\s+)?(.+?) loses ([0-9]+) hitpoints due to your (?:critical )?attack\.(?:\s|$)/gi;
+    for (const m of logText.matchAll(yourDmgRegex)) {
+      let target = m[1].trim();
+      let dmg = parseInt(m[2], 10);
+      let attacker = 'Você';
+      if (!damageDealtTo[target]) damageDealtTo[target] = {};
+      damageDealtTo[target][attacker] = (damageDealtTo[target][attacker] || 0) + dmg;
     }
 
     const playersGainingXp = new Set(Object.keys(xpGainedBy).map(x => x.toLowerCase()));
