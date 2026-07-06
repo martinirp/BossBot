@@ -335,6 +335,7 @@ class CommandHandler {
           message: pollData.originalMessage,
           pollUpdates: [msg],
       });
+      console.log(`[CommandHandler] pollUpdateResult:`, JSON.stringify(pollUpdateResult, null, 2));
 
       let selectedOption = null;
       let voterJid = null;
@@ -347,6 +348,7 @@ class CommandHandler {
       }
 
       if (selectedOption) {
+          console.log(`[CommandHandler] Voto capturado! Opção: ${selectedOption}`);
           this.activePolls.delete(pollId); // prevent multiple triggers
           
           try {
