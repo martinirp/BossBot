@@ -338,7 +338,7 @@ class CommandHandler {
       }
       
       const meId = jidNormalizedUser(sock.user.id);
-      const voterJid = jidNormalizedUser(msg.key.participant || msg.key.remoteJid);
+      const voter = jidNormalizedUser(msg.key.participant || msg.key.remoteJid);
       
       const voteMsg = decryptPollVote(
           msg.message.pollUpdateMessage.vote,
@@ -346,7 +346,7 @@ class CommandHandler {
               pollEncKey,
               pollCreatorJid: meId,
               pollMsgId: pollId,
-              voterJid
+              voterJid: voter
           }
       );
 
