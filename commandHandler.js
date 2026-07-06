@@ -360,8 +360,20 @@ class CommandHandler {
           }
       }
       
-      // Remove duplicatas e normaliza
-      participantsToTry = [...new Set(participantsToTry.map(j => jidNormalizedUser(j)))];
+      // Expandir lista com possíveis sufixos de device para contornar a assinatura
+      let expandedParticipants = [];
+      for (const p of participantsToTry) {
+          const base = jidNormalizedUser(p);
+          expandedParticipants.push(base);
+          expandedParticipants.push(p); // Mantém o original (pode já ter sufixo)
+          const [num, domain] = base.split('@');
+          for (let i = 1; i <= 5; i++) {
+              expandedParticipants.push(`${num}:${i}@${domain}`);
+          }
+      }
+      
+      // Remove duplicatas
+      participantsToTry = [...new Set(expandedParticipants)];
 
       let voteMsg = null;
       let trueVoterJid = null;
