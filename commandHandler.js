@@ -318,12 +318,18 @@ class CommandHandler {
 
   async handlePollUpdate(sock, msg) {
     try {
+      console.log("[CommandHandler] Processando pollUpdateMessage...");
       const { getAggregateVotesInPollMessage } = await import('@whiskeysockets/baileys');
       const pollCreationKey = msg.message.pollUpdateMessage.pollCreationMessageKey;
       const pollId = pollCreationKey.id;
       
+      console.log(`[CommandHandler] Poll ID recebido: ${pollId}`);
       const pollData = this.activePolls.get(pollId);
-      if (!pollData) return; // Not our poll or already handled
+      if (!pollData) {
+        console.log(`[CommandHandler] Enquete ${pollId} não encontrada em activePolls.`);
+        return; // Not our poll or already handled
+      }
+      console.log(`[CommandHandler] Enquete encontrada! Boss: ${pollData.bossName}`);
 
       const pollUpdateResult = getAggregateVotesInPollMessage({
           message: pollData.originalMessage,

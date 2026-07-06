@@ -78,12 +78,13 @@ export async function connectToWhatsApp() {
     if (m.type !== 'notify') return;
 
     for (const msg of m.messages) {
-      if (msg.key.fromMe) continue;
-      
       if (msg.message?.pollUpdateMessage) {
+        console.log(`[whatsapp.js] Recebeu pollUpdateMessage de fromMe=${msg.key.fromMe}`);
         await commandHandler.handlePollUpdate(sock, msg);
         continue;
       }
+      
+      if (msg.key.fromMe) continue;
 
       const text = msg.message?.conversation || 
                    msg.message?.extendedTextMessage?.text || 
