@@ -38,7 +38,12 @@ export async function connectToWhatsApp() {
   const sock = makeSocket({
     auth: state,
     printQRInTerminal: false,
-    logger: pino({ level: 'error' })
+    logger: pino({ level: 'error' }),
+    getMessage: async (key) => {
+      const pollData = commandHandler.activePolls.get(key.id);
+      if (pollData) return pollData.originalMessage.message;
+      return undefined;
+    }
   });
 
   sockInstance = sock;
@@ -74,18 +79,21 @@ export async function connectToWhatsApp() {
 
   sock.ev.on('creds.update', saveCreds);
   
+  sock.ev.on('messages.update', async (updates) => {
+    for (const update of updates) {
+      if (update.pollUpdates && update.pollUpdates.length > 0) {
+        await commandHandler.handlePollUpdate(sock, update);
+      }
+    }
+  });
+  
   sock.ev.on('messages.upsert', async (m) => {
     if (m.type !== 'notify') return;
 
     for (const msg of m.messages) {
-      if (msg.message?.pollUpdateMessage) {
-        console.log(`[whatsapp.js] Recebeu pollUpdateMessage de fromMe=${msg.key.fromMe}`);
-        await commandHandler.handlePollUpdate(sock, msg);
-        continue;
-      }
-      
       if (msg.key.fromMe) continue;
-
+      
+      // O processamento de pollUpdates agora é feito pelo messages.update
       const text = msg.message?.conversation || 
                    msg.message?.extendedTextMessage?.text || 
                    msg.message?.imageMessage?.caption || 
