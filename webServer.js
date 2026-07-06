@@ -72,7 +72,8 @@ const MULTI_CITY_BOSSES = {
   "hirintror":         ["Mines", "Nibelor"],
   "battlemaster zunzu":["West", "East"],
   "fleabringer":       ["Surface", "North", "Sul"],
-  "albino dragon":     ["Farmine", "Fenrock", "Goroma", "POI", "Ank"]
+  "albino dragon":     ["Farmine", "Fenrock", "Goroma", "POI", "Ank"],
+  "danimax":           ["Thais", "Venore", "Carlin", "Edron", "Darashia"]
 };
 
 // Dynamic boss list — re-reads bosses.json each call so admin changes are instant

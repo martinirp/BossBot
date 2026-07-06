@@ -678,5 +678,27 @@
       "description": "Ice Witch Temple (Svargrond)",
       "link": "https://tibiamaps.io/map/embed#31942,31387,9:1"
     }
+  ],
+  "Danimax": [
+    {
+      "description": "Thais",
+      "link": "https://tibiamaps.io/map/embed#32369,32241,7:1"
+    },
+    {
+      "description": "Venore",
+      "link": "https://tibiamaps.io/map/embed#32955,32076,7:1"
+    },
+    {
+      "description": "Carlin",
+      "link": "https://tibiamaps.io/map/embed#32360,31782,7:1"
+    },
+    {
+      "description": "Edron",
+      "link": "https://tibiamaps.io/map/embed#33217,31814,7:1"
+    },
+    {
+      "description": "Darashia",
+      "link": "https://tibiamaps.io/map/embed#33213,32454,7:1"
+    }
   ]
 }

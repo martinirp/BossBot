@@ -10,6 +10,7 @@ class CommandHandler {
     this.commands = new Map();
     this.aliases = new Map();
     this.pendingPrompts = new Map();
+    this.activePolls = new Map();
   }
 
   setPrompt(remoteJid, senderJid, promptData) {
@@ -124,6 +125,9 @@ class CommandHandler {
         // Fall through to process the message normally
       }
     }
+
+    // --- Poll Interception ---
+    // (Polls are handled via handlePollUpdate, not here)
 
     // Auto-calculador do Hive (Loot of a spidris elite / hive overseer)
     const hiveRegex = /(?:^|\s)(\d{1,2}):(\d{2})(?::(\d{2}))?\s+Loot\s+of\s+a\s+(spidris\s+elite|hive\s+overseer):/i;
@@ -309,6 +313,81 @@ class CommandHandler {
       await context.sock.sendMessage(context.remoteJid, {
         text: `⚠️ Ocorreu um erro ao executar este comando.`
       }, { quoted: context.msg });
+    }
+  }
+
+  async checkPermission(context) {
+    if (!context.isGroup) return false;
+    const gId = context.remoteJid.replace('@g.us', '');
+    if (!context.allowedGroups.includes(gId)) {
+      console.log(`[CommandHandler] Ignore message from unallowed group: ${context.remoteJid}`);
+      return false;
+    }
+    return true;
+  }
+
+  async handlePollUpdate(sock, msg) {
+    try {
+      const { getAggregateVotesInPollMessage } = await import('@whiskeysockets/baileys');
+      const pollCreationKey = msg.message.pollUpdateMessage.pollCreationMessageKey;
+      const pollId = pollCreationKey.id;
+      
+      const pollData = this.activePolls.get(pollId);
+      if (!pollData) return; // Not our poll or already handled
+
+      const pollUpdateResult = getAggregateVotesInPollMessage({
+          message: pollData.originalMessage,
+          pollUpdates: [msg],
+      });
+
+      let selectedOption = null;
+      let voterJid = null;
+      for (const opt of pollUpdateResult) {
+          if (opt.voters.length > 0) {
+              selectedOption = opt.name;
+              voterJid = opt.voters[0];
+              break;
+          }
+      }
+
+      if (selectedOption) {
+          this.activePolls.delete(pollId); // prevent multiple triggers
+          
+          try {
+              await sock.sendMessage(pollCreationKey.remoteJid, { delete: pollCreationKey });
+          } catch(e) { console.error("[CommandHandler] Failed to delete poll:", e); }
+          
+          const reconstructedCommandText = `${pollData.prefix}confirm ${pollData.bossName}, ${selectedOption}`;
+          console.log(`[CommandHandler] Intercepted poll reply from ${voterJid}: ${reconstructedCommandText}`);
+          
+          const args = reconstructedCommandText.slice(1).trim().split(/\s+/);
+          const cmdName = args.shift().toLowerCase();
+          
+          const voterPhone = voterJid ? voterJid.split('@')[0] : '';
+          const allowedGroups = await db.getAllowedGroups();
+          
+          const context = {
+              sock, 
+              msg: { key: pollCreationKey }, // minimal mock msg
+              text: reconstructedCommandText, 
+              trimmed: reconstructedCommandText,
+              withoutPrefix: reconstructedCommandText.slice(1).trim(),
+              prefix: pollData.prefix,
+              remoteJid: pollCreationKey.remoteJid,
+              isGroup: pollCreationKey.remoteJid.endsWith('@g.us'),
+              senderJid: voterJid,
+              senderPhone: voterPhone,
+              allowedGroups: allowedGroups,
+              commandHandler: this
+          };
+          
+          const command = this.getCommand(cmdName);
+          if (command) {
+              await this.executeCommand(command, args, context);
+          }
+      }
+    } catch(e) {
+      console.error("[CommandHandler] Error handling poll update:", e);
     }
   }
 }

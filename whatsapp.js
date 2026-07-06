@@ -79,6 +79,11 @@ export async function connectToWhatsApp() {
 
     for (const msg of m.messages) {
       if (msg.key.fromMe) continue;
+      
+      if (msg.message?.pollUpdateMessage) {
+        await commandHandler.handlePollUpdate(sock, msg);
+        continue;
+      }
 
       const text = msg.message?.conversation || 
                    msg.message?.extendedTextMessage?.text || 

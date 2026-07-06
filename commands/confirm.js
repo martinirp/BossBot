@@ -93,19 +93,21 @@ export default {
 
     if (validCities) {
       if (!extraText.trim()) {
-        const menuOptions = validCities.map((c, i) => `[ ${i + 1} ] ${c}`).join('\n');
-        
-        await sock.sendMessage(remoteJid, {
-          text: `⚠️ O boss *${matchedBossName}* nasce em várias cidades. Responda com o número do local correto:\n\n${menuOptions}`
+        const pollMsg = await sock.sendMessage(remoteJid, {
+          poll: {
+            name: `📍 O boss *${matchedBossName}* nasce em várias cidades. Escolha o local correto:`,
+            values: validCities,
+            selectableCount: 1
+          }
         }, { quoted: msg });
         
-        if (context.commandHandler) {
-          context.commandHandler.setPrompt(remoteJid, senderJid, {
+        context.commandHandler.activePolls.set(pollMsg.key.id, {
             bossName: matchedBossName,
             cities: validCities,
-            prefix: context.prefix || '!'
-          });
-        }
+            originalMessage: pollMsg.message,
+            prefix: context.prefix,
+            senderJid: senderJid
+        });
         return;
       }
 
