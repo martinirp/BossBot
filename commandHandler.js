@@ -316,16 +316,6 @@ class CommandHandler {
     }
   }
 
-  async checkPermission(context) {
-    if (!context.isGroup) return false;
-    const gId = context.remoteJid.replace('@g.us', '');
-    if (!context.allowedGroups.includes(gId)) {
-      console.log(`[CommandHandler] Ignore message from unallowed group: ${context.remoteJid}`);
-      return false;
-    }
-    return true;
-  }
-
   async handlePollUpdate(sock, msg) {
     try {
       const { getAggregateVotesInPollMessage } = await import('@whiskeysockets/baileys');
