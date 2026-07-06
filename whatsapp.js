@@ -85,20 +85,20 @@ export async function connectToWhatsApp() {
   sock.ev.on('creds.update', saveCreds);
   
   sock.ev.on('messages.update', async (updates) => {
-    for (const item of updates) {
-      if (item.update?.pollUpdates && item.update.pollUpdates.length > 0) {
-        await commandHandler.handlePollUpdate(sock, item);
-      }
-    }
+      // IGNORADO
   });
   
   sock.ev.on('messages.upsert', async (m) => {
     if (m.type !== 'notify') return;
 
     for (const msg of m.messages) {
-      if (msg.key.fromMe) continue;
+      if (msg.message?.pollUpdateMessage) {
+        console.log(`[whatsapp.js] Recebeu pollUpdateMessage via upsert de fromMe=${msg.key.fromMe}`);
+        await commandHandler.handlePollUpdate(sock, msg);
+        continue;
+      }
       
-      // O processamento de pollUpdates agora é feito pelo messages.update
+      if (msg.key.fromMe) continue;
       const text = msg.message?.conversation || 
                    msg.message?.extendedTextMessage?.text || 
                    msg.message?.imageMessage?.caption || 

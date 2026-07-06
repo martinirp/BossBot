@@ -316,11 +316,12 @@ class CommandHandler {
     }
   }
 
-  async handlePollUpdate(sock, item) {
+  async handlePollUpdate(sock, msg) {
     try {
-      console.log("[CommandHandler] Processando poll update descriptografado...");
-      const { getAggregateVotesInPollMessage } = await import('@whiskeysockets/baileys');
-      const pollId = item.key.id;
+      console.log("[CommandHandler] Processando pollUpdateMessage...");
+      const { getAggregateVotesInPollMessage, decryptPollVote, jidNormalizedUser } = await import('@whiskeysockets/baileys');
+      const pollCreationKey = msg.message.pollUpdateMessage.pollCreationMessageKey;
+      const pollId = pollCreationKey.id;
       
       console.log(`[CommandHandler] Poll ID recebido: ${pollId}`);
       const pollData = this.activePolls.get(pollId);
@@ -330,9 +331,40 @@ class CommandHandler {
       }
       console.log(`[CommandHandler] Enquete encontrada! Boss: ${pollData.bossName}`);
       
+      const pollEncKey = pollData.originalMessage?.message?.messageContextInfo?.messageSecret || pollData.originalMessage?.messageContextInfo?.messageSecret;
+      if (!pollEncKey) {
+          console.log("[CommandHandler] messageSecret não encontrado na mensagem original.");
+          console.log("Original message keys:", Object.keys(pollData.originalMessage));
+          return;
+      }
+      
+      const meId = jidNormalizedUser(sock.user.id);
+      const voter = msg.key.fromMe ? meId : (msg.key.participant || msg.key.remoteJid);
+      
+      console.log("[DEBUG CRYPTO]");
+      console.log("- pollEncKey (Buffer):", Buffer.isBuffer(pollEncKey), " length:", pollEncKey?.length);
+      console.log("- pollCreatorJid:", meId);
+      console.log("- pollMsgId:", pollId);
+      console.log("- voterJid:", voter);
+      console.log("- encPayload (Buffer):", Buffer.isBuffer(msg.message.pollUpdateMessage.vote.encPayload));
+      console.log("- encIv (Buffer):", Buffer.isBuffer(msg.message.pollUpdateMessage.vote.encIv));
+
+      const voteMsg = decryptPollVote(
+          msg.message.pollUpdateMessage.vote,
+          {
+              pollEncKey,
+              pollCreatorJid: meId,
+              pollMsgId: pollId,
+              voterJid: voter
+          }
+      );
+
       const pollUpdateResult = getAggregateVotesInPollMessage({
-          message: pollData.originalMessage.message,
-          pollUpdates: item.update.pollUpdates,
+          message: pollData.originalMessage.message || pollData.originalMessage,
+          pollUpdates: [{
+              pollUpdateMessageKey: msg.key,
+              vote: voteMsg
+          }],
       });
       console.log(`[CommandHandler] pollUpdateResult:`, JSON.stringify(pollUpdateResult, null, 2));
 
@@ -351,7 +383,7 @@ class CommandHandler {
           this.activePolls.delete(pollId); // prevent multiple triggers
           
           try {
-              await sock.sendMessage(item.key.remoteJid, { delete: item.key });
+              await sock.sendMessage(pollCreationKey.remoteJid, { delete: pollCreationKey });
           } catch(e) { console.error("[CommandHandler] Failed to delete poll:", e); }
           
           const reconstructedCommandText = `${pollData.prefix}confirm ${pollData.bossName}, ${selectedOption}`;
@@ -365,13 +397,13 @@ class CommandHandler {
           
           const context = {
               sock, 
-              msg: { key: item.key }, // minimal mock msg
+              msg: { key: msg.key }, // minimal mock msg
               text: reconstructedCommandText, 
               trimmed: reconstructedCommandText,
               withoutPrefix: reconstructedCommandText.slice(1).trim(),
               prefix: pollData.prefix,
-              remoteJid: item.key.remoteJid,
-              isGroup: item.key.remoteJid.endsWith('@g.us'),
+              remoteJid: pollCreationKey.remoteJid,
+              isGroup: pollCreationKey.remoteJid.endsWith('@g.us'),
               senderJid: voterJid,
               senderPhone: voterPhone,
               allowedGroups: allowedGroups,
