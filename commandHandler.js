@@ -316,11 +316,11 @@ class CommandHandler {
     }
   }
 
-  async handlePollUpdate(sock, update) {
+  async handlePollUpdate(sock, item) {
     try {
       console.log("[CommandHandler] Processando poll update descriptografado...");
       const { getAggregateVotesInPollMessage } = await import('@whiskeysockets/baileys');
-      const pollId = update.key.id;
+      const pollId = item.key.id;
       
       console.log(`[CommandHandler] Poll ID recebido: ${pollId}`);
       const pollData = this.activePolls.get(pollId);
@@ -332,7 +332,7 @@ class CommandHandler {
       
       const pollUpdateResult = getAggregateVotesInPollMessage({
           message: pollData.originalMessage.message,
-          pollUpdates: update.pollUpdates,
+          pollUpdates: item.update.pollUpdates,
       });
       console.log(`[CommandHandler] pollUpdateResult:`, JSON.stringify(pollUpdateResult, null, 2));
 
@@ -351,7 +351,7 @@ class CommandHandler {
           this.activePolls.delete(pollId); // prevent multiple triggers
           
           try {
-              await sock.sendMessage(update.key.remoteJid, { delete: update.key });
+              await sock.sendMessage(item.key.remoteJid, { delete: item.key });
           } catch(e) { console.error("[CommandHandler] Failed to delete poll:", e); }
           
           const reconstructedCommandText = `${pollData.prefix}confirm ${pollData.bossName}, ${selectedOption}`;
@@ -365,13 +365,13 @@ class CommandHandler {
           
           const context = {
               sock, 
-              msg: { key: update.key }, // minimal mock msg
+              msg: { key: item.key }, // minimal mock msg
               text: reconstructedCommandText, 
               trimmed: reconstructedCommandText,
               withoutPrefix: reconstructedCommandText.slice(1).trim(),
               prefix: pollData.prefix,
-              remoteJid: update.key.remoteJid,
-              isGroup: update.key.remoteJid.endsWith('@g.us'),
+              remoteJid: item.key.remoteJid,
+              isGroup: item.key.remoteJid.endsWith('@g.us'),
               senderJid: voterJid,
               senderPhone: voterPhone,
               allowedGroups: allowedGroups,

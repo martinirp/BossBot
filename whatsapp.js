@@ -80,9 +80,9 @@ export async function connectToWhatsApp() {
   sock.ev.on('creds.update', saveCreds);
   
   sock.ev.on('messages.update', async (updates) => {
-    for (const update of updates) {
-      if (update.pollUpdates && update.pollUpdates.length > 0) {
-        await commandHandler.handlePollUpdate(sock, update);
+    for (const item of updates) {
+      if (item.update?.pollUpdates && item.update.pollUpdates.length > 0) {
+        await commandHandler.handlePollUpdate(sock, item);
       }
     }
   });
