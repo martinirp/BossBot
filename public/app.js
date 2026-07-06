@@ -267,10 +267,18 @@ function renderSingleCard(grid, p) {
             <div class="pred-row">📡 <span class="chance-value color-${tibiaCat}">${p.tibiadata_chance_percent}%</span></div>`;
     }
 
+    const adminActions = authRole === 'admin' ? `
+        <div class="card-admin-actions" onclick="event.stopPropagation()">
+            <button class="btn-card-edit" onclick="promptRename('${p.name}')" title="Renomear">✏️</button>
+            <button class="btn-card-edit" onclick="promptImage('${getBaseName(p.name)}')" title="Trocar Imagem">🖼️</button>
+            <button class="btn-card-edit btn-card-delete" onclick="promptRemove('${p.name}')" title="Remover">🗑️</button>
+        </div>` : '';
+
     const col = document.createElement('div');
     col.className = 'boss-card-col';
     col.innerHTML = `
         <div class="boss-card category-${cat}" onclick='openModal(${JSON.stringify(p).replace(/'/g, "&apos;")})'>
+            ${adminActions}
             <div class="img-container">
                 <img src="/assets/bosses/${encodeURIComponent(getBaseName(p.name))}.webp"
                      onerror="this.onerror=null;this.src='/assets/bosses/${encodeURIComponent(getBaseName(p.name))}.gif'"
@@ -302,8 +310,16 @@ function renderGroupCard(grid, entry) {
         return `<span class="city-chip color-${cc}">${city} ${c.chance_percent}%</span>`;
     }).join('');
 
+    const adminActions = authRole === 'admin' ? `
+        <div class="card-admin-actions" onclick="event.stopPropagation()">
+            <button class="btn-card-edit" onclick="promptRename('${baseName}')" title="Renomear">✏️</button>
+            <button class="btn-card-edit" onclick="promptImage('${baseName}')" title="Trocar Imagem">🖼️</button>
+            <button class="btn-card-edit btn-card-delete" onclick="promptRemove('${baseName}')" title="Remover">🗑️</button>
+        </div>` : '';
+
     col.innerHTML = `
         <div class="boss-card category-${cat} boss-card-group" onclick='openGroupModal(${JSON.stringify(entry).replace(/'/g, "&apos;")})'>
+            ${adminActions}
             <div class="img-container">
                 <img src="/assets/bosses/${encodeURIComponent(baseName)}.webp"
                      onerror="this.onerror=null;this.src='/assets/bosses/${encodeURIComponent(baseName)}.gif'"
@@ -575,100 +591,63 @@ function renderFullHistoryList(kills) {
     }).join('');
 }
 
-// ═══ ADMIN PANEL ════════════════════════════════════════════════════════════
+// ═══ ADMIN ACTIONS (INLINE) ═════════════════════════════════════════════════
 
-function openAdminPanel() {
-    document.getElementById('adminSidebar').classList.add('open');
-    document.getElementById('adminSidebarOverlay').classList.add('open');
-}
-
-function closeAdminPanel() {
-    document.getElementById('adminSidebar').classList.remove('open');
-    document.getElementById('adminSidebarOverlay').classList.remove('open');
-}
-
-function setAdminMsg(id, text, isError = false) {
-    const el = document.getElementById(id);
-    el.textContent = text;
-    el.style.color = isError ? 'var(--color-hot)' : 'var(--color-radar)';
-}
-
-async function adminAddBoss() {
-    const name = document.getElementById('adminAddName').value.trim();
-    if (!name) return setAdminMsg('adminAddMsg', '⚠️ Digite um nome.', true);
+async function promptAddBoss() {
+    const name = prompt('Nome do novo boss a ser adicionado:');
+    if (!name || !name.trim()) return;
     const res = await fetch(`${API_BASE}/api/admin/add-boss`, {
-        method: 'POST', headers: apiHeaders(), body: JSON.stringify({ name })
+        method: 'POST', headers: apiHeaders(), body: JSON.stringify({ name: name.trim() })
     });
     const data = await res.json();
-    if (res.ok) {
-        setAdminMsg('adminAddMsg', `✅ "${name}" adicionado!`);
-        document.getElementById('adminAddName').value = '';
-        loadPredictions();
-    } else { setAdminMsg('adminAddMsg', `❌ ${data.error}`, true); }
+    if (res.ok) { alert(`✅ "${name.trim()}" adicionado!`); loadPredictions(); }
+    else { alert(`❌ ${data.error}`); }
 }
 
-async function adminRenameBoss() {
-    const oldName = document.getElementById('adminRenameOld').value.trim();
-    const newName = document.getElementById('adminRenameNew').value.trim();
-    if (!oldName || !newName) return setAdminMsg('adminRenameMsg', '⚠️ Preencha ambos os campos.', true);
-    if (!confirm(`Renomear "${oldName}" para "${newName}"? Esta ação migra todos os dados do banco.`)) return;
+async function promptRename(oldName) {
+    const newName = prompt(`Renomear "${oldName}" para:`, oldName);
+    if (!newName || newName.trim() === oldName) return;
+    if (!confirm(`Renomear "${oldName}" para "${newName.trim()}"? Esta ação migra todos os dados do banco.`)) return;
     const res = await fetch(`${API_BASE}/api/admin/rename-boss`, {
-        method: 'POST', headers: apiHeaders(), body: JSON.stringify({ oldName, newName })
+        method: 'POST', headers: apiHeaders(), body: JSON.stringify({ oldName, newName: newName.trim() })
     });
     const data = await res.json();
-    if (res.ok) {
-        setAdminMsg('adminRenameMsg', `✅ ${data.message}`);
-        document.getElementById('adminRenameOld').value = '';
-        document.getElementById('adminRenameNew').value = '';
-        loadPredictions();
-    } else { setAdminMsg('adminRenameMsg', `❌ ${data.error}`, true); }
+    if (res.ok) { alert(`✅ ${data.message}`); loadPredictions(); }
+    else { alert(`❌ ${data.error}`); }
 }
 
-async function adminRemoveBoss() {
-    const name = document.getElementById('adminRemoveName').value.trim();
-    if (!name) return setAdminMsg('adminRemoveMsg', '⚠️ Digite um nome.', true);
-    if (!confirm(`Remover "${name}" da lista de bosses monitorados?`)) return;
+async function promptRemove(name) {
+    if (!confirm(`Tem certeza que deseja remover "${name}" da lista de bosses monitorados?`)) return;
     const res = await fetch(`${API_BASE}/api/admin/remove-boss`, {
         method: 'DELETE', headers: apiHeaders(), body: JSON.stringify({ name })
     });
     const data = await res.json();
-    if (res.ok) {
-        setAdminMsg('adminRemoveMsg', `✅ "${name}" removido.`);
-        document.getElementById('adminRemoveName').value = '';
-        loadPredictions();
-    } else { setAdminMsg('adminRemoveMsg', `❌ ${data.error}`, true); }
+    if (res.ok) { alert(`✅ "${name}" removido.`); loadPredictions(); }
+    else { alert(`❌ ${data.error}`); }
 }
 
-function previewAdminImage(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const label = document.getElementById('adminImgFileLabel');
-    label.textContent = file.name;
-    const preview = document.getElementById('adminImgPreview');
-    const reader = new FileReader();
-    reader.onload = (ev) => { preview.src = ev.target.result; preview.style.display = 'block'; };
-    reader.readAsDataURL(file);
-}
-
-async function adminUploadImage() {
-    const bossName = document.getElementById('adminImgBossName').value.trim();
-    const file = document.getElementById('adminImgFile').files[0];
-    if (!bossName || !file) return setAdminMsg('adminImgMsg', '⚠️ Preencha o nome e selecione uma imagem.', true);
-    const ext = file.name.split('.').pop();
-    const reader = new FileReader();
-    reader.onload = async (ev) => {
-        const imageData = ev.target.result; // base64 data URL
-        const res = await fetch(`${API_BASE}/api/admin/upload-image`, {
-            method: 'POST', headers: apiHeaders(),
-            body: JSON.stringify({ bossName, imageData, extension: ext })
-        });
-        const data = await res.json();
-        if (res.ok) {
-            setAdminMsg('adminImgMsg', `✅ Imagem "${data.filename}" enviada!`);
-            loadPredictions();
-        } else { setAdminMsg('adminImgMsg', `❌ ${data.error}`, true); }
+function promptImage(bossName) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.webp,.gif,.png';
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const ext = file.name.split('.').pop();
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+            const imageData = ev.target.result;
+            const res = await fetch(`${API_BASE}/api/admin/upload-image`, {
+                method: 'POST', headers: apiHeaders(),
+                body: JSON.stringify({ bossName, imageData, extension: ext })
+            });
+            const data = await res.json();
+            if (res.ok) { alert(`✅ Imagem para "${bossName}" atualizada!`); loadPredictions(); }
+            else { alert(`❌ ${data.error}`); }
+        };
+        reader.readAsDataURL(file);
     };
-    reader.readAsDataURL(file);
+    input.click();
 }
 
 // ═══ INIT ════════════════════════════════════════════════════════════════════

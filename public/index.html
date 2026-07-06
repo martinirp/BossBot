@@ -40,62 +40,7 @@
         </div>
     </div>
 
-    <!-- ═══ PAINEL ADMIN (sidebar) ════════════════════════════════════════════ -->
-    <div id="adminSidebarOverlay" class="admin-overlay" onclick="closeAdminPanel()"></div>
-    <aside id="adminSidebar" class="admin-sidebar glass-panel">
-        <div class="admin-sidebar-header">
-            <span>⚙️ Painel Administrativo</span>
-            <button class="admin-close-btn" onclick="closeAdminPanel()">✕</button>
-        </div>
-        <div class="admin-sidebar-content">
 
-            <!-- Adicionar Boss -->
-            <div class="admin-section">
-                <h4 class="admin-section-title">➕ Adicionar Boss</h4>
-                <div class="admin-form-row">
-                    <input type="text" id="adminAddName" placeholder="Nome do novo boss" class="admin-input">
-                    <button class="btn-admin-action" onclick="adminAddBoss()">Adicionar</button>
-                </div>
-                <p id="adminAddMsg" class="admin-feedback"></p>
-            </div>
-
-            <!-- Renomear Boss -->
-            <div class="admin-section">
-                <h4 class="admin-section-title">✏️ Renomear Boss</h4>
-                <div class="admin-form-col">
-                    <input type="text" id="adminRenameOld" placeholder="Nome atual (exato)" class="admin-input">
-                    <input type="text" id="adminRenameNew" placeholder="Novo nome" class="admin-input">
-                    <button class="btn-admin-action" onclick="adminRenameBoss()">Renomear</button>
-                </div>
-                <p id="adminRenameMsg" class="admin-feedback"></p>
-            </div>
-
-            <!-- Upload de Imagem -->
-            <div class="admin-section">
-                <h4 class="admin-section-title">🖼️ Trocar Imagem do Boss</h4>
-                <div class="admin-form-col">
-                    <input type="text" id="adminImgBossName" placeholder="Nome exato do boss" class="admin-input">
-                    <label class="admin-file-label">
-                        <input type="file" id="adminImgFile" accept=".webp,.gif,.png" onchange="previewAdminImage(event)">
-                        <span id="adminImgFileLabel">Selecionar imagem (.webp, .gif, .png)</span>
-                    </label>
-                    <img id="adminImgPreview" class="admin-img-preview" src="" alt="" style="display:none">
-                    <button class="btn-admin-action" onclick="adminUploadImage()">Enviar Imagem</button>
-                </div>
-                <p id="adminImgMsg" class="admin-feedback"></p>
-            </div>
-
-            <!-- Remover Boss -->
-            <div class="admin-section admin-section-danger">
-                <h4 class="admin-section-title">🗑️ Remover Boss</h4>
-                <div class="admin-form-row">
-                    <input type="text" id="adminRemoveName" placeholder="Nome exato do boss" class="admin-input">
-                    <button class="btn-admin-danger" onclick="adminRemoveBoss()">Remover</button>
-                </div>
-                <p id="adminRemoveMsg" class="admin-feedback"></p>
-            </div>
-        </div>
-    </aside>
 
     <!-- ═══ DASHBOARD PRINCIPAL ═══════════════════════════════════════════════ -->
     <main class="container" id="mainDashboard" style="display:none">
@@ -114,9 +59,9 @@
                     <span class="status-dot pulse"></span>
                     <span id="worldName" class="world-name">Quelibra</span>
                 </div>
-                <!-- Botão Admin (visível somente para admin) -->
-                <button class="btn-admin-toggle" id="adminBtn" onclick="openAdminPanel()" style="display:none" title="Painel Administrativo">
-                    ⚙️
+                <!-- Botão Add Boss (visível somente para admin) -->
+                <button class="btn-admin-toggle" id="adminBtn" onclick="promptAddBoss()" style="display:none" title="Adicionar Novo Boss">
+                    ➕ Adicionar Boss
                 </button>
                 <button class="btn-sync" id="syncBtn" onclick="forceSync()">
                     <svg class="sync-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
