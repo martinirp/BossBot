@@ -266,6 +266,61 @@ app.post('/api/admin/upload-image', authMiddleware, adminMiddleware, (req, res) 
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// POST add manual record (kill/flop)
+app.post('/api/admin/manual-record', authMiddleware, adminMiddleware, async (req, res) => {
+  const { bossName, type, datetime, world } = req.body;
+  if (!bossName || !type || !datetime || !world) {
+    return res.status(400).json({ error: 'Dados incompletos (bossName, type, datetime, world)' });
+  }
+  
+  try {
+    // datetime comes as "YYYY-MM-DDTHH:mm" in local browser time.
+    // Convert this to UTC, then we will use this to register in DB
+    const localDate = new Date(datetime);
+    if (isNaN(localDate.getTime())) return res.status(400).json({ error: 'Data inválida' });
+    
+    const utcDate = new Date(localDate.getTime());
+    const createdAtStr = utcDate.toISOString().replace('T', ' ').substring(0, 19);
+    
+    // For boss_last_seen, Tibia operates in Europe/Berlin (German time).
+    const germanDate = utcToGerman(utcDate);
+    const pad = (n) => String(n).padStart(2, '0');
+    const seenAtGerman = `${germanDate.getFullYear()}-${pad(germanDate.getMonth() + 1)}-${pad(germanDate.getDate())} ${pad(germanDate.getHours())}:${pad(germanDate.getMinutes())}`;
+    
+    const reportedBy = req.userSession.username;
+    const extraText = type === 'flop' ? 'Flopado' : 'Morto (Manual)';
+    
+    // Update boss_reports
+    await new Promise((resolve, reject) => {
+      db.run(
+        `INSERT INTO boss_reports (boss_name, extra_text, reported_by_jid, notified_count, world, created_at) VALUES (?, ?, ?, 0, ?, ?)`,
+        [bossName, extraText, reportedBy, world, createdAtStr],
+        (err) => err ? reject(err) : resolve()
+      );
+    });
+    
+    // Update boss_last_seen
+    await new Promise((resolve, reject) => {
+      db.run(`
+        INSERT INTO boss_last_seen (world, boss_name, confirmed_by, seen_at, city)
+        VALUES (?, ?, ?, ?, NULL)
+        ON CONFLICT(world, boss_name) DO UPDATE SET
+          confirmed_by = excluded.confirmed_by,
+          seen_at = excluded.seen_at,
+          city = excluded.city,
+          prev_confirmed_by = NULL,
+          prev_seen_at = NULL,
+          prev_city = NULL
+      `, [world, bossName, reportedBy, seenAtGerman], (err) => err ? reject(err) : resolve());
+    });
+    
+    res.json({ ok: true, message: `Registro '${type}' adicionado para ${bossName} com sucesso!` });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ─── API Endpoints ────────────────────────────────────────────────────────────
 
 app.get('/api/config', (req, res) => {

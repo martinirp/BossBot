@@ -195,7 +195,10 @@
 
             <!-- Histórico 7 dias -->
             <div class="modal-history-7d">
-                <h3>Monitoramento Semanal</h3>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                    <h3 style="margin:0; border:none; padding:0;">Monitoramento Semanal</h3>
+                    <button class="btn-calendar-full" onclick="openCalendarModal()">📅 Ver Calendário Completo</button>
+                </div>
                 <div id="history7dGrid" class="history-7d-grid"></div>
             </div>
 
@@ -205,6 +208,79 @@
                 <div id="fullHistoryList" class="full-history-list"></div>
             </div>
 
+        </div>
+    </div>
+
+    <!-- ═══ MODAL DE EDIÇÃO ══════════════════════════════════════════════════ -->
+    <div id="editModalOverlay" class="modal-overlay">
+        <div class="modal-card glass-panel" style="max-width: 480px;">
+            <button class="modal-close-btn" onclick="closeEditModal()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <div class="modal-header" style="flex-direction:column; align-items:center; gap:12px; margin-bottom:20px; border:none;">
+                <h2 class="modal-title">⚙️ Modo de Edição</h2>
+                <div class="modal-avatar-wrap" style="width:80px; height:80px;">
+                    <img id="editModalImg" src="" class="modal-avatar" alt="Boss Sprite">
+                </div>
+                <h3 id="editModalName" style="font-size:18px; color:var(--text-primary); text-align:center;">-</h3>
+            </div>
+
+            <div class="edit-section">
+                <label>Renomear Boss</label>
+                <div class="admin-form-row">
+                    <input type="text" id="editNameInput" class="admin-input">
+                    <button class="btn-admin-action" onclick="saveEditName()">Salvar</button>
+                </div>
+            </div>
+
+            <div class="edit-section">
+                <label>Trocar Imagem (.webp, .gif, .png)</label>
+                <div class="admin-form-row">
+                    <label class="admin-file-label" style="flex:1;">
+                        <input type="file" id="editImgFile" accept=".webp,.gif,.png" onchange="previewAndSaveEditImage(event)">
+                        <span id="editImgFileLabel">Selecionar e Enviar...</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="edit-section">
+                <label>Registro Manual (Morte/Flop)</label>
+                <div class="admin-form-col">
+                    <input type="datetime-local" id="editManualDate" class="admin-input" step="60">
+                    <div class="admin-form-row">
+                        <select id="editManualType" class="admin-input">
+                            <option value="kill">Morto (Kill)</option>
+                            <option value="flop">Flopado</option>
+                        </select>
+                        <button class="btn-admin-action" onclick="saveManualRecord()">Registrar</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="edit-section" style="border-top: 1px dashed rgba(255,59,48,0.3); padding-top:20px; margin-top:20px;">
+                <button class="btn-admin-danger" style="width:100%;" onclick="saveEditRemove()">🗑️ Excluir Boss Definitivamente</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ MODAL DE CALENDÁRIO ══════════════════════════════════════════════ -->
+    <div id="calendarModalOverlay" class="modal-overlay">
+        <div class="modal-card glass-panel" style="max-width: 800px; padding:30px;">
+            <button class="modal-close-btn" onclick="closeCalendarModal()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <div class="modal-header" style="border-bottom:none; margin-bottom:10px;">
+                <h2 class="modal-title">📅 Histórico Completo</h2>
+            </div>
+            <div id="calendarContainer" class="calendar-container">
+                <!-- Conteúdo gerado via JS -->
+            </div>
         </div>
     </div>
 

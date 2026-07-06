@@ -3,7 +3,7 @@ import { findBossMatch, loadBosses } from '../commands.js';
 
 export default {
   name: 'inscritos',
-  aliases: ['subscribers', 'quemquer', 'inscritos'],
+  aliases: ['subscribers', 'quemquer', 'inscritos', 'subs', 'i'],
   execute: async (context, args) => {
     const { sock, msg, remoteJid, prefix } = context;
 

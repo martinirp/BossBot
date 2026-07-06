@@ -269,9 +269,7 @@ function renderSingleCard(grid, p) {
 
     const adminActions = authRole === 'admin' ? `
         <div class="card-admin-actions" onclick="event.stopPropagation()">
-            <button class="btn-card-edit" onclick="promptRename('${p.name}')" title="Renomear">✏️</button>
-            <button class="btn-card-edit" onclick="promptImage('${getBaseName(p.name)}')" title="Trocar Imagem">🖼️</button>
-            <button class="btn-card-edit btn-card-delete" onclick="promptRemove('${p.name}')" title="Remover">🗑️</button>
+            <button class="btn-card-edit" style="width:auto; padding:0 8px; font-weight:700;" onclick='openEditModal(${JSON.stringify(p).replace(/'/g, "&apos;")})' title="Editar Boss">⚙️ Editar</button>
         </div>` : '';
 
     const col = document.createElement('div');
@@ -312,9 +310,7 @@ function renderGroupCard(grid, entry) {
 
     const adminActions = authRole === 'admin' ? `
         <div class="card-admin-actions" onclick="event.stopPropagation()">
-            <button class="btn-card-edit" onclick="promptRename('${baseName}')" title="Renomear">✏️</button>
-            <button class="btn-card-edit" onclick="promptImage('${baseName}')" title="Trocar Imagem">🖼️</button>
-            <button class="btn-card-edit btn-card-delete" onclick="promptRemove('${baseName}')" title="Remover">🗑️</button>
+            <button class="btn-card-edit" style="width:auto; padding:0 8px; font-weight:700;" onclick="openEditModal({name: '${baseName}'})" title="Editar Grupo">⚙️ Editar</button>
         </div>` : '';
 
     col.innerHTML = `
@@ -604,50 +600,227 @@ async function promptAddBoss() {
     else { alert(`❌ ${data.error}`); }
 }
 
-async function promptRename(oldName) {
-    const newName = prompt(`Renomear "${oldName}" para:`, oldName);
-    if (!newName || newName.trim() === oldName) return;
-    if (!confirm(`Renomear "${oldName}" para "${newName.trim()}"? Esta ação migra todos os dados do banco.`)) return;
-    const res = await fetch(`${API_BASE}/api/admin/rename-boss`, {
-        method: 'POST', headers: apiHeaders(), body: JSON.stringify({ oldName, newName: newName.trim() })
-    });
-    const data = await res.json();
-    if (res.ok) { alert(`✅ ${data.message}`); loadPredictions(); }
-    else { alert(`❌ ${data.error}`); }
-}
+// ═══ EDIT MODAL ═════════════════════════════════════════════════════════════
 
-async function promptRemove(name) {
-    if (!confirm(`Tem certeza que deseja remover "${name}" da lista de bosses monitorados?`)) return;
-    const res = await fetch(`${API_BASE}/api/admin/remove-boss`, {
-        method: 'DELETE', headers: apiHeaders(), body: JSON.stringify({ name })
-    });
-    const data = await res.json();
-    if (res.ok) { alert(`✅ "${name}" removido.`); loadPredictions(); }
-    else { alert(`❌ ${data.error}`); }
-}
+let currentEditingBoss = null;
 
-function promptImage(bossName) {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.webp,.gif,.png';
-    input.onchange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const ext = file.name.split('.').pop();
-        const reader = new FileReader();
-        reader.onload = async (ev) => {
-            const imageData = ev.target.result;
-            const res = await fetch(`${API_BASE}/api/admin/upload-image`, {
-                method: 'POST', headers: apiHeaders(),
-                body: JSON.stringify({ bossName, imageData, extension: ext })
-            });
-            const data = await res.json();
-            if (res.ok) { alert(`✅ Imagem para "${bossName}" atualizada!`); loadPredictions(); }
-            else { alert(`❌ ${data.error}`); }
-        };
-        reader.readAsDataURL(file);
+function openEditModal(p) {
+    currentEditingBoss = p.name;
+    const baseName = getBaseName(p.name);
+    document.getElementById('editModalName').innerText = p.name;
+    const img = document.getElementById('editModalImg');
+    img.src = `/assets/bosses/${encodeURIComponent(baseName)}.webp`;
+    img.onerror = function() {
+        this.onerror = null;
+        this.src = `/assets/bosses/${encodeURIComponent(baseName)}.gif`;
     };
-    input.click();
+    
+    document.getElementById('editNameInput').value = p.name;
+    document.getElementById('editImgFileLabel').innerText = 'Selecionar e Enviar...';
+    
+    // Set default datetime to now
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('editManualDate').value = now.toISOString().slice(0, 16);
+    
+    document.getElementById('editModalOverlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeEditModal() {
+    document.getElementById('editModalOverlay').classList.remove('active');
+    document.body.style.overflow = '';
+    currentEditingBoss = null;
+}
+
+async function saveEditName() {
+    if (!currentEditingBoss) return;
+    const oldName = currentEditingBoss;
+    const newName = document.getElementById('editNameInput').value.trim();
+    if (!newName || newName === oldName) return;
+    
+    if (!confirm(`Renomear "${oldName}" para "${newName}"? Esta ação migra todos os dados do banco.`)) return;
+    const res = await fetch(`${API_BASE}/api/admin/rename-boss`, {
+        method: 'POST', headers: apiHeaders(), body: JSON.stringify({ oldName, newName })
+    });
+    const data = await res.json();
+    if (res.ok) { 
+        alert(`✅ ${data.message}`); 
+        currentEditingBoss = newName;
+        document.getElementById('editModalName').innerText = newName;
+        loadPredictions(); 
+    }
+    else { alert(`❌ ${data.error}`); }
+}
+
+async function previewAndSaveEditImage(e) {
+    if (!currentEditingBoss) return;
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    document.getElementById('editImgFileLabel').innerText = 'Enviando...';
+    
+    const ext = file.name.split('.').pop();
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+        const imageData = ev.target.result;
+        const res = await fetch(`${API_BASE}/api/admin/upload-image`, {
+            method: 'POST', headers: apiHeaders(),
+            body: JSON.stringify({ bossName: getBaseName(currentEditingBoss), imageData, extension: ext })
+        });
+        const data = await res.json();
+        if (res.ok) { 
+            alert(`✅ Imagem atualizada com sucesso!`);
+            document.getElementById('editImgFileLabel').innerText = 'Selecionar e Enviar...';
+            // Force refresh image cache
+            document.getElementById('editModalImg').src = `${imageData}`;
+            loadPredictions(); 
+        }
+        else { 
+            alert(`❌ ${data.error}`);
+            document.getElementById('editImgFileLabel').innerText = 'Erro ao enviar. Tente novamente.';
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+async function saveManualRecord() {
+    if (!currentEditingBoss) return;
+    const datetime = document.getElementById('editManualDate').value;
+    const type = document.getElementById('editManualType').value;
+    
+    if (!datetime) {
+        alert('Selecione a data e hora do registro.');
+        return;
+    }
+    
+    const res = await fetch(`${API_BASE}/api/admin/manual-record`, {
+        method: 'POST', headers: apiHeaders(),
+        body: JSON.stringify({ bossName: currentEditingBoss, type, datetime, world: currentWorld })
+    });
+    const data = await res.json();
+    if (res.ok) { 
+        alert(data.message); 
+        loadPredictions(); 
+    }
+    else { alert(`❌ ${data.error}`); }
+}
+
+async function saveEditRemove() {
+    if (!currentEditingBoss) return;
+    if (!confirm(`Tem certeza que deseja remover "${currentEditingBoss}" da lista de bosses monitorados?`)) return;
+    const res = await fetch(`${API_BASE}/api/admin/remove-boss`, {
+        method: 'DELETE', headers: apiHeaders(), body: JSON.stringify({ name: currentEditingBoss })
+    });
+    const data = await res.json();
+    if (res.ok) { 
+        alert(`✅ "${currentEditingBoss}" removido.`); 
+        closeEditModal();
+        loadPredictions(); 
+    }
+    else { alert(`❌ ${data.error}`); }
+}
+
+// ═══ CALENDAR MODAL ═════════════════════════════════════════════════════════
+
+let fullHistoryDataCache = []; // Caches the latest full history loaded
+
+// Monkey patch renderFullHistoryList to cache the data
+const originalRenderFullHistoryList = renderFullHistoryList;
+renderFullHistoryList = function(kills) {
+    fullHistoryDataCache = kills || [];
+    originalRenderFullHistoryList(kills);
+}
+
+function openCalendarModal() {
+    const container = document.getElementById('calendarContainer');
+    container.innerHTML = '';
+    
+    if (fullHistoryDataCache.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-secondary); text-align:center;">Nenhum histórico disponível para exibir no calendário.</p>';
+        document.getElementById('calendarModalOverlay').classList.add('active');
+        return;
+    }
+    
+    // Group kills by year and month
+    const grouped = {};
+    for (const k of fullHistoryDataCache) {
+        // kill_date is YYYY-MM-DD
+        const parts = k.kill_date.split('-');
+        if (parts.length !== 3) continue;
+        const year = parts[0];
+        const month = parseInt(parts[1], 10);
+        const day = parseInt(parts[2], 10);
+        const isFlop = k.extra_text && k.extra_text.toLowerCase().includes('flop');
+        
+        if (!grouped[year]) grouped[year] = {};
+        if (!grouped[year][month]) grouped[year][month] = {};
+        
+        // We can have multiple records in a day, store array
+        if (!grouped[year][month][day]) grouped[year][month][day] = [];
+        grouped[year][month][day].push({ ...k, isFlop });
+    }
+    
+    const years = Object.keys(grouped).sort((a, b) => b - a); // Descending years
+    const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+    
+    let html = '';
+    
+    for (const year of years) {
+        html += `<div class="calendar-year-block"><h3>${year}</h3><div class="calendar-months-grid">`;
+        
+        const months = Object.keys(grouped[year]).map(m => parseInt(m, 10)).sort((a, b) => a - b);
+        
+        for (const month of months) {
+            html += `<div class="calendar-month-card">
+                        <div class="calendar-month-title">${monthNames[month-1]}</div>
+                        <div class="calendar-days-grid">
+                            ${renderCalendarDays(year, month, grouped[year][month])}
+                        </div>
+                     </div>`;
+        }
+        
+        html += `</div></div>`;
+    }
+    
+    container.innerHTML = html;
+    document.getElementById('calendarModalOverlay').classList.add('active');
+}
+
+function renderCalendarDays(year, month, daysData) {
+    const firstDay = new Date(year, month - 1, 1).getDay(); // 0 is Sunday
+    const daysInMonth = new Date(year, month, 0).getDate();
+    
+    let html = '';
+    
+    // Empty days before the 1st
+    for (let i = 0; i < firstDay; i++) {
+        html += `<div class="calendar-day calendar-day-empty"></div>`;
+    }
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+        if (daysData[day]) {
+            // Find if there is a kill or a flop (prioritize kill visually)
+            const hasKill = daysData[day].some(d => !d.isFlop);
+            const hasFlop = daysData[day].some(d => d.isFlop);
+            
+            let cls = '';
+            if (hasKill) cls = 'kill';
+            else if (hasFlop) cls = 'flop';
+            
+            const titles = daysData[day].map(d => `${d.created_at} - ${d.isFlop ? 'Flop' : 'Kill'} (${d.confirmed_by})`).join('&#10;');
+            
+            html += `<div class="calendar-day ${cls}" title="${titles}">${day}</div>`;
+        } else {
+            html += `<div class="calendar-day">${day}</div>`;
+        }
+    }
+    
+    return html;
+}
+
+function closeCalendarModal() {
+    document.getElementById('calendarModalOverlay').classList.remove('active');
 }
 
 // ═══ INIT ════════════════════════════════════════════════════════════════════
