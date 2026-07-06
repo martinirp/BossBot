@@ -38,10 +38,15 @@ export async function connectToWhatsApp() {
   const sock = makeSocket({
     auth: state,
     printQRInTerminal: false,
-    logger: pino({ level: 'error' }),
+    logger: pino({ level: 'warn' }),
     getMessage: async (key) => {
+      console.log(`[getMessage] Solicitado key.id=${key.id}`);
       const pollData = commandHandler.activePolls.get(key.id);
-      if (pollData) return pollData.originalMessage.message;
+      if (pollData) {
+          console.log(`[getMessage] Mensagem original encontrada para enquete: ${pollData.bossName}`);
+          return pollData.originalMessage.message;
+      }
+      console.log(`[getMessage] Enquete não encontrada na memória para key.id=${key.id}`);
       return undefined;
     }
   });
