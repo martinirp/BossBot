@@ -319,7 +319,7 @@ class CommandHandler {
   async handlePollUpdate(sock, msg) {
     try {
       console.log("[CommandHandler] Processando pollUpdateMessage...");
-      const { getAggregateVotesInPollMessage } = await import('@whiskeysockets/baileys');
+      const { getAggregateVotesInPollMessage, decryptPollVote, jidNormalizedUser } = await import('@whiskeysockets/baileys');
       const pollCreationKey = msg.message.pollUpdateMessage.pollCreationMessageKey;
       const pollId = pollCreationKey.id;
       
@@ -330,10 +330,32 @@ class CommandHandler {
         return; // Not our poll or already handled
       }
       console.log(`[CommandHandler] Enquete encontrada! Boss: ${pollData.bossName}`);
+      
+      const pollEncKey = pollData.originalMessage?.messageContextInfo?.messageSecret;
+      if (!pollEncKey) {
+          console.log("[CommandHandler] messageSecret não encontrado na mensagem original.");
+          return;
+      }
+      
+      const meId = jidNormalizedUser(sock.user.id);
+      const voterJid = jidNormalizedUser(msg.key.participant || msg.key.remoteJid);
+      
+      const voteMsg = decryptPollVote(
+          msg.message.pollUpdateMessage.vote,
+          {
+              pollEncKey,
+              pollCreatorJid: meId,
+              pollMsgId: pollId,
+              voterJid
+          }
+      );
 
       const pollUpdateResult = getAggregateVotesInPollMessage({
           message: pollData.originalMessage,
-          pollUpdates: [msg],
+          pollUpdates: [{
+              pollUpdateMessageKey: msg.key,
+              vote: voteMsg
+          }],
       });
       console.log(`[CommandHandler] pollUpdateResult:`, JSON.stringify(pollUpdateResult, null, 2));
 
