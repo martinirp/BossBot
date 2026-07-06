@@ -339,25 +339,57 @@ class CommandHandler {
       }
       
       const meId = jidNormalizedUser(sock.user.id);
-      const voter = msg.key.fromMe ? meId : (msg.key.participant || msg.key.remoteJid);
       
-      console.log("[DEBUG CRYPTO]");
-      console.log("- pollEncKey (Buffer):", Buffer.isBuffer(pollEncKey), " length:", pollEncKey?.length);
-      console.log("- pollCreatorJid:", meId);
-      console.log("- pollMsgId:", pollId);
-      console.log("- voterJid:", voter);
-      console.log("- encPayload (Buffer):", Buffer.isBuffer(msg.message.pollUpdateMessage.vote.encPayload));
-      console.log("- encIv (Buffer):", Buffer.isBuffer(msg.message.pollUpdateMessage.vote.encIv));
-
-      const voteMsg = decryptPollVote(
-          msg.message.pollUpdateMessage.vote,
-          {
-              pollEncKey,
-              pollCreatorJid: meId,
-              pollMsgId: pollId,
-              voterJid: voter
+      let participantsToTry = [];
+      if (msg.key.fromMe) {
+          participantsToTry.push(meId);
+      } else {
+          // Tenta o JID original que veio na mensagem (pode ser o @lid)
+          if (msg.key.participant) participantsToTry.push(msg.key.participant);
+          
+          // Se for grupo, busca a lista real de JIDs (telefone) dos membros e adiciona
+          if (msg.key.remoteJid.endsWith('@g.us')) {
+              try {
+                  const metadata = await sock.groupMetadata(msg.key.remoteJid);
+                  for (const p of metadata.participants) {
+                      if (p.id) participantsToTry.push(p.id);
+                  }
+              } catch(e) {
+                  console.log("[CommandHandler] Erro ao buscar metadata do grupo para bruteforce:", e);
+              }
           }
-      );
+      }
+      
+      // Remove duplicatas e normaliza
+      participantsToTry = [...new Set(participantsToTry.map(j => jidNormalizedUser(j)))];
+
+      let voteMsg = null;
+      let trueVoterJid = null;
+      
+      for (const pJid of participantsToTry) {
+          try {
+              voteMsg = decryptPollVote(
+                  msg.message.pollUpdateMessage.vote,
+                  {
+                      pollEncKey,
+                      pollCreatorJid: meId,
+                      pollMsgId: pollId,
+                      voterJid: pJid
+                  }
+              );
+              trueVoterJid = pJid;
+              break; // BINGO! Descriptografou com sucesso
+          } catch (e) {
+              // Assinatura falhou para este JID, tenta o próximo
+          }
+      }
+      
+      if (!voteMsg) {
+          console.log("[CommandHandler] FALHA CRÍTICA: Não foi possível descriptografar o voto com nenhum dos", participantsToTry.length, "JIDs testados.");
+          return;
+      }
+      
+      console.log(`[CommandHandler] Voto descriptografado com sucesso! Burlou o @lid usando o JID real: ${trueVoterJid}`);
 
       const pollUpdateResult = getAggregateVotesInPollMessage({
           message: pollData.originalMessage.message || pollData.originalMessage,
