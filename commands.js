@@ -117,7 +117,7 @@ export const MULTI_CITY_BOSSES = {
   "hirintror": ["Formorgar Mines", "Nibelor"],
   "battlemaster zunzu": ["Esquerda", "Direita"],
   "fleabringer": ["Surface"],
-  "albino dragon": ["Farmine", "Fenrock", "Goroma", "POI", "Ank"],
+  "albino dragon": ["Dragon Lair (Ankrahmun)", "Dragon Lair (Farmine)", "Dragon Lair (Fenrock)", "Dragon Lair (Goroma)", "Pits of Inferno"],
   "danimax": ["Thais", "Venore", "Carlin", "Edron", "Darashia"]
 };
 
@@ -125,8 +125,9 @@ export const CITY_ALIASES = {
   "dara": "Darashia",
   "lb": "Liberty Bay",
   "ab": "Ab'Dendriel",
+  "ab'dendriel": "Hellgate (Ab'Dendriel)",
+  "hellgate": "Hellgate (Ab'Dendriel)",
   "yala": "Yalahar",
-  "ank": "Ankrahmun",
   "esq": "Esquerda",
   "e": "Esquerda",
   "west": "Esquerda",
@@ -148,10 +149,11 @@ export const CITY_ALIASES = {
   "nibelor": "Nibelor",
   "sul": "Sul",
   "south": "Sul",
-  "farmine": "Farmine",
-  "fenrock": "Fenrock",
-  "goroma": "Goroma",
-  "poi": "POI"
+  "farmine": "Dragon Lair (Farmine)",
+  "fenrock": "Dragon Lair (Fenrock)",
+  "goroma": "Dragon Lair (Goroma)",
+  "poi": "Pits of Inferno",
+  "ank": "Dragon Lair (Ankrahmun)"
 };
 
 export function getBossCities(bossName) {
