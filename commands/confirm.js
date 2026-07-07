@@ -121,9 +121,13 @@ export default {
         }
 
         // 2. Envia o menu para confirmar a cidade e salvar no BD
-        let menuText = `@${senderPhone}, o BOSS nasce em varios locais. Responda essa mensagem com o número do local:\n\n`;
+        let menuText = `⚔️ Alerta de Boss: ${matchedBossName.toUpperCase()}! ⚔️\n`;
+        menuText += `Responda a esta mensagem APENAS com o NÚMERO da cidade:\n`;
+        
+        const NUM_EMOJIS = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
         validCities.forEach((city, idx) => {
-            menuText += `*${idx + 1}.* ${city}\n`;
+            const emoji = NUM_EMOJIS[idx] || `*${idx + 1}.*`;
+            menuText += `${emoji} ${city}\n`;
         });
 
         const menuMsg = await sock.sendMessage(remoteJid, { 
@@ -135,7 +139,8 @@ export default {
             type: 'numeric_menu',
             bossName: matchedBossName,
             cities: validCities,
-            prefix: context.prefix
+            prefix: context.prefix,
+            remoteJid: remoteJid
         });
         
         // Loop infinito até responder (limite de segurança: 15 vezes, a cada 1 minuto)
@@ -221,11 +226,7 @@ export default {
     await db.setBossLastSeenDate(cityBossName, senderJid, seenAt, world, matchedCity);
 
     if (isSilent) {
-        await sock.sendMessage(remoteJid, {
-            text: `✅ A cidade de *${matchedCity}* foi confirmada para o boss *${matchedBossName}*!\nO kill foi registrado no banco de dados e adicionado ao seu rank, @${senderPhone}.`,
-            mentions: [senderJid]
-        });
-        return;
+        return; // Retorna sem mandar mensagem nenhuma
     }
 
     // Nota informativa se a API já atualizou esta noite
