@@ -61,21 +61,8 @@ function adminMiddleware(req, res, next) {
   next();
 }
 
-// Dynamic boss list — re-reads bosses.json each call so admin changes are instant
 function getMonitoredBosses() {
-  const rawBosses = JSON.parse(fs.readFileSync(path.resolve('bosses.json'), 'utf8'));
-  const monitored = [];
-  for (const boss of rawBosses) {
-    const key = boss.toLowerCase();
-    if (MULTI_CITY_BOSSES[key]) {
-      for (const city of MULTI_CITY_BOSSES[key]) {
-        monitored.push(`${boss} (${city})`);
-      }
-    } else {
-      monitored.push(boss);
-    }
-  }
-  return monitored;
+  return JSON.parse(fs.readFileSync(path.resolve('bosses.json'), 'utf8'));
 }
 
 function getBossMapLink(bossNameWithCity, bossLocations) {
@@ -115,8 +102,9 @@ function getKillHistory(world, bossName) {
       query = `SELECT id, boss_name, reported_by_jid, extra_text, created_at FROM boss_reports WHERE world = ? AND (boss_name = ? OR boss_name LIKE ?) ORDER BY created_at DESC`;
       params = [world, baseName, `${baseName} (%`];
     } else {
-      query = `SELECT id, boss_name, reported_by_jid, extra_text, created_at FROM boss_reports WHERE world = ? AND boss_name = ? ORDER BY created_at DESC`;
-      params = [world, bossName];
+      // It's already the base name
+      query = `SELECT id, boss_name, reported_by_jid, extra_text, created_at FROM boss_reports WHERE world = ? AND (boss_name = ? OR boss_name LIKE ?) ORDER BY created_at DESC`;
+      params = [world, bossName, `${bossName} (%`];
     }
     db.all(query, params, async (err, rows) => {
       if (err) return reject(err);
@@ -440,20 +428,42 @@ app.get('/api/bosses/:world', authMiddleware, async (req, res) => {
     const monitoredBosses = getMonitoredBosses();
 
     const promises = monitoredBosses.map(async (bossName) => {
-      const cityMatch = bossName.match(/^(.+?)\s*\((.+?)\)$/);
-      let lastSeen = await getBossLastSeen(bossName, world);
-      if (cityMatch) {
-          const baseRecord = await getBossLastSeen(cityMatch[1].trim(), world);
-          if (baseRecord && baseRecord.tibiadata_seen_at) {
-              if (!lastSeen) {
-                  lastSeen = { ...baseRecord, city: cityMatch[2].trim() };
-              } else if (!lastSeen.tibiadata_seen_at || baseRecord.tibiadata_seen_at > lastSeen.tibiadata_seen_at) {
-                  lastSeen.tibiadata_seen_at = baseRecord.tibiadata_seen_at;
-                  if (lastSeen.confirmed_by === 'TibiaData_API' || lastSeen.confirmed_by === 'system_adjust') {
-                      lastSeen.seen_at = baseRecord.seen_at;
-                  }
-              }
+      let lastSeen = null;
+      const key = bossName.toLowerCase();
+      if (MULTI_CITY_BOSSES[key]) {
+        const variants = MULTI_CITY_BOSSES[key].map(c => ({ name: `${bossName} (${c})`, city: c }));
+        const allRecords = await Promise.all([
+          getBossLastSeen(bossName, world).then(r => r ? { ...r, city: null } : null),
+          ...variants.map(v => getBossLastSeen(v.name, world).then(r => r ? { ...r, city: v.city } : null))
+        ]);
+        
+        let bestRecord = null;
+        for (const rec of allRecords) {
+          if (!rec) continue;
+          if (!bestRecord) {
+            bestRecord = rec;
+          } else {
+            if (rec.seen_at > bestRecord.seen_at) {
+              bestRecord = rec;
+            }
           }
+        }
+        
+        const baseRecord = allRecords[0];
+        if (bestRecord && baseRecord && baseRecord.tibiadata_seen_at) {
+            if (!bestRecord.tibiadata_seen_at || baseRecord.tibiadata_seen_at > bestRecord.tibiadata_seen_at) {
+                bestRecord.tibiadata_seen_at = baseRecord.tibiadata_seen_at;
+                if (bestRecord.confirmed_by === 'TibiaData_API' || bestRecord.confirmed_by === 'system_adjust') {
+                    bestRecord.seen_at = baseRecord.seen_at;
+                }
+            }
+        } else if (!bestRecord && baseRecord) {
+            bestRecord = baseRecord;
+        }
+
+        lastSeen = bestRecord;
+      } else {
+        lastSeen = await getBossLastSeen(bossName, world);
       }
       const lastCheck = await getBossCheck(bossName, world);
       const kills = await getKillHistory(world, bossName);
