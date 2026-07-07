@@ -90,7 +90,7 @@ const calculatePrediction = (seenAtStr, minDays, maxDays, isTibiaData = false) =
 // Helper to format the boss details block
 const formatBossInfo = async (bossName, intervalName, record) => {
   const bossIntervals = loadIntervals();
-  const interval = bossIntervals[intervalName];
+  const interval = bossIntervals[bossName] || bossIntervals[intervalName];
   let predictionText = 'Indefinida (necessita de um avistamento prévio)';
 
   if (interval && interval.fixedDaysFrequency) {
@@ -244,8 +244,7 @@ export default {
     }
 
     const bossIntervals = loadIntervals();
-    const sampleIntervalName = cities ? `${bossName} (${cities[0]})` : bossName;
-    const interval = bossIntervals[sampleIntervalName];
+    const interval = bossIntervals[bossName] || bossIntervals[cities ? `${bossName} (${cities[0]})` : bossName];
     let spawnIntervalLine = '';
     if (interval && interval.fixedDaysFrequency) {
       const min = interval.fixedDaysFrequency.min;
