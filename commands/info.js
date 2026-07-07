@@ -276,23 +276,11 @@ export default {
       reply += text;
     }
 
-    let specificPath = null;
-    const exts = ['.webp', '.png', '.gif'];
-    for (const ext of exts) {
-      const p = path.resolve('assets', 'bosses', `${bossName}${ext}`);
-      if (fs.existsSync(p)) {
-        specificPath = p;
-        break;
-      }
-    }
+    const bossImgPath = path.resolve('assets', 'bosses', `${bossName}.webp`);
 
-    if (specificPath) {
+    if (fs.existsSync(bossImgPath)) {
       try {
-        if (specificPath.endsWith('.webp')) {
-          await sock.sendMessage(remoteJid, { sticker: fs.readFileSync(specificPath) });
-        } else {
-          await sock.sendMessage(remoteJid, { image: fs.readFileSync(specificPath) });
-        }
+        await sock.sendMessage(remoteJid, { sticker: fs.readFileSync(bossImgPath) });
       } catch (err) {
         console.error('[info] Error sending image/sticker:', err);
       }

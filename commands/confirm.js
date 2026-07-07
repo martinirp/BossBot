@@ -277,24 +277,11 @@ export default {
       enqueueNotification(sock, subscribers, cityBossName, finalExtraText, world);
     }
 
-    // Envia a figurinha ou imagem de alerta referente ao boss, se existir
-    let specificPath = null;
-    const exts = ['.webp', '.png', '.gif'];
-    for (const ext of exts) {
-      const p = `./assets/bosses/${matchedBossName}${ext}`;
-      if (fs.existsSync(p)) {
-        specificPath = p;
-        break;
-      }
-    }
+    const bossImgPath = `./assets/bosses/${matchedBossName}.webp`;
 
     try {
-      if (specificPath) {
-        if (specificPath.endsWith('.webp')) {
-          await sock.sendMessage(remoteJid, { sticker: { url: specificPath } });
-        } else {
-          await sock.sendMessage(remoteJid, { image: { url: specificPath } });
-        }
+      if (fs.existsSync(bossImgPath)) {
+        await sock.sendMessage(remoteJid, { sticker: { url: bossImgPath } });
       } else if (fs.existsSync('./assets/alerta.webp')) {
         await sock.sendMessage(remoteJid, { sticker: { url: './assets/alerta.webp' } });
       }
