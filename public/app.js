@@ -137,6 +137,9 @@ function groupPredictions(predictions) {
     return ordered.map(entry => {
         if (entry.type === 'single') return entry;
         const cities = groups.get(entry.baseName) || [];
+        if (cities.length === 1) {
+            return { type: 'single', data: cities[0] };
+        }
         const bestChance = Math.max(...cities.map(c =>
             Math.max(c.chance_percent, c.tibiadata_chance_percent ?? 0)
         ));
