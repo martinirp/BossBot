@@ -48,9 +48,15 @@ export default {
     const rest = args.join(' ');
     let bossRaw = rest;
     let extraText = '';
+    
+    let isSilent = false;
+    if (bossRaw.endsWith('--silent')) {
+        isSilent = true;
+        bossRaw = bossRaw.replace('--silent', '').trim();
+    }
 
-    const commaIndex = rest.indexOf(',');
-    const pipeIndex = rest.indexOf('|');
+    const commaIndex = bossRaw.indexOf(',');
+    const pipeIndex = bossRaw.indexOf('|');
     let separatorIndex = -1;
     if (commaIndex !== -1 && pipeIndex !== -1) {
       separatorIndex = Math.min(commaIndex, pipeIndex);
@@ -59,8 +65,8 @@ export default {
     }
 
     if (separatorIndex !== -1) {
-      bossRaw = rest.substring(0, separatorIndex).trim();
-      extraText = rest.substring(separatorIndex + 1).trim();
+      extraText = bossRaw.substring(separatorIndex + 1).trim();
+      bossRaw = bossRaw.substring(0, separatorIndex).trim();
     }
 
     const bossName = normalizeBossName(bossRaw);
@@ -93,20 +99,41 @@ export default {
 
     if (validCities) {
       if (!extraText.trim()) {
-        const pollMsg = await sock.sendMessage(remoteJid, {
-          poll: {
-            name: `📍 O boss *${matchedBossName}* nasce em várias cidades. Escolha o local correto:`,
-            values: validCities,
-            selectableCount: 1
-          }
-        }, { quoted: msg });
+        const subscribers = await db.getSubscribers(matchedBossName);
+        const world = await db.getGroupWorld(remoteJid);
         
-        context.commandHandler.activePolls.set(pollMsg.key.id, {
+        // 1. Dispara o alarme imediatamente para poupar tempo
+        let bossHeader = `⚔️ *${matchedBossName.toUpperCase()}*`;
+        const baseText = `📢 BOSS CONFIRMADO!\n${bossHeader}\n👤 Por: @${senderPhone}`;
+        
+        if (subscribers.length > 0) {
+            await sock.sendMessage(remoteJid, {
+              text: `${baseText}\n🔔 Disparando notificações IMEDIATAS\n📋 ${subscribers.length} inscrito(s)`,
+              mentions: [senderJid]
+            }, { quoted: msg });
+            
+            enqueueNotification(sock, subscribers, matchedBossName, '', world);
+        } else {
+            await sock.sendMessage(remoteJid, {
+              text: `${baseText}\n📭 Não há membros inscritos para notificação no momento.`,
+              mentions: [senderJid]
+            }, { quoted: msg });
+        }
+
+        // 2. Envia o menu para confirmar a cidade e salvar no BD
+        let menuText = `📍 O boss *${matchedBossName}* nasce em várias cidades.\n\n`;
+        menuText += `👉 Responda *ESTA MENSAGEM* com o *NÚMERO* do local correto para o kill ir pro seu Rank:\n\n`;
+        validCities.forEach((city, idx) => {
+            menuText += `*${idx + 1}.* ${city}\n`;
+        });
+
+        const menuMsg = await sock.sendMessage(remoteJid, { text: menuText.trim() }, { quoted: msg });
+        
+        context.commandHandler.activePolls.set(menuMsg.key.id, {
+            type: 'numeric_menu',
             bossName: matchedBossName,
             cities: validCities,
-            originalMessage: pollMsg.message,
-            prefix: context.prefix,
-            senderJid: senderJid
+            prefix: context.prefix
         });
         return;
       }
@@ -164,9 +191,18 @@ export default {
     const [tYear, tMonth, tDay] = trackingDateStr.split('-');
     const trackingDateDisplay = `${tDay}/${tMonth}/${tYear}`;
 
-    // ── 2. Alertar imediatamente ──────────────────────────────────────────
+    // ── 2. Salvar no Banco de Dados ──────────────────────────────────────────
     await db.addBossReport(cityBossName, extraText, senderJid, subscribers.length, world);
     await db.incrementRank(senderJid);
+    await db.setBossLastSeenDate(cityBossName, senderJid, seenAt, world, matchedCity);
+
+    if (isSilent) {
+        await sock.sendMessage(remoteJid, {
+            text: `✅ A cidade de *${matchedCity}* foi confirmada para o boss *${matchedBossName}*!\nO kill foi registrado no banco de dados e adicionado ao seu rank, @${senderPhone}.`,
+            mentions: [senderJid]
+        });
+        return;
+    }
 
     // Nota informativa se a API já atualizou esta noite
     const brtNow = new Date(utcNow);
@@ -227,8 +263,5 @@ export default {
         console.error('Erro ao enviar figurinha de alerta de boss:', err);
       }
     }
-
-    // ── 3. Salvar com o dia de rastreamento correto ───────────────────────
-    await db.setBossLastSeenDate(cityBossName, senderJid, seenAt, world, matchedCity);
   }
 }

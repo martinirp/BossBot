@@ -126,9 +126,45 @@ class CommandHandler {
       }
     }
 
-    // --- Poll Interception ---
-    // (Polls are handled via handlePollUpdate, not here)
+    // --- Numeric Menu Interception ---
+    const stanzaId = msg.message?.extendedTextMessage?.contextInfo?.stanzaId;
+    if (stanzaId && this.activePolls.has(stanzaId)) {
+      const menuPrompt = this.activePolls.get(stanzaId);
+      if (menuPrompt.type === 'numeric_menu') {
+        const optionIndex = parseInt(trimmed, 10);
+        if (!isNaN(optionIndex) && optionIndex >= 1 && optionIndex <= menuPrompt.cities.length) {
+          const selectedCity = menuPrompt.cities[optionIndex - 1];
+          const reconstructedCommandText = `${menuPrompt.prefix}confirm ${menuPrompt.bossName}, ${selectedCity} --silent`;
+          
+          const args = reconstructedCommandText.slice(1).trim().split(/\s+/);
+          const cmdName = args.shift().toLowerCase();
+          
+          context.text = reconstructedCommandText;
+          context.trimmed = reconstructedCommandText;
+          context.withoutPrefix = reconstructedCommandText.slice(1).trim();
+          context.prefix = menuPrompt.prefix;
+          
+          const command = this.getCommand(cmdName);
+          if (command) {
+             try {
+                // Deleta a mensagem do menu (do bot)
+                const botJid = jidNormalizedUser(sock.user.id);
+                await sock.sendMessage(remoteJid, { delete: { remoteJid, id: stanzaId, fromMe: true, participant: botJid } });
+                // Deleta a resposta numérica do usuário
+                await sock.sendMessage(remoteJid, { delete: msg.key });
+             } catch(e) {
+                 console.log("[CommandHandler] Nao foi possivel apagar a mensagem numerica:", e);
+             }
+             
+             this.activePolls.delete(stanzaId); // Evita chamadas duplicadas se varias pessoas responderem
+             await this.executeCommand(command, args, context);
+             return;
+          }
+        }
+      }
+    }
 
+    // --- Poll Interception (Deprecated/Failing in Baileys for @lid) ---
     // Auto-calculador do Hive (Loot of a spidris elite / hive overseer)
     const hiveRegex = /(?:^|\s)(\d{1,2}):(\d{2})(?::(\d{2}))?\s+Loot\s+of\s+a\s+(spidris\s+elite|hive\s+overseer):/i;
     const match = trimmed.match(hiveRegex);
