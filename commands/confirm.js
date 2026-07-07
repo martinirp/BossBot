@@ -121,13 +121,15 @@ export default {
         }
 
         // 2. Envia o menu para confirmar a cidade e salvar no BD
-        let menuText = `📍 O boss *${matchedBossName}* nasce em várias cidades.\n\n`;
-        menuText += `👉 Responda *ESTA MENSAGEM* com o *NÚMERO* do local correto para o kill ir pro seu Rank:\n\n`;
+        let menuText = `@${senderPhone}, o BOSS nasce em varios locais. Responda essa mensagem com o número do local:\n\n`;
         validCities.forEach((city, idx) => {
             menuText += `*${idx + 1}.* ${city}\n`;
         });
 
-        const menuMsg = await sock.sendMessage(remoteJid, { text: menuText.trim() }, { quoted: msg });
+        const menuMsg = await sock.sendMessage(remoteJid, { 
+            text: menuText.trim(), 
+            mentions: [senderJid] 
+        }, { quoted: msg });
         
         context.commandHandler.activePolls.set(menuMsg.key.id, {
             type: 'numeric_menu',
@@ -135,6 +137,28 @@ export default {
             cities: validCities,
             prefix: context.prefix
         });
+        
+        // Loop infinito até responder (limite de segurança: 15 vezes, a cada 1 minuto)
+        let attempts = 0;
+        const nagLoop = setInterval(async () => {
+            if (!context.commandHandler.activePolls.has(menuMsg.key.id)) {
+                clearInterval(nagLoop);
+                return;
+            }
+            attempts++;
+            if (attempts > 15) { // Evita spam eterno se o bot ou zap bugar
+                clearInterval(nagLoop);
+                context.commandHandler.activePolls.delete(menuMsg.key.id);
+                return;
+            }
+            try {
+                await sock.sendMessage(remoteJid, {
+                    text: `⚠️ @${senderPhone}, você ainda não informou a cidade do boss!\nResponda a *mensagem do menu* acima com o número do local.`,
+                    mentions: [senderJid]
+                }, { quoted: menuMsg });
+            } catch (err) {}
+        }, 60 * 1000); // 1 minuto
+
         return;
       }
 
