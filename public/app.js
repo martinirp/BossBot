@@ -25,7 +25,8 @@ const MULTI_CITY_KEYS = new Set([
 ]);
 
 function getBaseName(bossName) {
-    return bossName.replace(/\s*\(.*?\)\s*/g, '').trim();
+    const m = bossName.match(/^(.+?)\s*\((.+?)\)$/);
+    return m ? m[1].trim() : bossName.trim();
 }
 
 function isMultiCity(bossName) {

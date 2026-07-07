@@ -468,7 +468,8 @@ app.get('/api/bosses/:world', authMiddleware, async (req, res) => {
         return `${brtDate.getUTCFullYear()}-${p(brtDate.getUTCMonth() + 1)}-${p(brtDate.getUTCDate())} ${p(brtDate.getUTCHours())}:${p(brtDate.getUTCMinutes())}`;
       };
 
-      const baseName = bossName.replace(/\s*\(.*?\)\s*/g, '');
+      const m = bossName.match(/^(.+?)\s*\((.+?)\)$/);
+      const baseName = m ? m[1].trim() : bossName.trim();
       const statsInfo = bossStats[baseName] || { hp: '?', immunities: [] };
       const mapLink = getBossMapLink(bossName, bossLocations);
       const intervalStats = bossIntervals[bossName];
