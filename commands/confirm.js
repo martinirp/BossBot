@@ -104,7 +104,7 @@ export default {
         
         // 1. Dispara o alarme imediatamente para poupar tempo
         let bossHeader = `⚔️ *${matchedBossName.toUpperCase()}*`;
-        const baseText = `📢 BOSS CONFIRMADO!\n${bossHeader}\n👤 Por: @${senderPhone}`;
+        const baseText = `📢 BOSS ENCONTRADO!\n${bossHeader}\n👤 Por: @${senderPhone}`;
         
         if (subscribers.length > 0) {
             await sock.sendMessage(remoteJid, {
@@ -226,7 +226,11 @@ export default {
     await db.setBossLastSeenDate(cityBossName, senderJid, seenAt, world, matchedCity);
 
     if (isSilent) {
-        return; // Retorna sem mandar mensagem nenhuma
+        await sock.sendMessage(remoteJid, {
+            text: `📍 Local: *${matchedCity}* confirmado por @${senderPhone}`,
+            mentions: [senderJid]
+        });
+        return;
     }
 
     // Nota informativa se a API já atualizou esta noite
@@ -257,7 +261,7 @@ export default {
       }
     }
 
-    const baseText = `📢 BOSS CONFIRMADO!\n${bossHeader}\n👤 Por: @${senderPhone}\n🕒 Horário: ${brtTimeStr}${apiNote}${mapLine}`;
+    const baseText = `📢 BOSS ENCONTRADO!\n${bossHeader}\n👤 Por: @${senderPhone}\n🕒 Horário: ${brtTimeStr}${apiNote}${mapLine}`;
 
     if (subscribers.length === 0) {
       await sock.sendMessage(remoteJid, {

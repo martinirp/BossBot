@@ -512,7 +512,7 @@ async function runTests() {
     sentMessages = [];
     await commandHandler.handleMessage(mockSock, mockMsg3, '!boss the voice of ruin, e');
     console.log('!boss the voice of ruin, e response:', sentMessages[0]?.content?.text);
-    if (!sentMessages[0]?.content?.text || !sentMessages[0]?.content?.text.includes('BOSS CONFIRMADO!') || !sentMessages[0]?.content?.text.includes('(Esquerda)')) {
+    if (!sentMessages[0]?.content?.text || !sentMessages[0]?.content?.text.includes('BOSS ENCONTRADO!') || !sentMessages[0]?.content?.text.includes('(Esquerda)')) {
       throw new Error('Multi-location boss confirm with valid location (alias e) failed');
     }
     console.log('Confirm with valid location passed ✅');
@@ -589,7 +589,7 @@ async function runTests() {
     sentMessages = [];
     await commandHandler.handleMessage(mockSock, mockMsg3, '!boss rotworm queen, lb');
     console.log('!boss rotworm queen, lb response:', sentMessages[0]?.content?.text);
-    if (!sentMessages[0]?.content?.text || !sentMessages[0]?.content?.text.includes('BOSS CONFIRMADO!') || !sentMessages[0]?.content?.text.includes('(Liberty Bay)')) {
+    if (!sentMessages[0]?.content?.text || !sentMessages[0]?.content?.text.includes('BOSS ENCONTRADO!') || !sentMessages[0]?.content?.text.includes('(Liberty Bay)')) {
       throw new Error('Rotworm Queen confirm with alias lb failed');
     }
     console.log('Rotworm Queen confirm with alias lb passed ✅');
