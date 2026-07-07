@@ -740,6 +740,27 @@ function openEditModal(p) {
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     document.getElementById('editManualDate').value = now.toISOString().slice(0, 16);
     
+    const citySection = document.getElementById('editManualCitySection');
+    const citySelect = document.getElementById('editManualCity');
+    citySelect.innerHTML = '';
+    
+    fetch(`${API_BASE}/api/boss-cities/${encodeURIComponent(p.name)}`, { headers: apiHeaders() })
+        .then(res => res.json())
+        .then(data => {
+            if (data.cities && data.cities.length > 0) {
+                citySection.style.display = 'block';
+                data.cities.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c;
+                    opt.textContent = c;
+                    citySelect.appendChild(opt);
+                });
+            } else {
+                citySection.style.display = 'none';
+            }
+        })
+        .catch(() => { citySection.style.display = 'none'; });
+    
     document.getElementById('editModalOverlay').classList.add('active');
     document.body.style.overflow = 'hidden';
 }
@@ -811,9 +832,18 @@ async function saveManualRecord() {
         return;
     }
     
+    let targetBoss = currentEditingBoss;
+    const citySection = document.getElementById('editManualCitySection');
+    if (citySection.style.display === 'block') {
+        const city = document.getElementById('editManualCity').value;
+        if (city) {
+            targetBoss = `${currentEditingBoss} (${city})`;
+        }
+    }
+    
     const res = await fetch(`${API_BASE}/api/admin/manual-record`, {
         method: 'POST', headers: apiHeaders(),
-        body: JSON.stringify({ bossName: currentEditingBoss, type, datetime, world: currentWorld })
+        body: JSON.stringify({ bossName: targetBoss, type, datetime, world: currentWorld })
     });
     const data = await res.json();
     if (res.ok) { 

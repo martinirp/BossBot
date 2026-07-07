@@ -250,7 +250,11 @@
                 <label>Registro Manual (Morte/Flop)</label>
                 <div class="admin-form-col">
                     <input type="datetime-local" id="editManualDate" class="admin-input" step="60">
-                    <div class="admin-form-row">
+                    <div id="editManualCitySection" style="display:none; margin-top:8px;">
+                        <label style="font-size:12px; color:var(--text-secondary);">Selecione a Cidade:</label>
+                        <select id="editManualCity" class="admin-input" style="margin-top:4px;"></select>
+                    </div>
+                    <div class="admin-form-row" style="margin-top:8px;">
                         <select id="editManualType" class="admin-input">
                             <option value="kill">Morto (Kill)</option>
                             <option value="flop">Flopado</option>
