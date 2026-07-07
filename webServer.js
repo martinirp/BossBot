@@ -112,8 +112,8 @@ function getKillHistory(world, bossName) {
     let query, params;
     if (cityMatch) {
       const baseName = cityMatch[1].trim();
-      query = `SELECT id, boss_name, reported_by_jid, extra_text, created_at FROM boss_reports WHERE world = ? AND (boss_name = ? OR boss_name = ?) ORDER BY created_at DESC`;
-      params = [world, bossName, baseName];
+      query = `SELECT id, boss_name, reported_by_jid, extra_text, created_at FROM boss_reports WHERE world = ? AND (boss_name = ? OR boss_name LIKE ?) ORDER BY created_at DESC`;
+      params = [world, baseName, `${baseName} (%`];
     } else {
       query = `SELECT id, boss_name, reported_by_jid, extra_text, created_at FROM boss_reports WHERE world = ? AND boss_name = ? ORDER BY created_at DESC`;
       params = [world, bossName];
@@ -440,7 +440,21 @@ app.get('/api/bosses/:world', authMiddleware, async (req, res) => {
     const monitoredBosses = getMonitoredBosses();
 
     const promises = monitoredBosses.map(async (bossName) => {
-      const lastSeen = await getBossLastSeen(bossName, world);
+      const cityMatch = bossName.match(/^(.+?)\s*\((.+?)\)$/);
+      let lastSeen = await getBossLastSeen(bossName, world);
+      if (cityMatch) {
+          const baseRecord = await getBossLastSeen(cityMatch[1].trim(), world);
+          if (baseRecord && baseRecord.tibiadata_seen_at) {
+              if (!lastSeen) {
+                  lastSeen = { ...baseRecord, city: cityMatch[2].trim() };
+              } else if (!lastSeen.tibiadata_seen_at || baseRecord.tibiadata_seen_at > lastSeen.tibiadata_seen_at) {
+                  lastSeen.tibiadata_seen_at = baseRecord.tibiadata_seen_at;
+                  if (lastSeen.confirmed_by === 'TibiaData_API' || lastSeen.confirmed_by === 'system_adjust') {
+                      lastSeen.seen_at = baseRecord.seen_at;
+                  }
+              }
+          }
+      }
       const lastCheck = await getBossCheck(bossName, world);
       const kills = await getKillHistory(world, bossName);
       const totalKillsCount = kills.length;

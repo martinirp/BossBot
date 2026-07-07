@@ -262,9 +262,21 @@ export default {
     let reply = `*${bossName}*\n${statsLine}${spawnIntervalLine}\n`;
 
     if (cities) {
+      const baseRecord = await db.getBossLastSeen(bossName, world);
       for (const city of cities) {
         const cityBossName = `${bossName} (${city})`;
-        const record = await db.getBossLastSeen(cityBossName, world);
+        let record = await db.getBossLastSeen(cityBossName, world);
+        
+        if (baseRecord && baseRecord.tibiadata_seen_at) {
+          if (!record) {
+            record = { ...baseRecord, city };
+          } else if (!record.tibiadata_seen_at || baseRecord.tibiadata_seen_at > record.tibiadata_seen_at) {
+            record.tibiadata_seen_at = baseRecord.tibiadata_seen_at;
+            if (record.confirmed_by === 'TibiaData_API' || record.confirmed_by === 'system_adjust') {
+                record.seen_at = baseRecord.seen_at;
+            }
+          }
+        }
         
         reply += `📍 *${city}*:\n`;
         const { text } = await formatBossInfo(bossName, cityBossName, record);

@@ -129,42 +129,36 @@ export async function syncWorldKillStatistics(targetWorld) {
             }
 
             const finalBossName = bossName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+            const vLocalRecord = await getBossLastSeen(finalBossName, targetWorld);
             
-            const { MULTI_CITY_BOSSES } = await import('./commands.js');
-            const cities = MULTI_CITY_BOSSES[finalBossName.toLowerCase()];
-            const variants = cities ? cities.map(c => `${finalBossName} (${c})`) : [finalBossName];
+            let vNeedsUpdate = false;
+            if (!vLocalRecord) {
+                vNeedsUpdate = true;
+            } else {
+                const confirmedByApi =
+                    vLocalRecord.confirmed_by === 'TibiaData_API' ||
+                    vLocalRecord.confirmed_by === 'system_adjust';
 
-            for (const variant of variants) {
-                const vLocalRecord = await getBossLastSeen(variant, targetWorld);
-                
-                let vNeedsUpdate = false;
-                if (!vLocalRecord) {
-                    vNeedsUpdate = true;
-                } else {
-                    const confirmedByApi =
-                        vLocalRecord.confirmed_by === 'TibiaData_API' ||
-                        vLocalRecord.confirmed_by === 'system_adjust';
-
-                    if (confirmedByApi) {
-                        const localDayStr = vLocalRecord.seen_at.split(' ')[0];
-                        if (localDayStr < fallbackDayStr) {
-                            vNeedsUpdate = true;
-                        }
+                if (confirmedByApi) {
+                    const localDayStr = vLocalRecord.seen_at.split(' ')[0];
+                    if (localDayStr < fallbackDayStr) {
+                        vNeedsUpdate = true;
                     }
                 }
+            }
 
-                if (vNeedsUpdate) {
-                    console.log(`[SYNC] ${targetWorld}: ${variant} não estava no banco — registrando via API em ${fallbackDate}`);
-                    await setBossLastSeenDate(variant, 'TibiaData_API', fallbackDate, targetWorld);
+            if (vNeedsUpdate) {
+                console.log(`[SYNC] ${targetWorld}: ${finalBossName} não estava no banco — registrando via API em ${fallbackDate}`);
+                await setBossLastSeenDate(finalBossName, 'TibiaData_API', fallbackDate, targetWorld);
 
-                    const fallbackDateGerman = parseDateStr(fallbackDate);
-                    const fallbackDateUtc = germanToUtc(fallbackDateGerman);
-                    const fallbackDateUtcStr = fallbackDateUtc.toISOString().replace('T', ' ').substring(0, 19);
-                    await addBossReport(variant, 'Detectado via TibiaData API', 'TibiaData_API', 0, targetWorld, fallbackDateUtcStr);
-                    syncCount++;
-                } else {
-                    await setTibiadataSeenAt(variant, targetWorld, fallbackDate);
-                }
+                const fallbackDateGerman = parseDateStr(fallbackDate);
+                const fallbackDateUtc = germanToUtc(fallbackDateGerman);
+                const fallbackDateUtcStr = fallbackDateUtc.toISOString().replace('T', ' ').substring(0, 19);
+                await addBossReport(finalBossName, 'Detectado via TibiaData API', 'TibiaData_API', 0, targetWorld, fallbackDateUtcStr);
+                syncCount++;
+            } else {
+                await setTibiadataSeenAt(finalBossName, targetWorld, fallbackDate);
             }
         }
 
