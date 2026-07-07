@@ -576,15 +576,132 @@ function renderFullHistoryList(kills) {
         const formattedDate = formatDateBR(k.kill_date);
         const timePart = k.created_at.split(' ')[1]?.substring(0, 5) || '';
         const displayDateTime = timePart ? `${formattedDate} ${timePart}` : formattedDate;
+        
+        let adminActions = '';
+        if (authRole === 'admin') {
+            const btnStyle = "background:transparent; border:none; cursor:pointer; font-size:16px; margin-left:8px;";
+            adminActions = `
+            <div style="display:flex; align-items:center;">
+                <button style="${btnStyle}" onclick='openEditHistoryModal(${JSON.stringify(k).replace(/'/g, "&apos;")})' title="Editar Registro">✏️</button>
+                <button style="${btnStyle}" onclick='deleteHistoryRecord(${k.id})' title="Excluir Registro">🗑️</button>
+            </div>`;
+        }
+
         return `
             <div class="history-list-item">
                 <div class="history-item-left">
                     <span class="history-item-date">${displayDateTime}</span>
                     <span class="history-item-reporter">Confirmado por: ${k.confirmed_by}</span>
                 </div>
-                <div class="history-item-right" title="${k.extra_text || ''}">${k.extra_text || 'Sem detalhes.'}</div>
+                <div class="history-item-right" style="display:flex; align-items:center; gap:10px;" title="${k.extra_text || ''}">
+                    <span>${k.extra_text || 'Sem detalhes.'}</span>
+                    ${adminActions}
+                </div>
             </div>`;
     }).join('');
+}
+
+let currentEditingHistoryId = null;
+
+async function openEditHistoryModal(k) {
+    currentEditingHistoryId = k.id;
+    
+    // Set date input
+    const [datePart, timePart] = k.raw_created_at.split(' ');
+    const utcDate = new Date(datePart + 'T' + timePart + 'Z');
+    
+    // Format to YYYY-MM-DDThh:mm
+    const tzOffset = utcDate.getTimezoneOffset() * 60000;
+    const localDate = new Date(utcDate.getTime() - tzOffset);
+    const localISO = localDate.toISOString().slice(0, 16);
+    
+    document.getElementById('editHistoryDate').value = localISO;
+
+    const citySection = document.getElementById('editHistoryCitySection');
+    const citySelect = document.getElementById('editHistoryCity');
+    citySelect.innerHTML = '';
+    
+    try {
+        const res = await fetch(`${API_BASE}/api/boss-cities/${encodeURIComponent(k.boss_name)}`, { headers: apiHeaders() });
+        const data = await res.json();
+        
+        if (data.cities && data.cities.length > 0) {
+            citySection.style.display = 'block';
+            let currentCity = '';
+            const match = k.boss_name.match(/^(.+?)\s*\((.+?)\)$/);
+            if (match) currentCity = match[2];
+            
+            data.cities.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c;
+                opt.textContent = c;
+                if (c === currentCity) opt.selected = true;
+                citySelect.appendChild(opt);
+            });
+        } else {
+            citySection.style.display = 'none';
+        }
+    } catch {
+        citySection.style.display = 'none';
+    }
+
+    document.getElementById('editHistoryModalOverlay').classList.add('active');
+}
+
+function closeEditHistoryModal() {
+    currentEditingHistoryId = null;
+    document.getElementById('editHistoryModalOverlay').classList.remove('active');
+}
+
+async function saveHistoryRecord() {
+    if (!currentEditingHistoryId) return;
+    const datetime = document.getElementById('editHistoryDate').value;
+    const citySection = document.getElementById('editHistoryCitySection');
+    const city = citySection.style.display === 'block' ? document.getElementById('editHistoryCity').value : null;
+
+    if (!datetime) {
+        alert('Data/Hora inválida.');
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/edit-record/${currentEditingHistoryId}`, {
+            method: 'PUT',
+            headers: apiHeaders(),
+            body: JSON.stringify({ datetime, city })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            alert(`✅ ${data.message}`);
+            closeEditHistoryModal();
+            loadPredictions();
+            closeModal();
+        } else {
+            alert(`❌ ${data.error}`);
+        }
+    } catch (err) {
+        alert('Erro de conexão');
+    }
+}
+
+async function deleteHistoryRecord(id) {
+    if (!confirm('Tem certeza que deseja excluir permanentemente este registro de histórico? Isso recalculará as previsões.')) return;
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/delete-record/${id}`, {
+            method: 'DELETE',
+            headers: apiHeaders()
+        });
+        const data = await res.json();
+        if (res.ok) {
+            alert(`✅ ${data.message}`);
+            loadPredictions();
+            closeModal();
+        } else {
+            alert(`❌ ${data.error}`);
+        }
+    } catch (err) {
+        alert('Erro de conexão');
+    }
 }
 
 // ═══ ADMIN ACTIONS (INLINE) ═════════════════════════════════════════════════
@@ -706,20 +823,7 @@ async function saveManualRecord() {
     else { alert(`❌ ${data.error}`); }
 }
 
-async function saveEditRemove() {
-    if (!currentEditingBoss) return;
-    if (!confirm(`Tem certeza que deseja remover "${currentEditingBoss}" da lista de bosses monitorados?`)) return;
-    const res = await fetch(`${API_BASE}/api/admin/remove-boss`, {
-        method: 'DELETE', headers: apiHeaders(), body: JSON.stringify({ name: currentEditingBoss })
-    });
-    const data = await res.json();
-    if (res.ok) { 
-        alert(`✅ "${currentEditingBoss}" removido.`); 
-        closeEditModal();
-        loadPredictions(); 
-    }
-    else { alert(`❌ ${data.error}`); }
-}
+
 
 // ═══ CALENDAR MODAL ═════════════════════════════════════════════════════════
 

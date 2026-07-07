@@ -260,9 +260,7 @@
                 </div>
             </div>
 
-            <div class="edit-section" style="border-top: 1px dashed rgba(255,59,48,0.3); padding-top:20px; margin-top:20px;">
-                <button class="btn-admin-danger" style="width:100%;" onclick="saveEditRemove()">🗑️ Excluir Boss Definitivamente</button>
-            </div>
+
         </div>
     </div>
 
@@ -280,6 +278,41 @@
             </div>
             <div id="calendarContainer" class="calendar-container">
                 <!-- Conteúdo gerado via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ MODAL DE EDIÇÃO DE HISTÓRICO ═════════════════════════════════════ -->
+    <div id="editHistoryModalOverlay" class="modal-overlay">
+        <div class="modal-card glass-panel" style="max-width: 400px;">
+            <button class="modal-close-btn" onclick="closeEditHistoryModal()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <div class="modal-header" style="border-bottom:none; margin-bottom:10px;">
+                <h2 class="modal-title">✏️ Editar Registro</h2>
+            </div>
+            
+            <div class="edit-section">
+                <label>Data/Hora do Avistamento</label>
+                <div class="admin-form-col">
+                    <input type="datetime-local" id="editHistoryDate" class="admin-input" step="60">
+                </div>
+            </div>
+
+            <div class="edit-section" id="editHistoryCitySection" style="display:none;">
+                <label>Localização (Cidade)</label>
+                <div class="admin-form-col">
+                    <select id="editHistoryCity" class="admin-input">
+                        <!-- Cidades inseridas via JS -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="edit-section" style="margin-top:20px;">
+                <button class="btn-admin-action" style="width:100%;" onclick="saveHistoryRecord()">Salvar Alterações</button>
             </div>
         </div>
     </div>

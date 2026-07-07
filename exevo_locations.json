@@ -1,0 +1,44 @@
+{
+  "rotworm queen": [
+    "Rotworm Cave (Darashia)",
+    "Rotworm Cave (Liberty Bay)",
+    "Rotworm Cave (Edron)",
+    "Hellgate (Ab'Dendriel)"
+  ],
+  "the voice of ruin": [
+    "Corruption Hole (Ghastly)", -- ESQUERDA
+    "Corruption Hole (Chosen)" -- DIREITA
+  ],
+  "flamecaller zazrak": [
+    "Muggy Plains (Farmine)"
+  ],
+  "tyrn": [
+    "Drefia (Darashia)",
+    "Wyrm Cave (Liberty Bay)"
+  ],
+  "dreadmaw": [
+    "Muggy Plains (Farmine)"
+  ],
+  "white pale": [
+    "Rotworm Cave (Edron)",
+    "Rotworm Cave (Darashia)",
+    "Rotworm Cave (Liberty Bay)"
+  ],
+  "hirintror": [
+    "Formorgar Mines (Svargrond)",
+    "Nibelor (Svargrond)"
+  ],
+  "battlemaster zunzu": [
+    "Muggy Plains (Farmine)"
+  ],
+  "fleabringer": [
+    "Zao Steppe (Farmine)"
+  ],
+  "albino dragon": [
+    "Dragon Lair (Ankrahmun)",
+    "Dragon Lair (Farmine)",
+    "Dragon Lair (Fenrock)",
+    "Dragon Lair (Goroma)",
+    "Pits of Inferno"
+  ]
+}

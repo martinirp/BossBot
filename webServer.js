@@ -127,10 +127,10 @@ function getKillHistory(world, bossName) {
     let query, params;
     if (cityMatch) {
       const baseName = cityMatch[1].trim();
-      query = `SELECT boss_name, reported_by_jid, extra_text, created_at FROM boss_reports WHERE world = ? AND (boss_name = ? OR boss_name = ?) ORDER BY created_at DESC`;
+      query = `SELECT id, boss_name, reported_by_jid, extra_text, created_at FROM boss_reports WHERE world = ? AND (boss_name = ? OR boss_name = ?) ORDER BY created_at DESC`;
       params = [world, bossName, baseName];
     } else {
-      query = `SELECT boss_name, reported_by_jid, extra_text, created_at FROM boss_reports WHERE world = ? AND boss_name = ? ORDER BY created_at DESC`;
+      query = `SELECT id, boss_name, reported_by_jid, extra_text, created_at FROM boss_reports WHERE world = ? AND boss_name = ? ORDER BY created_at DESC`;
       params = [world, bossName];
     }
     db.all(query, params, async (err, rows) => {
@@ -144,7 +144,7 @@ function getKillHistory(world, bossName) {
         const kill_date = `${brtDate.getUTCFullYear()}-${pad(brtDate.getUTCMonth() + 1)}-${pad(brtDate.getUTCDate())}`;
         const brtTimeStr = `${kill_date} ${pad(brtDate.getUTCHours())}:${pad(brtDate.getUTCMinutes())}:${pad(brtDate.getUTCSeconds())}`;
         const confirmed_by = await formatJidName(row.reported_by_jid);
-        mapped.push({ kill_date, amount_killed: 1, confirmed_by, extra_text: row.extra_text, created_at: brtTimeStr });
+        mapped.push({ id: row.id, boss_name: row.boss_name, raw_created_at: row.created_at, kill_date, amount_killed: 1, confirmed_by, extra_text: row.extra_text, created_at: brtTimeStr });
       }
       resolve(mapped);
     });
@@ -234,18 +234,6 @@ app.post('/api/admin/add-boss', authMiddleware, adminMiddleware, (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// DELETE remove boss
-app.delete('/api/admin/remove-boss', authMiddleware, adminMiddleware, (req, res) => {
-  const { name } = req.body;
-  if (!name) return res.status(400).json({ error: 'Nome inválido' });
-  try {
-    const bossesPath = path.resolve('bosses.json');
-    let bosses = JSON.parse(fs.readFileSync(bossesPath, 'utf8'));
-    bosses = bosses.filter(b => b.toLowerCase() !== name.toLowerCase());
-    fs.writeFileSync(bossesPath, JSON.stringify(bosses, null, 2), 'utf8');
-    res.json({ ok: true });
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
 
 // POST upload boss image (base64)
 app.post('/api/admin/upload-image', authMiddleware, adminMiddleware, (req, res) => {
@@ -320,6 +308,119 @@ app.post('/api/admin/manual-record', authMiddleware, adminMiddleware, async (req
     console.error(err);
     res.status(500).json({ error: err.message });
   }
+});
+
+// Function to recalculate boss_last_seen after history edits
+async function recalculateLastSeen(world, bossName) {
+  const cityMatch = bossName.match(/^(.+?)\s*\((.+?)\)$/);
+  const baseName = cityMatch ? cityMatch[1].trim() : bossName;
+  const cities = MULTI_CITY_BOSSES[baseName.toLowerCase()];
+  
+  const variants = cities ? cities.map(c => `${baseName} (${c})`) : [baseName];
+  if (cities) variants.push(baseName);
+
+  for (const variant of variants) {
+    const latestReport = await new Promise((resolve, reject) => {
+      db.get(`SELECT * FROM boss_reports WHERE world = ? AND boss_name = ? ORDER BY created_at DESC LIMIT 1`, [world, variant], (err, row) => {
+        if (err) reject(err); else resolve(row);
+      });
+    });
+
+    if (latestReport) {
+      const utcDate = new Date(latestReport.created_at.replace(' ', 'T') + 'Z');
+      const germanDate = utcToGerman(utcDate);
+      const pad = (n) => String(n).padStart(2, '0');
+      const seenAtGerman = `${germanDate.getFullYear()}-${pad(germanDate.getMonth() + 1)}-${pad(germanDate.getDate())} ${pad(germanDate.getHours())}:${pad(germanDate.getMinutes())}`;
+      
+      let matchedCity = null;
+      const vMatch = variant.match(/^(.+?)\s*\((.+?)\)$/);
+      if (vMatch) matchedCity = vMatch[2];
+
+      await new Promise((resolve, reject) => {
+        db.run(`
+          INSERT INTO boss_last_seen (world, boss_name, confirmed_by, seen_at, city)
+          VALUES (?, ?, ?, ?, ?)
+          ON CONFLICT(world, boss_name) DO UPDATE SET
+            confirmed_by = excluded.confirmed_by,
+            seen_at = excluded.seen_at,
+            city = excluded.city,
+            prev_confirmed_by = NULL,
+            prev_seen_at = NULL,
+            prev_city = NULL
+        `, [world, variant, latestReport.reported_by_jid, seenAtGerman, matchedCity], (err) => err ? reject(err) : resolve());
+      });
+    } else {
+      await new Promise((resolve, reject) => {
+        db.run(`DELETE FROM boss_last_seen WHERE world = ? AND boss_name = ?`, [world, variant], (err) => err ? reject(err) : resolve());
+      });
+    }
+  }
+}
+
+// PUT edit history record
+app.put('/api/admin/edit-record/:id', authMiddleware, adminMiddleware, async (req, res) => {
+  const { id } = req.params;
+  const { datetime, city } = req.body;
+  if (!datetime) return res.status(400).json({ error: 'Data/Hora é obrigatório' });
+
+  try {
+    const record = await new Promise((resolve, reject) => {
+      db.get(`SELECT * FROM boss_reports WHERE id = ?`, [id], (err, row) => err ? reject(err) : resolve(row));
+    });
+    if (!record) return res.status(404).json({ error: 'Registro não encontrado' });
+
+    const localDate = new Date(datetime);
+    if (isNaN(localDate.getTime())) return res.status(400).json({ error: 'Data inválida' });
+    const utcDate = new Date(localDate.getTime());
+    const createdAtStr = utcDate.toISOString().replace('T', ' ').substring(0, 19);
+
+    const cityMatch = record.boss_name.match(/^(.+?)\s*\((.+?)\)$/);
+    const baseName = cityMatch ? cityMatch[1].trim() : record.boss_name;
+    let newBossName = record.boss_name;
+    if (cityMatch && city) {
+      newBossName = `${baseName} (${city})`;
+    }
+
+    await new Promise((resolve, reject) => {
+      db.run(`UPDATE boss_reports SET created_at = ?, boss_name = ? WHERE id = ?`, [createdAtStr, newBossName, id], (err) => err ? reject(err) : resolve());
+    });
+
+    await recalculateLastSeen(record.world, baseName);
+    res.json({ ok: true, message: 'Registro atualizado com sucesso' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE history record
+app.delete('/api/admin/delete-record/:id', authMiddleware, adminMiddleware, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const record = await new Promise((resolve, reject) => {
+      db.get(`SELECT * FROM boss_reports WHERE id = ?`, [id], (err, row) => err ? reject(err) : resolve(row));
+    });
+    if (!record) return res.status(404).json({ error: 'Registro não encontrado' });
+
+    await new Promise((resolve, reject) => {
+      db.run(`DELETE FROM boss_reports WHERE id = ?`, [id], (err) => err ? reject(err) : resolve());
+    });
+
+    await recalculateLastSeen(record.world, record.boss_name);
+    res.json({ ok: true, message: 'Registro excluído' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET boss cities (for edit modal)
+app.get('/api/boss-cities/:bossName', authMiddleware, (req, res) => {
+  const bossName = req.params.bossName;
+  const cityMatch = bossName.match(/^(.+?)\s*\((.+?)\)$/);
+  const baseName = cityMatch ? cityMatch[1].trim() : bossName.trim();
+  const cities = MULTI_CITY_BOSSES[baseName.toLowerCase()] || null;
+  res.json({ cities });
 });
 
 // ─── API Endpoints ────────────────────────────────────────────────────────────

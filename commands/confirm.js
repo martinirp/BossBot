@@ -277,20 +277,29 @@ export default {
       enqueueNotification(sock, subscribers, cityBossName, finalExtraText, world);
     }
 
-    // Envia a figurinha de alerta referente ao boss, se existir
-    const specificStickerPath = `./assets/bosses/${matchedBossName}.webp`;
-    let stickerToSend = './assets/alerta.webp';
-    
-    if (fs.existsSync(specificStickerPath)) {
-      stickerToSend = specificStickerPath;
+    // Envia a figurinha ou imagem de alerta referente ao boss, se existir
+    let specificPath = null;
+    const exts = ['.webp', '.png', '.gif'];
+    for (const ext of exts) {
+      const p = `./assets/bosses/${matchedBossName}${ext}`;
+      if (fs.existsSync(p)) {
+        specificPath = p;
+        break;
+      }
     }
 
-    if (fs.existsSync(stickerToSend)) {
-      try {
-        await sock.sendMessage(remoteJid, { sticker: { url: stickerToSend } });
-      } catch (err) {
-        console.error('Erro ao enviar figurinha de alerta de boss:', err);
+    try {
+      if (specificPath) {
+        if (specificPath.endsWith('.webp')) {
+          await sock.sendMessage(remoteJid, { sticker: { url: specificPath } });
+        } else {
+          await sock.sendMessage(remoteJid, { image: { url: specificPath } });
+        }
+      } else if (fs.existsSync('./assets/alerta.webp')) {
+        await sock.sendMessage(remoteJid, { sticker: { url: './assets/alerta.webp' } });
       }
+    } catch (err) {
+      console.error('Erro ao enviar alerta de boss:', err);
     }
   }
 }
