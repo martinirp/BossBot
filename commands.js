@@ -117,8 +117,7 @@ export const MULTI_CITY_BOSSES = {
   "hirintror": ["Formorgar Mines", "Nibelor"],
   "battlemaster zunzu": ["Esquerda", "Direita"],
   "fleabringer": ["Surface"],
-  "albino dragon": ["Dragon Lair (Ankrahmun)", "Dragon Lair (Farmine)", "Dragon Lair (Fenrock)", "Dragon Lair (Goroma)", "Pits of Inferno"],
-  "danimax": ["Thais", "Venore", "Carlin", "Edron", "Darashia"]
+  "albino dragon": ["Dragon Lair (Ankrahmun)", "Dragon Lair (Farmine)", "Dragon Lair (Fenrock)", "Dragon Lair (Goroma)", "Pits of Inferno"]
 };
 
 export const CITY_ALIASES = {
