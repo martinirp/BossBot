@@ -16,6 +16,7 @@ import {
   utcToBrt
 } from './database.js';
 import { syncWorldKillStatistics } from './syncTibiaData.js';
+import { MULTI_CITY_BOSSES } from './commands.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -59,22 +60,6 @@ function adminMiddleware(req, res, next) {
   }
   next();
 }
-
-// ─── Multi-city boss map ───────────────────────────────────────────────────────
-
-const MULTI_CITY_BOSSES = {
-  "rotworm queen":     ["Ab'Dendriel", "Darashia", "Edron", "Liberty Bay"],
-  "the voice of ruin": ["Esquerda", "Direita"],
-  "flamecaller zazrak":["Surface", "North"],
-  "tyrn":              ["Liberty Bay", "Drefia"],
-  "dreadmaw":          ["West", "East"],
-  "white pale":        ["Edron", "Darashia", "Liberty Bay"],
-  "hirintror":         ["Mines", "Nibelor"],
-  "battlemaster zunzu":["West", "East"],
-  "fleabringer":       ["Surface", "North", "Sul"],
-  "albino dragon":     ["Farmine", "Fenrock", "Goroma", "POI", "Ank"],
-  "danimax":           ["Thais", "Venore", "Carlin", "Edron", "Darashia"]
-};
 
 // Dynamic boss list — re-reads bosses.json each call so admin changes are instant
 function getMonitoredBosses() {
