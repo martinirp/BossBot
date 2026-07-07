@@ -15,7 +15,7 @@ export function loadBosses() {
   const filePath = path.resolve('bosses.json');
   if (!fs.existsSync(filePath)) {
     const defaultBosses = [
-      "Ferumbras", "Ghazbaran", "Morgaroth", "Orshabaal", "Zushuka", 
+      "Ferumbras", "Ghazbaran", "Morgaroth", "Orshabaal", "Zushuka",
       "Chayenne", "Shlorg", "Munster", "Onyx", "Grand Mother Reapers"
     ];
     try {
@@ -170,14 +170,14 @@ export function getLinkForCity(bossName, locations, city) {
   const normCity = city.toLowerCase();
   for (const loc of locations) {
     const desc = loc.description.toLowerCase();
-    
+
     if (normCity === 'ank' && (desc.includes('ankrahmun') || desc.includes('ank'))) return loc.link;
     if (normCity === 'poi' && (desc.includes('pits of inferno') || desc.includes('poi'))) return loc.link;
     if (normCity === 'lb' && (desc.includes('liberty bay') || desc.includes('lb'))) return loc.link;
     if (normCity === 'dara' && (desc.includes('darashia') || desc.includes('dara'))) return loc.link;
     if (normCity === 'ab' && (desc.includes("ab'dendriel") || desc.includes('ab'))) return loc.link;
     if (normCity === 'yala' && (desc.includes('yalahar') || desc.includes('yala'))) return loc.link;
-    
+
     if (desc.includes(normCity)) {
       return loc.link;
     }
