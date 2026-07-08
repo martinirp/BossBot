@@ -111,9 +111,12 @@ function getKillHistory(world, bossName) {
     const cityMatch = bossName.match(/^(.+?)\s*\((.+?)\)$/);
     let query, params;
     if (cityMatch) {
+      // Bug fix (3): when a specific city is requested, filter only that city's records.
+      // Also include base-name records (no city suffix) for backwards compatibility.
       const baseName = cityMatch[1].trim();
-      query = `SELECT id, boss_name, reported_by_jid, extra_text, created_at FROM boss_reports WHERE world = ? AND (boss_name = ? OR boss_name LIKE ?) ORDER BY created_at DESC`;
-      params = [world, baseName, `${baseName} (%`];
+      const fullName = bossName.trim();
+      query = `SELECT id, boss_name, reported_by_jid, extra_text, created_at FROM boss_reports WHERE world = ? AND (boss_name = ? OR boss_name = ?) ORDER BY created_at DESC`;
+      params = [world, fullName, baseName];
     } else {
       query = `SELECT id, boss_name, reported_by_jid, extra_text, created_at FROM boss_reports WHERE world = ? AND boss_name = ? ORDER BY created_at DESC`;
       params = [world, bossName];
@@ -123,8 +126,10 @@ function getKillHistory(world, bossName) {
       if (!rows) return resolve([]);
       const mapped = [];
       for (const row of rows) {
-        const utcDate = new Date(row.created_at.replace(' ', 'T') + 'Z');
-        const brtDate = new Date(utcDate.getTime() - 3 * 60 * 60 * 1000);
+        // Bug fix (2): created_at is stored in German (CET/CEST) time, not UTC.
+        // Correct conversion: German → UTC → BRT.
+        const germanDate = parseDateStr(row.created_at);
+        const brtDate = utcToBrt(germanToUtc(germanDate));
         const pad = (n) => String(n).padStart(2, '0');
         const kill_date = `${brtDate.getUTCFullYear()}-${pad(brtDate.getUTCMonth() + 1)}-${pad(brtDate.getUTCDate())}`;
         const brtTimeStr = `${kill_date} ${pad(brtDate.getUTCHours())}:${pad(brtDate.getUTCMinutes())}:${pad(brtDate.getUTCSeconds())}`;
@@ -312,10 +317,11 @@ async function recalculateLastSeen(world, bossName) {
     });
 
     if (latestReport) {
-      const utcDate = new Date(latestReport.created_at.replace(' ', 'T') + 'Z');
-      const germanDate = utcToGerman(utcDate);
+      // created_at in boss_reports is stored in German (CET/CEST) time.
+      // parseDateStr interprets it as German time directly — use it as-is for seenAt.
+      const storedGermanDate = parseDateStr(latestReport.created_at);
       const pad = (n) => String(n).padStart(2, '0');
-      const seenAtGerman = `${germanDate.getFullYear()}-${pad(germanDate.getMonth() + 1)}-${pad(germanDate.getDate())} ${pad(germanDate.getHours())}:${pad(germanDate.getMinutes())}`;
+      const seenAtGerman = `${storedGermanDate.getUTCFullYear()}-${pad(storedGermanDate.getUTCMonth() + 1)}-${pad(storedGermanDate.getUTCDate())} ${pad(storedGermanDate.getUTCHours())}:${pad(storedGermanDate.getUTCMinutes())}`;
       
       let matchedCity = null;
       const vMatch = variant.match(/^(.+?)\s*\((.+?)\)$/);

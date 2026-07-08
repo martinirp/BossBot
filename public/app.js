@@ -445,11 +445,24 @@ function populateModal(p) {
 
     // Spawn range
     document.getElementById('modalFreqVal').innerText = formatSpawnRange(p.min_days, p.max_days);
-    if (p.max_days) {
-        const daysLeft = p.max_days - (p.days_since || 0);
-        if (daysLeft > 0)      document.getElementById('modalWindowVal').innerText = `Daqui ${daysLeft} dia${daysLeft !== 1 ? 's' : ''}`;
-        else if (daysLeft === 0) document.getElementById('modalWindowVal').innerText = 'Hoje!';
-        else                   document.getElementById('modalWindowVal').innerText = `Atrasado há ${Math.abs(daysLeft)}d`;
+    if (p.min_days && p.max_days) {
+        const daysSince = p.days_since || 0;
+        const daysToMin = p.min_days - daysSince;
+        const daysToMax = p.max_days - daysSince;
+        let windowText = '';
+        if (daysToMin > 0) {
+            // Window not yet open
+            windowText = `Abre em ${daysToMin} dia${daysToMin !== 1 ? 's' : ''}`;
+        } else if (daysToMax > 0) {
+            // Inside the window
+            windowText = `Aberta! Fecha em ${daysToMax} dia${daysToMax !== 1 ? 's' : ''}`;
+        } else if (daysToMax === 0) {
+            windowText = 'Último dia!';
+        } else {
+            // Past max
+            windowText = `Atrasado há ${Math.abs(daysToMax)}d`;
+        }
+        document.getElementById('modalWindowVal').innerText = windowText;
     } else {
         document.getElementById('modalWindowVal').innerText = 'Necessita de avistamento';
     }

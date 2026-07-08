@@ -99,8 +99,7 @@ const formatBossInfo = async (bossName, intervalName, record) => {
 
     if (record && record.seen_at) {
       const confirmedByHuman = record.confirmed_by !== 'TibiaData_API' &&
-                               record.confirmed_by !== 'system_adjust' &&
-                               record.confirmed_by !== 'flop';
+                               record.confirmed_by !== 'system_adjust';
 
       if (confirmedByHuman) {
         // Human confirmed: group prediction (no shift) + optional TibiaData prediction
