@@ -116,7 +116,7 @@ export const MULTI_CITY_BOSSES = {
   "white pale": ["Edron", "Darashia", "Liberty Bay"],
   "hirintror": ["Formorgar Mines", "Nibelor"],
   "battlemaster zunzu": ["Esquerda", "Direita"],
-  "fleabringer": ["Surface"],
+  "fleabringer": ["North", "Sul", "Surface"],
   "albino dragon": ["Dragon Lair (Ankrahmun)", "Dragon Lair (Farmine)", "Dragon Lair (Fenrock)", "Dragon Lair (Goroma)", "Pits of Inferno"]
 };
 

@@ -135,7 +135,9 @@ class CommandHandler {
         if (menuPrompt.type === 'numeric_menu' && menuPrompt.remoteJid === remoteJid) {
           if (possibleNumber >= 1 && possibleNumber <= menuPrompt.cities.length) {
             const selectedCity = menuPrompt.cities[possibleNumber - 1];
-            const reconstructedCommandText = `${menuPrompt.prefix}confirm ${menuPrompt.bossName}, ${selectedCity} --silent`;
+            const menuCommand = menuPrompt.command || 'confirm';
+            const silentSuffix = menuCommand === 'confirm' ? ' --silent' : '';
+            const reconstructedCommandText = `${menuPrompt.prefix}${menuCommand} ${menuPrompt.bossName}, ${selectedCity}${silentSuffix}`;
             
             const args = reconstructedCommandText.slice(1).trim().split(/\s+/);
             const cmdName = args.shift().toLowerCase();
@@ -167,6 +169,7 @@ class CommandHandler {
     }
 
     // --- Poll Interception (Deprecated/Failing in Baileys for @lid) ---
+
     // Auto-calculador do Hive (Loot of a spidris elite / hive overseer)
     const hiveRegex = /(?:^|\s)(\d{1,2}):(\d{2})(?::(\d{2}))?\s+Loot\s+of\s+a\s+(spidris\s+elite|hive\s+overseer):/i;
     const match = trimmed.match(hiveRegex);

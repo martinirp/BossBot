@@ -57,9 +57,30 @@ export default {
 
     if (validCities) {
       if (!extraText.trim()) {
-        await sock.sendMessage(remoteJid, {
-          text: `⚠️ O boss *${matchedBossName}* nasce em várias cidades. Por favor, especifique a cidade como argumento.\nExemplo: \`${context.prefix}flop ${matchedBossName}, Ankrahmun\`\nCidades válidas: ${validCities.join(', ')}`
+        // Exibe menu numérico igual ao !boss, mas sem disparar notificações
+        let menuText = `⚔️ Boss Flopado: ${matchedBossName.toUpperCase()}! ⚔️\n`;
+        menuText += `Responda a esta mensagem APENAS com o NÚMERO do local:\n`;
+
+        const NUM_EMOJIS = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
+        validCities.forEach((city, idx) => {
+          const emoji = NUM_EMOJIS[idx] || `*${idx + 1}.*`;
+          menuText += `${emoji} ${city}\n`;
+        });
+
+        const menuMsg = await sock.sendMessage(remoteJid, {
+          text: menuText.trim(),
+          mentions: [senderJid]
         }, { quoted: msg });
+
+        context.commandHandler.activePolls.set(menuMsg.key.id, {
+          type: 'numeric_menu',
+          command: 'flop',
+          bossName: matchedBossName,
+          cities: validCities,
+          prefix: context.prefix,
+          remoteJid: remoteJid
+        });
+
         return;
       }
 
