@@ -2,7 +2,7 @@ import * as db from '../database.js';
 
 export default {
   name: 'removecommunity',
-  aliases: [],
+  aliases: ['removecomunity'],
   execute: async (context, args) => {
     const { sock, msg, isGroup, remoteJid, senderIsAdmin } = context;
     if (!isGroup) {
