@@ -253,18 +253,24 @@ app.post('/api/admin/manual-record', authMiddleware, adminMiddleware, async (req
   }
   
   try {
-    // datetime comes as "YYYY-MM-DDTHH:mm" in local browser time.
-    // Convert this to UTC, then we will use this to register in DB
-    const localDate = new Date(datetime);
-    if (isNaN(localDate.getTime())) return res.status(400).json({ error: 'Data inválida' });
+    // datetime comes as "YYYY-MM-DDTHH:mm". Assume user inputs in BRT (UTC-3)
+    const [datePart, timePart] = datetime.split('T');
+    const [year, month, day] = datePart.split('-');
+    const [hour, minute] = timePart.split(':');
     
-    const utcDate = new Date(localDate.getTime());
+    if (!year || !month || !day || !hour || !minute) {
+      return res.status(400).json({ error: 'Data inválida' });
+    }
+    
+    // Create UTC Date treating the input as BRT (UTC-3)
+    const utcDate = new Date(Date.UTC(year, month - 1, day, Number(hour) + 3, minute));
     const createdAtStr = utcDate.toISOString().replace('T', ' ').substring(0, 19);
     
     // For boss_last_seen, Tibia operates in Europe/Berlin (German time).
     const germanDate = utcToGerman(utcDate);
     const pad = (n) => String(n).padStart(2, '0');
-    const seenAtGerman = `${germanDate.getFullYear()}-${pad(germanDate.getMonth() + 1)}-${pad(germanDate.getDate())} ${pad(germanDate.getHours())}:${pad(germanDate.getMinutes())}`;
+    // We MUST use getUTC* methods because germanDate is an offset UTC timestamp
+    const seenAtGerman = `${germanDate.getUTCFullYear()}-${pad(germanDate.getUTCMonth() + 1)}-${pad(germanDate.getUTCDate())} ${pad(germanDate.getUTCHours())}:${pad(germanDate.getUTCMinutes())}`;
     
     const reportedBy = req.userSession.username;
     const extraText = type === 'flop' ? 'Flopado' : 'Morto (Manual)';

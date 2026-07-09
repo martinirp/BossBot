@@ -59,9 +59,9 @@ function buildPrediction(seenAtStr, minDays, maxDays, isTibiaData = false) {
     const maxCmp = new Date(maxDateGerman); maxCmp.setUTCHours(0, 0, 0, 0);
 
     if (trackingNowGerman >= maxCmp) {
-      extraStr = ' (🟢 No radar / 🟢 Alta chance)';
+      extraStr = ' (🟢 Alta chance)';
     } else if (trackingNowGerman >= minCmp) {
-      extraStr = ' (🟢 No radar / 🟢 Com chance)';
+      extraStr = ' (🟢 Com chance)';
     } else {
       // Not in spawn window — skip this boss
       return null;
