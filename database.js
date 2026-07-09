@@ -116,6 +116,15 @@ export function initDb() {
           )
         `);
 
+        // Create allowed_communities table
+        db.run(`
+          CREATE TABLE IF NOT EXISTS allowed_communities (
+            jid TEXT PRIMARY KEY,
+            tibia_world TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          )
+        `);
+
         // Create global_settings table
         db.run(`
           CREATE TABLE IF NOT EXISTS global_settings (
@@ -735,6 +744,73 @@ export function setGroupWorld(jid, world) {
   return new Promise((resolve, reject) => {
     db.run(
       `UPDATE allowed_groups SET tibia_world = ? WHERE jid = ?`,
+      [world, jid],
+      function (err) {
+        if (err) return reject(err);
+        resolve(this.changes > 0);
+      }
+    );
+  });
+}
+
+// ==========================================
+// Community Functions
+// ==========================================
+
+export function addCommunity(jid) {
+  return new Promise((resolve, reject) => {
+    const defaultWorld = process.env.TIBIA_WORLD || 'Quelibra';
+    db.run(
+      'INSERT OR IGNORE INTO allowed_communities (jid, tibia_world) VALUES (?, ?)',
+      [jid, defaultWorld],
+      function (err) {
+        if (err) return reject(err);
+        resolve(this.changes > 0);
+      }
+    );
+  });
+}
+
+export function removeCommunity(jid) {
+  return new Promise((resolve, reject) => {
+    db.run(
+      'DELETE FROM allowed_communities WHERE jid = ?',
+      [jid],
+      function (err) {
+        if (err) return reject(err);
+        resolve(this.changes > 0);
+      }
+    );
+  });
+}
+
+export function getAllowedCommunities() {
+  return new Promise((resolve, reject) => {
+    db.all('SELECT jid FROM allowed_communities', [], (err, rows) => {
+      if (err) return reject(err);
+      resolve(rows.map(row => row.jid));
+    });
+  });
+}
+
+export function getCommunityWorld(jid) {
+  return new Promise((resolve, reject) => {
+    const defaultWorld = process.env.TIBIA_WORLD || 'Quelibra';
+    db.get(
+      `SELECT tibia_world FROM allowed_communities WHERE jid = ?`,
+      [jid],
+      (err, row) => {
+        if (err) return reject(err);
+        resolve(row && row.tibia_world ? row.tibia_world : defaultWorld);
+      }
+    );
+  });
+}
+
+export function setCommunityWorld(jid, world) {
+  return new Promise((resolve, reject) => {
+    db.run(
+      `UPDATE allowed_communities SET tibia_world = ? WHERE jid = ?`,
       [world, jid],
       function (err) {
         if (err) return reject(err);

@@ -70,18 +70,36 @@ export async function enqueueNotification(sock, subscribers, bossName, extraText
 
     const allowedGroups = await db.getAllowedGroups();
     const activeMembersSet = new Set();
+    const groupMentionsMap = new Map(); // groupJid -> array of normalized JIDs
     
     for (const groupJid of allowedGroups) {
       const groupWorld = await db.getGroupWorld(groupJid);
       if (groupWorld === world) {
         try {
           const metadata = await sock.groupMetadata(groupJid);
+          const groupSubs = [];
           for (const p of metadata.participants) {
-            activeMembersSet.add(jidNormalizedUser(p.id));
+            const clean = jidNormalizedUser(p.id);
+            activeMembersSet.add(clean);
+            if (subscribers.some(s => jidNormalizedUser(s) === clean)) {
+              groupSubs.push(clean);
+            }
+          }
+          if (groupSubs.length > 0) {
+            groupMentionsMap.set(groupJid, groupSubs);
           }
         } catch (err) {
           console.error(`Erro ao buscar metadados do grupo ${groupJid} no mundo ${world}:`, err);
         }
+      }
+    }
+
+    const allowedCommunities = await db.getAllowedCommunities();
+    const targetCommunities = [];
+    for (const commJid of allowedCommunities) {
+      const commWorld = await db.getCommunityWorld(commJid);
+      if (commWorld === world) {
+        targetCommunities.push(commJid);
       }
     }
 
@@ -122,8 +140,8 @@ export async function enqueueNotification(sock, subscribers, bossName, extraText
     }
 
     // 2. Enqueue WhatsApp notifications to be processed sequentially
-    if (validSubscribers.length > 0) {
-      jobQueue.push({ sock, validSubscribers, bossName, alertMessage });
+    if (validSubscribers.length > 0 || targetCommunities.length > 0) {
+      jobQueue.push({ sock, validSubscribers, bossName, alertMessage, groupMentionsMap, targetCommunities });
       processQueue();
     }
   } catch (err) {
@@ -136,14 +154,44 @@ async function processQueue() {
   if (jobQueue.length === 0) return;
 
   isProcessing = true;
-  const { sock, validSubscribers, bossName, alertMessage } = jobQueue.shift();
+  const { sock, validSubscribers, bossName, alertMessage, groupMentionsMap, targetCommunities } = jobQueue.shift();
 
   try {
     const uppercaseBoss = bossName.toUpperCase();
-    console.log(`Starting WhatsApp notifications for boss ${uppercaseBoss} to ${validSubscribers.length} subscribers.`);
+    console.log(`Starting WhatsApp notifications for boss ${uppercaseBoss}.`);
 
-    for (let i = 0; i < validSubscribers.length; i++) {
-      const jid = jidNormalizedUser(validSubscribers[i]);
+    // 1. Group Mentions
+    if (process.env.ENABLE_GROUP_MENTIONS === 'true' && groupMentionsMap && groupMentionsMap.size > 0) {
+      for (const [groupJid, mentions] of groupMentionsMap.entries()) {
+        try {
+          let text = alertMessage + '\n\n';
+          text += mentions.map(jid => `@${jid.split('@')[0]}`).join(' ');
+          await sock.sendMessage(groupJid, { text, mentions });
+          console.log(`[GROUP_MENTION] Sent to ${groupJid} with ${mentions.length} tags`);
+          await sleep(1000); // small delay between groups
+        } catch (err) {
+          console.error(`[GROUP_MENTION] Failed to send to ${groupJid}:`, err);
+        }
+      }
+    }
+
+    // 2. Community Alerts
+    if (process.env.ENABLE_COMMUNITY_ALERTS === 'true' && targetCommunities && targetCommunities.length > 0) {
+      for (const commJid of targetCommunities) {
+        try {
+          await sock.sendMessage(commJid, { text: alertMessage });
+          console.log(`[COMMUNITY_ALERT] Sent to ${commJid}`);
+          await sleep(1000);
+        } catch (err) {
+          console.error(`[COMMUNITY_ALERT] Failed to send to ${commJid}:`, err);
+        }
+      }
+    }
+
+    // 3. Individual DMs (Spam)
+    if (SPAM_COUNT > 0 && validSubscribers && validSubscribers.length > 0) {
+      for (let i = 0; i < validSubscribers.length; i++) {
+        const jid = jidNormalizedUser(validSubscribers[i]);
       console.log(`Notifying ${jid} (${i + 1}/${validSubscribers.length})`);
 
       for (let j = 0; j < SPAM_COUNT; j++) {
@@ -165,6 +213,7 @@ async function processQueue() {
         await sleep(SUBSCRIBER_INTERVAL_MS);
       }
     }
+    } // close if (SPAM_COUNT > 0)
     console.log(`Finished notifications for boss ${uppercaseBoss}`);
   } catch (err) {
     console.error('Error during notification processing:', err);
