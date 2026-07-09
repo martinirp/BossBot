@@ -302,8 +302,8 @@ class CommandHandler {
       if (context.allowedGroups.includes(context.remoteJid)) {
         return true;
       }
-      // Em grupos não cadastrados, só permite o addgroup
-      if (commandName === 'addgroup') {
+      // Em grupos/comunidades não cadastrados, permite vinculá-los
+      if (commandName === 'addgroup' || commandName === 'addcommunity' || commandName === 'removecommunity') {
         return true;
       }
       return false;
