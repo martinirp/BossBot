@@ -4,10 +4,19 @@ export default {
   name: 'removecommunity',
   aliases: ['removecomunity'],
   execute: async (context, args) => {
-    const { sock, msg, isGroup, remoteJid, senderIsAdmin } = context;
+    const { sock, msg, isGroup, remoteJid, senderJid } = context;
     if (!isGroup) {
       await sock.sendMessage(remoteJid, { text: `⚠️ Este comando só funciona dentro de um grupo ou comunidade.` }, { quoted: msg });
       return;
+    }
+
+    let senderIsAdmin = false;
+    try {
+      const metadata = await sock.groupMetadata(remoteJid);
+      const participant = metadata.participants.find(p => p.id === senderJid);
+      senderIsAdmin = participant && (participant.admin === 'admin' || participant.admin === 'superadmin');
+    } catch (err) {
+      console.error('Failed to get metadata for admin check:', err);
     }
 
     const ownerNumber = process.env.BOT_OWNER_NUMBER;
