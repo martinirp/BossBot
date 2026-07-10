@@ -161,32 +161,33 @@ async function processQueue() {
     const uppercaseBoss = bossName.toUpperCase();
     console.log(`Starting WhatsApp notifications for boss ${uppercaseBoss}.`);
 
-    const bossImgPath = `./assets/bosses/${bossName.toLowerCase()}.webp`;
-    const fallbackImgPath = './assets/alerta.webp';
+    // Sticker específico do boss — sem fallback genérico
+    const bossImgPath = `./assets/bosses/${bossName}.webp`;
     let stickerMsg = null;
     if (fs.existsSync(bossImgPath)) {
       stickerMsg = { sticker: { url: bossImgPath } };
-    } else if (fs.existsSync(fallbackImgPath)) {
-      stickerMsg = { sticker: { url: fallbackImgPath } };
+    } else {
+      console.log(`[STICKER] Imagem específica não encontrada para ${bossName}, sticker não será enviado.`);
     }
 
     // 1. Group Mentions
+    // Sequência: sticker → alertMessage → menções (numa só mensagem logo abaixo)
     if (process.env.ENABLE_GROUP_MENTIONS === 'true' && groupMentionsMap && groupMentionsMap.size > 0) {
       for (const [groupJid, mentions] of groupMentionsMap.entries()) {
         try {
-          // Send Alert Text
-          await sock.sendMessage(groupJid, { text: alertMessage });
-          // Send Sticker
+          // 1a. Sticker do boss primeiro
           if (stickerMsg) {
             await sock.sendMessage(groupJid, stickerMsg);
           }
-          // Send Mentions
+          // 1b. Mensagem padrão do grupo
+          await sock.sendMessage(groupJid, { text: alertMessage });
+          // 1c. Menções de todos os inscritos logo abaixo
           if (mentions.length > 0) {
             const mentionsText = mentions.map(jid => `@${jid.split('@')[0]}`).join(' ');
             await sock.sendMessage(groupJid, { text: mentionsText, mentions });
           }
           console.log(`[GROUP_MENTION] Sent to ${groupJid} with ${mentions.length} tags`);
-          await sleep(1000); // small delay between groups
+          await sleep(1000);
         } catch (err) {
           console.error(`[GROUP_MENTION] Failed to send to ${groupJid}:`, err);
         }
@@ -194,21 +195,16 @@ async function processQueue() {
     }
 
     // 2. Community Alerts
+    // Sequência: sticker → mesma mensagem do DM privado (sem marcar ninguém)
     if (process.env.ENABLE_COMMUNITY_ALERTS === 'true' && targetCommunities && targetCommunities.length > 0) {
       for (const commJid of targetCommunities) {
         try {
-          // Send Alert Text
-          await sock.sendMessage(commJid, { text: alertMessage });
-          // Send Sticker
+          // 2a. Sticker do boss primeiro
           if (stickerMsg) {
             await sock.sendMessage(commJid, stickerMsg);
           }
-          // Send Mentions
-          if (validSubscribers && validSubscribers.length > 0) {
-            const mentions = validSubscribers.map(jidNormalizedUser);
-            const mentionsText = mentions.map(jid => `@${jid.split('@')[0]}`).join(' ');
-            await sock.sendMessage(commJid, { text: mentionsText, mentions });
-          }
+          // 2b. Mesma mensagem do DM — sem menções
+          await sock.sendMessage(commJid, { text: alertMessage });
           console.log(`[COMMUNITY_ALERT] Sent to ${commJid}`);
           await sleep(1000);
         } catch (err) {
