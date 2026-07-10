@@ -10,27 +10,11 @@ export default {
       return;
     }
 
-    let senderIsAdmin = false;
-    try {
-      const metadata = await sock.groupMetadata(remoteJid);
-      const participant = metadata.participants.find(p => p.id === senderJid);
-      senderIsAdmin = participant && (participant.admin === 'admin' || participant.admin === 'superadmin');
-    } catch (err) {
-      console.error('Failed to get metadata for admin check:', err);
-    }
-
-    const ownerNumber = process.env.BOT_OWNER_NUMBER;
-    const isOwner = ownerNumber && msg.key.participant && msg.key.participant.includes(ownerNumber);
-    if (!senderIsAdmin && !isOwner) {
-      await sock.sendMessage(remoteJid, { text: `⚠️ Somente administradores podem desvincular a comunidade.` }, { quoted: msg });
-      return;
-    }
-
     const success = await db.removeCommunity(remoteJid);
     if (success) {
-      await sock.sendMessage(remoteJid, { text: `✅ Comunidade desvinculada com sucesso!` }, { quoted: msg });
+      await sock.sendMessage(remoteJid, { text: `❌ Grupo/Comunidade removida da lista de alertas.` }, { quoted: msg });
     } else {
-      await sock.sendMessage(remoteJid, { text: `⚠️ Esta comunidade não estava vinculada.` }, { quoted: msg });
+      await sock.sendMessage(remoteJid, { text: `⚠️ Falha ao remover a comunidade ou ela não estava vinculada.` }, { quoted: msg });
     }
   }
 }

@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import { jidNormalizedUser } from '@whiskeysockets/baileys';
 import * as db from './database.js';
+import fs from 'fs';
 dotenv.config();
 
 const SPAM_COUNT = parseInt(process.env.SPAM_COUNT || '4', 10);
@@ -160,13 +161,30 @@ async function processQueue() {
     const uppercaseBoss = bossName.toUpperCase();
     console.log(`Starting WhatsApp notifications for boss ${uppercaseBoss}.`);
 
+    const bossImgPath = `./assets/bosses/${bossName.toLowerCase()}.webp`;
+    const fallbackImgPath = './assets/alerta.webp';
+    let stickerMsg = null;
+    if (fs.existsSync(bossImgPath)) {
+      stickerMsg = { sticker: { url: bossImgPath } };
+    } else if (fs.existsSync(fallbackImgPath)) {
+      stickerMsg = { sticker: { url: fallbackImgPath } };
+    }
+
     // 1. Group Mentions
     if (process.env.ENABLE_GROUP_MENTIONS === 'true' && groupMentionsMap && groupMentionsMap.size > 0) {
       for (const [groupJid, mentions] of groupMentionsMap.entries()) {
         try {
-          let text = alertMessage + '\n\n';
-          text += mentions.map(jid => `@${jid.split('@')[0]}`).join(' ');
-          await sock.sendMessage(groupJid, { text, mentions });
+          // Send Alert Text
+          await sock.sendMessage(groupJid, { text: alertMessage });
+          // Send Sticker
+          if (stickerMsg) {
+            await sock.sendMessage(groupJid, stickerMsg);
+          }
+          // Send Mentions
+          if (mentions.length > 0) {
+            const mentionsText = mentions.map(jid => `@${jid.split('@')[0]}`).join(' ');
+            await sock.sendMessage(groupJid, { text: mentionsText, mentions });
+          }
           console.log(`[GROUP_MENTION] Sent to ${groupJid} with ${mentions.length} tags`);
           await sleep(1000); // small delay between groups
         } catch (err) {
@@ -179,7 +197,18 @@ async function processQueue() {
     if (process.env.ENABLE_COMMUNITY_ALERTS === 'true' && targetCommunities && targetCommunities.length > 0) {
       for (const commJid of targetCommunities) {
         try {
+          // Send Alert Text
           await sock.sendMessage(commJid, { text: alertMessage });
+          // Send Sticker
+          if (stickerMsg) {
+            await sock.sendMessage(commJid, stickerMsg);
+          }
+          // Send Mentions
+          if (validSubscribers && validSubscribers.length > 0) {
+            const mentions = validSubscribers.map(jidNormalizedUser);
+            const mentionsText = mentions.map(jid => `@${jid.split('@')[0]}`).join(' ');
+            await sock.sendMessage(commJid, { text: mentionsText, mentions });
+          }
           console.log(`[COMMUNITY_ALERT] Sent to ${commJid}`);
           await sleep(1000);
         } catch (err) {
