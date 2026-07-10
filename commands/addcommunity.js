@@ -10,14 +10,19 @@ export default {
       return;
     }
     
+    // For @newsletter (Community Announcement Groups), skip admin check - just allow the command
+    const isNewsletter = remoteJid.endsWith('@newsletter');
+
     // Check if sender is admin or owner
-    let senderIsAdmin = false;
-    try {
-      const metadata = await sock.groupMetadata(remoteJid);
-      const participant = metadata.participants.find(p => p.id === senderJid);
-      senderIsAdmin = participant && (participant.admin === 'admin' || participant.admin === 'superadmin');
-    } catch (err) {
-      console.error('Failed to get metadata for admin check:', err);
+    let senderIsAdmin = isNewsletter; // newsletters skip group admin check
+    if (!isNewsletter) {
+      try {
+        const metadata = await sock.groupMetadata(remoteJid);
+        const participant = metadata.participants.find(p => p.id === senderJid);
+        senderIsAdmin = participant && (participant.admin === 'admin' || participant.admin === 'superadmin');
+      } catch (err) {
+        console.error('Failed to get metadata for admin check:', err);
+      }
     }
 
     const ownerNumber = process.env.BOT_OWNER_NUMBER;

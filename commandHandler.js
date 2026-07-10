@@ -80,7 +80,7 @@ class CommandHandler {
     const trimmed = text.trim();
 
     const remoteJid = msg.key.remoteJid;
-    const isGroup = remoteJid.endsWith('@g.us');
+    const isGroup = remoteJid.endsWith('@g.us') || remoteJid.endsWith('@newsletter');
     const senderJid = jidNormalizedUser(msg.key.participant || remoteJid);
     const senderPhone = senderJid.split('@')[0];
     const senderName = msg.pushName || '';
@@ -304,6 +304,10 @@ class CommandHandler {
       }
       // Em grupos/comunidades não cadastrados, permite vinculá-los
       if (commandName === 'addgroup' || commandName === 'addcommunity' || commandName === 'removecommunity') {
+        return true;
+      }
+      // Grupos de anúncios de comunidades (@newsletter) também são liberados
+      if (context.remoteJid.endsWith('@newsletter')) {
         return true;
       }
       return false;
