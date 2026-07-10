@@ -41,6 +41,16 @@ export default {
     }
 
     const key = args[0];
+    
+    // Pushover User Keys are exactly 30 characters long and alphanumeric
+    if (!/^[a-zA-Z0-9]{30}$/.test(key)) {
+      await sock.sendMessage(remoteJid, {
+        text: `⚠️ @${senderPhone}, a chave Pushover informada é inválida. A sua User Key deve conter exatamente 30 letras/números (ex: u1234567890abcdefghijklmnopqrs).`,
+        mentions: [senderJid]
+      }, { quoted: msg });
+      return;
+    }
+
     const success = await db.setUserPushoverKey(senderJid, key);
     if (success) {
       await sock.sendMessage(remoteJid, {
