@@ -179,13 +179,13 @@ async function processQueue() {
           if (stickerMsg) {
             await sock.sendMessage(groupJid, stickerMsg);
           }
-          // 1b. Mensagem padrão do grupo
-          await sock.sendMessage(groupJid, { text: alertMessage });
-          // 1c. Menções de todos os inscritos logo abaixo
+          // 1b. Mensagem padrão do grupo + Menções em um único balão
+          let finalGroupText = alertMessage;
           if (mentions.length > 0) {
             const mentionsText = mentions.map(jid => `@${jid.split('@')[0]}`).join(' ');
-            await sock.sendMessage(groupJid, { text: mentionsText, mentions });
+            finalGroupText += `\n\n${mentionsText}`;
           }
+          await sock.sendMessage(groupJid, { text: finalGroupText, mentions });
           console.log(`[GROUP_MENTION] Sent to ${groupJid} with ${mentions.length} tags`);
           await sleep(1000);
         } catch (err) {

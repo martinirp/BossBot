@@ -277,16 +277,6 @@ export default {
       enqueueNotification(sock, subscribers, cityBossName, finalExtraText, world);
     }
 
-    const bossImgPath = `./assets/bosses/${matchedBossName}.webp`;
-
-    try {
-      if (fs.existsSync(bossImgPath)) {
-        await sock.sendMessage(remoteJid, { sticker: { url: bossImgPath } });
-      } else if (fs.existsSync('./assets/alerta.webp')) {
-        await sock.sendMessage(remoteJid, { sticker: { url: './assets/alerta.webp' } });
-      }
-    } catch (err) {
-      console.error('Erro ao enviar alerta de boss:', err);
-    }
+    // Envio da figurinha foi removido daqui pois o notifier.js já faz isso.
   }
 }
