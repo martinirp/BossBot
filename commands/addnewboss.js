@@ -36,9 +36,8 @@ export default {
       return;
     }
 
-    // Adiciona e ordena alfabeticamente
+    // Adiciona ao final da lista
     bossesList.push(newBossName);
-    bossesList.sort((a, b) => a.localeCompare(b, 'en', { sensitivity: 'base' }));
 
     const filePath = path.resolve('bosses.json');
     try {
