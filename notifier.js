@@ -60,8 +60,8 @@ export async function enqueueNotification(sock, subscribers, bossName, extraText
   try {
     const uppercaseBoss = bossName.toUpperCase();
     const now = new Date();
-    now.setHours(now.getHours() - 3);
-    const timeString = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const brtDate = db.utcToBrt(now);
+    const timeString = `${String(brtDate.getUTCHours()).padStart(2, '0')}:${String(brtDate.getUTCMinutes()).padStart(2, '0')}`;
 
     const alertMessage = extraText 
       ? `🚨 *ALERTA DE BOSS* 🚨\n\n⚔️ *Boss:* ${uppercaseBoss}\n🕒 *Horário:* ${timeString}\n📍 *Detalhes:* ${extraText}`

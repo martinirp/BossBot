@@ -72,12 +72,19 @@ function buildPrediction(seenAtStr, minDays, maxDays, isTibiaData = false) {
 }
 
 // Format seen_at from German time to BRT "DD/MM/YYYY HH:mm"
-const formatSeenAtBrt = (seenAtStr) => {
+const formatSeenAtBrt = (seenAtStr, isTibiaData = false) => {
+  if (isTibiaData) {
+    const [year, month, day] = seenAtStr.split(' ')[0].split('-');
+    return `${day}/${month}/${year}`;
+  }
+
   const germanDate = db.parseDateStr(seenAtStr);
   if (!germanDate) return seenAtStr;
   const brtDate = db.utcToBrt(db.germanToUtc(germanDate));
   const pad = (n) => String(n).padStart(2, '0');
-  return `${pad(brtDate.getUTCDate())}/${pad(brtDate.getUTCMonth() + 1)}/${brtDate.getUTCFullYear()} ${pad(brtDate.getUTCHours())}:${pad(brtDate.getUTCMinutes())}`;
+  
+  const datePart = `${pad(brtDate.getUTCDate())}/${pad(brtDate.getUTCMonth() + 1)}/${brtDate.getUTCFullYear()}`;
+  return `${datePart} ${pad(brtDate.getUTCHours())}:${pad(brtDate.getUTCMinutes())}`;
 };
 
 export default {
@@ -151,9 +158,10 @@ export default {
           predictionText += `\n⏰ *Últimas aparições:* ${slicedRecentTimes.join(', ')}`;
         }
 
+        const isTibiaData = (record.confirmed_by === 'TibiaData_API');
         bossesWithPrediction.push({
           name: bName,
-          lastSeenFormatted: formatSeenAtBrt(record.seen_at),
+          lastSeenFormatted: formatSeenAtBrt(record.seen_at, isTibiaData),
           prediction: predictionText
         });
       }

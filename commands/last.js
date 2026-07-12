@@ -2,13 +2,21 @@ import * as db from '../database.js';
 import { findBossMatch, loadBosses, getBossCities } from '../commands.js';
 
 // Helper to format seen_at timestamp from German time to BRT "DD/MM/YYYY HH:mm"
-const formatSeenAtBrt = (seenAtStr) => {
+const formatSeenAtBrt = (seenAtStr, isTibiaData = false) => {
   if (!seenAtStr) return 'Nenhum avistamento registrado ainda';
+  
+  if (isTibiaData) {
+    const [year, month, day] = seenAtStr.split(' ')[0].split('-');
+    return `${day}/${month}/${year}`;
+  }
+
   const germanDate = db.parseDateStr(seenAtStr);
   if (!germanDate) return seenAtStr;
   const brtDate = db.utcToBrt(db.germanToUtc(germanDate));
   const pad = (n) => String(n).padStart(2, '0');
-  return `${pad(brtDate.getUTCDate())}/${pad(brtDate.getUTCMonth() + 1)}/${brtDate.getUTCFullYear()} ${pad(brtDate.getUTCHours())}:${pad(brtDate.getUTCMinutes())}`;
+  
+  const datePart = `${pad(brtDate.getUTCDate())}/${pad(brtDate.getUTCMonth() + 1)}/${brtDate.getUTCFullYear()}`;
+  return `${datePart} ${pad(brtDate.getUTCHours())}:${pad(brtDate.getUTCMinutes())}`;
 };
 
 export default {
@@ -69,7 +77,8 @@ export default {
         reply += `📍 *${item.city}*:\n`;
         if (item.record) {
           const confirmer = item.record.confirmed_by;
-          reply += `👁️ Último avistamento: *${formatSeenAtBrt(item.record.seen_at)}*\n`;
+          const isTibiaData = (confirmer === 'TibiaData_API');
+          reply += `👁️ Último avistamento: *${formatSeenAtBrt(item.record.seen_at, isTibiaData)}*\n`;
           if (!confirmer) {
             reply += `👤 Por: Desconhecido\n\n`;
           } else if (confirmer === 'flop') {

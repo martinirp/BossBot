@@ -104,11 +104,17 @@ export default {
     }
 
     const world = await db.getGroupWorld(remoteJid);
-    await db.updateBossCheck(cityBossName, senderJid, world, matchedCity);
+    const messageTimestampMs = msg.messageTimestamp ? Number(msg.messageTimestamp) * 1000 : Date.now();
+    const now = new Date(messageTimestampMs);
+    
+    // Calcula a hora alemã exata do momento e passa para salvar no DB
+    const germanTime = db.utcToGerman(now);
+    const checkedAtStr = db.formatDateStr(germanTime);
+    
+    await db.updateBossCheck(cityBossName, senderJid, world, matchedCity, checkedAtStr);
 
-    const now = new Date();
-    now.setHours(now.getHours() - 3);
-    const timeString = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const brtDate = db.utcToBrt(now);
+    const timeString = `${String(brtDate.getUTCHours()).padStart(2, '0')}:${String(brtDate.getUTCMinutes()).padStart(2, '0')}`;
 
     let checkHeader = `🔍 *${matchedBossName}*`;
     if (matchedCity) {

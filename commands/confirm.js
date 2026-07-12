@@ -213,7 +213,8 @@ export default {
     const world = await db.getGroupWorld(remoteJid);
 
     // ── 1. Calcular dia de rastreamento ANTES de salvar ────────────────────
-    const utcNow = new Date();
+    const messageTimestampMs = msg.messageTimestamp ? Number(msg.messageTimestamp) * 1000 : Date.now();
+    const utcNow = new Date(messageTimestampMs);
     const { seenAt, trackingDateStr, apiUpdatedTonight, brtTimeStr } = await calcTrackingDay(utcNow, world);
 
     // Formata a data de rastreamento para exibição (DD/MM/YYYY)
@@ -221,7 +222,7 @@ export default {
     const trackingDateDisplay = `${tDay}/${tMonth}/${tYear}`;
 
     // ── 2. Salvar no Banco de Dados ──────────────────────────────────────────
-    await db.addBossReport(cityBossName, extraText, senderJid, subscribers.length, world);
+    await db.addBossReport(cityBossName, extraText, senderJid, subscribers.length, world, seenAt);
     await db.incrementRank(senderJid);
     await db.setBossLastSeenDate(cityBossName, senderJid, seenAt, world, matchedCity);
 

@@ -681,10 +681,9 @@ export function setTibiadataSeenAt(bossName, world, seenAt) {
 
 // ─── Boss Check (checked and NOT found) ─────────────────────────────────────
 
-export function updateBossCheck(bossName, jid, world = 'Quelibra', city = null) {
+export function updateBossCheck(bossName, jid, world = 'Quelibra', city = null, checkedAtStr = null) {
   const cleanJid = jidNormalizedUser(jid);
-  const now = new Date();
-  const checkedAt = formatDateStr(utcToGerman(now));
+  const checkedAt = checkedAtStr || formatDateStr(utcToGerman(new Date()));
   return new Promise((resolve, reject) => {
     db.run(
       `INSERT INTO boss_check (world, boss_name, checked_by, checked_at, city) VALUES (?, ?, ?, ?, ?)

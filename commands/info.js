@@ -25,13 +25,21 @@ const loadStats = () => {
 };
 
 // Helper to format seen_at timestamp from German time to BRT "DD/MM/YYYY HH:mm"
-const formatSeenAtBrt = (seenAtStr) => {
+const formatSeenAtBrt = (seenAtStr, isTibiaData = false) => {
   if (!seenAtStr) return 'Nenhum avistamento registrado ainda';
+  
+  if (isTibiaData) {
+    const [year, month, day] = seenAtStr.split(' ')[0].split('-');
+    return `${day}/${month}/${year}`;
+  }
+
   const germanDate = db.parseDateStr(seenAtStr);
   if (!germanDate) return seenAtStr;
   const brtDate = db.utcToBrt(db.germanToUtc(germanDate));
   const pad = (n) => String(n).padStart(2, '0');
-  return `${pad(brtDate.getUTCDate())}/${pad(brtDate.getUTCMonth() + 1)}/${brtDate.getUTCFullYear()} ${pad(brtDate.getUTCHours())}:${pad(brtDate.getUTCMinutes())}`;
+  
+  const datePart = `${pad(brtDate.getUTCDate())}/${pad(brtDate.getUTCMonth() + 1)}/${brtDate.getUTCFullYear()}`;
+  return `${datePart} ${pad(brtDate.getUTCHours())}:${pad(brtDate.getUTCMinutes())}`;
 };
 
 // Calculates prediction based on seenDate, minDays, and maxDays
@@ -165,10 +173,11 @@ const formatBossInfo = async (bossName, intervalName, record) => {
   let seenLine = '';
   if (record && record.seen_at) {
     const confirmer = record.confirmed_by;
-    if (confirmer === 'TibiaData_API') {
-      seenLine = `👁️ *Visto:* ${formatSeenAtBrt(record.seen_at)} (por TibiaData API)\n`;
+    const isTibiaData = (confirmer === 'TibiaData_API');
+    if (isTibiaData) {
+      seenLine = `👁️ *Visto:* ${formatSeenAtBrt(record.seen_at, true)} (por TibiaData API)\n`;
     } else {
-      seenLine = `👁️ *Visto:* ${formatSeenAtBrt(record.seen_at)}\n`;
+      seenLine = `👁️ *Visto:* ${formatSeenAtBrt(record.seen_at, false)}\n`;
     }
   } else {
     seenLine = `👁️ *Visto:* Nenhum avistamento registrado ainda\n`;
