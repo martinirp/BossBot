@@ -162,12 +162,13 @@ async function processQueue() {
     console.log(`Starting WhatsApp notifications for boss ${uppercaseBoss}.`);
 
     // Sticker específico do boss — sem fallback genérico
-    const bossImgPath = `./assets/bosses/${bossName}.webp`;
+    const baseBossName = bossName.split(' (')[0];
+    const bossImgPath = `./assets/bosses/${baseBossName}.webp`;
     let stickerMsg = null;
     if (fs.existsSync(bossImgPath)) {
       stickerMsg = { sticker: { url: bossImgPath } };
     } else {
-      console.log(`[STICKER] Imagem específica não encontrada para ${bossName}, sticker não será enviado.`);
+      console.log(`[STICKER] Imagem específica não encontrada para ${baseBossName}, sticker não será enviado.`);
     }
 
     // 1. Group Mentions
