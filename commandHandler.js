@@ -5,6 +5,47 @@ import { normalizeBossName, findBossMatch, loadBosses } from './commands.js';
 import * as db from './database.js';
 import { jidNormalizedUser } from '@whiskeysockets/baileys';
 
+// ─── In-memory TTL Caches ─────────────────────────────────────────────────────
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+// Cache: allowedGroups list
+let _allowedGroupsCache = null;
+let _allowedGroupsTs = 0;
+async function getCachedAllowedGroups() {
+  if (_allowedGroupsCache && Date.now() - _allowedGroupsTs < CACHE_TTL_MS) {
+    return _allowedGroupsCache;
+  }
+  _allowedGroupsCache = await db.getAllowedGroups();
+  _allowedGroupsTs = Date.now();
+  return _allowedGroupsCache;
+}
+
+// Cache: groupMetadata per groupJid
+const _groupMetaCache = new Map(); // groupJid -> { data, ts }
+async function getCachedGroupMetadata(sock, groupJid) {
+  const cached = _groupMetaCache.get(groupJid);
+  if (cached && Date.now() - cached.ts < CACHE_TTL_MS) {
+    return cached.data;
+  }
+  const metadata = await sock.groupMetadata(groupJid);
+  _groupMetaCache.set(groupJid, { data: metadata, ts: Date.now() });
+  return metadata;
+}
+
+// Debounce: upsertUser — only write to DB if name changed or >1h since last write
+const _userNameCache = new Map(); // jid -> { name, ts }
+const USER_UPDATE_INTERVAL_MS = 60 * 60 * 1000; // 1 hour
+function maybeUpsertUser(jid, name) {
+  if (!name) return;
+  const cached = _userNameCache.get(jid);
+  const now = Date.now();
+  if (cached && cached.name === name && now - cached.ts < USER_UPDATE_INTERVAL_MS) {
+    return; // Nothing changed, skip DB write
+  }
+  _userNameCache.set(jid, { name, ts: now });
+  db.upsertUser(jid, name).catch(() => {});
+}
+
 class CommandHandler {
   constructor() {
     this.commands = new Map();
@@ -84,10 +125,8 @@ class CommandHandler {
     const senderJid = jidNormalizedUser(msg.key.participant || remoteJid);
     const senderPhone = senderJid.split('@')[0];
     const senderName = msg.pushName || '';
-    if (senderName) {
-      db.upsertUser(senderJid, senderName).catch(() => {});
-    }
-    const allowedGroups = await db.getAllowedGroups();
+    maybeUpsertUser(senderJid, senderName);
+    const allowedGroups = await getCachedAllowedGroups();
 
     const context = {
       sock, msg, text, trimmed,
@@ -324,7 +363,7 @@ class CommandHandler {
         let isAllowed = false;
         try {
           for (const groupJid of context.allowedGroups) {
-            const metadata = await context.sock.groupMetadata(groupJid);
+            const metadata = await getCachedGroupMetadata(context.sock, groupJid);
             const isMember = metadata.participants.some(p => p.id === context.senderJid);
             if (isMember) {
               isAllowed = true;
@@ -482,7 +521,7 @@ class CommandHandler {
           const cmdName = args.shift().toLowerCase();
           
           const voterPhone = voterJid ? voterJid.split('@')[0] : '';
-          const allowedGroups = await db.getAllowedGroups();
+          const allowedGroups = await getCachedAllowedGroups();
           
           const context = {
               sock, 

@@ -2,13 +2,22 @@ import * as db from '../database.js';
 import fs from 'fs';
 import path from 'path';
 
+// ─── In-memory TTL Cache ─────────────────────────────────────────────────────
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+let _intervalsCache = null;
+let _intervalsCacheTs = 0;
+
 const loadIntervals = () => {
+  if (_intervalsCache && Date.now() - _intervalsCacheTs < CACHE_TTL_MS) {
+    return _intervalsCache;
+  }
   try {
-    const jsonPath = path.resolve('boss_intervals.json');
-    return JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+    _intervalsCache = JSON.parse(fs.readFileSync(path.resolve('boss_intervals.json'), 'utf8'));
+    _intervalsCacheTs = Date.now();
+    return _intervalsCache;
   } catch (err) {
     console.error('[previsao] Error loading boss_intervals.json:', err);
-    return {};
+    return _intervalsCache ?? {};
   }
 };
 

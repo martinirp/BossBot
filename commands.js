@@ -1,6 +1,26 @@
 import fs from 'fs';
 import path from 'path';
 
+// ─── In-memory TTL Cache ─────────────────────────────────────────────────────
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const _cache = {};
+
+function cachedRead(key, filePath) {
+  const now = Date.now();
+  if (_cache[key] && now - _cache[key].ts < CACHE_TTL_MS) {
+    return _cache[key].data;
+  }
+  try {
+    const raw = fs.readFileSync(path.resolve(filePath), 'utf-8');
+    const data = JSON.parse(raw.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, '$1'));
+    _cache[key] = { data, ts: now };
+    return data;
+  } catch (err) {
+    console.error(`[cache] Error reading ${filePath}:`, err);
+    return _cache[key]?.data ?? null;
+  }
+}
+
 export function normalizeBossName(name) {
   if (!name) return '';
   return name
@@ -12,27 +32,19 @@ export function normalizeBossName(name) {
 }
 
 export function loadBosses() {
-  const filePath = path.resolve('bosses.json');
-  if (!fs.existsSync(filePath)) {
-    const defaultBosses = [
-      "Ferumbras", "Ghazbaran", "Morgaroth", "Orshabaal", "Zushuka",
-      "Chayenne", "Shlorg", "Munster", "Onyx", "Grand Mother Reapers"
-    ];
-    try {
-      fs.writeFileSync(filePath, JSON.stringify(defaultBosses, null, 2), 'utf-8');
-    } catch (e) {
-      console.error('Failed to create default bosses.json:', e);
-    }
-    return defaultBosses;
-  }
+  const cached = cachedRead('bosses', 'bosses.json');
+  if (cached) return cached;
+  // Fallback: create default file if missing
+  const defaultBosses = [
+    "Ferumbras", "Ghazbaran", "Morgaroth", "Orshabaal", "Zushuka",
+    "Chayenne", "Shlorg", "Munster", "Onyx", "Grand Mother Reapers"
+  ];
   try {
-    const fileContent = fs.readFileSync(filePath, 'utf-8');
-    const cleanContent = fileContent.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, '$1');
-    return JSON.parse(cleanContent);
-  } catch (err) {
-    console.error('Error loading bosses.json, using defaults:', err);
-    return ["Ferumbras", "Ghazbaran", "Morgaroth", "Orshabaal", "Zushuka", "Munster"];
+    fs.writeFileSync(path.resolve('bosses.json'), JSON.stringify(defaultBosses, null, 2), 'utf-8');
+  } catch (e) {
+    console.error('Failed to create default bosses.json:', e);
   }
+  return defaultBosses;
 }
 
 export function getLevenshteinDistance(a, b) {
@@ -162,12 +174,7 @@ export function getBossCities(bossName) {
 }
 
 export function loadLocations() {
-  try {
-    const jsonPath = path.resolve('boss_locations.json');
-    return JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
-  } catch (err) {
-    return {};
-  }
+  return cachedRead('locations', 'boss_locations.json') ?? {};
 }
 
 export function getLinkForCity(bossName, locations, city) {

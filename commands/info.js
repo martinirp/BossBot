@@ -3,26 +3,30 @@ import { findBossMatch, loadBosses, getBossCities, loadLocations, getLinkForCity
 import fs from 'fs';
 import path from 'path';
 
-const loadIntervals = () => {
-  try {
-    const jsonPath = path.resolve('boss_intervals.json');
-    return JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
-  } catch (err) {
-    console.error('[info] Error loading boss_intervals.json:', err);
-    return {};
+// ─── In-memory TTL Cache ─────────────────────────────────────────────────────
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const _infoCache = {};
+
+function cachedRead(key, filePath, fallback = {}) {
+  const now = Date.now();
+  if (_infoCache[key] && now - _infoCache[key].ts < CACHE_TTL_MS) {
+    return _infoCache[key].data;
   }
-};
+  try {
+    const data = JSON.parse(fs.readFileSync(path.resolve(filePath), 'utf8'));
+    _infoCache[key] = { data, ts: now };
+    return data;
+  } catch (err) {
+    console.error(`[info] Error loading ${filePath}:`, err);
+    return _infoCache[key]?.data ?? fallback;
+  }
+}
+
+const loadIntervals = () => cachedRead('intervals', 'boss_intervals.json');
 
 // loadLocations imported from commands.js
 
-const loadStats = () => {
-  try {
-    const jsonPath = path.resolve('boss_stats.json');
-    return JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
-  } catch (err) {
-    return {};
-  }
-};
+const loadStats = () => cachedRead('stats', 'boss_stats.json');
 
 // Helper to format seen_at timestamp from German time to BRT "DD/MM/YYYY HH:mm"
 const formatSeenAtBrt = (seenAtStr, isTibiaData = false) => {
