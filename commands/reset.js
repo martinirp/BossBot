@@ -12,7 +12,9 @@ export default {
     // Executa o git pull capturando stdout e stderr
     let gitOutput = '';
     try {
+      execSync('git stash', { cwd: process.cwd(), encoding: 'utf8' });
       gitOutput = execSync('git pull origin main 2>&1', { cwd: process.cwd(), encoding: 'utf8' }).trim();
+      try { execSync('git stash pop', { cwd: process.cwd(), encoding: 'utf8' }); } catch (_) {}
     } catch (err) {
       const out = err.stdout?.toString().trim() || '';
       const rederr = err.stderr?.toString().trim() || '';
