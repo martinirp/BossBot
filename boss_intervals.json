@@ -92,8 +92,8 @@
   },
   "Chizzoron the Distorter": {
     "fixedDaysFrequency": {
-      "min": 7,
-      "max": 19
+      "min": 6,
+      "max": 20
     }
   },
   "Countess Sorrow": {
@@ -104,8 +104,8 @@
   },
   "Cublarc the Plunderer": {
     "fixedDaysFrequency": {
-      "min": 1,
-      "max": 7
+      "min": 0,
+      "max": 8
     }
   },
   "Dharalion": {
@@ -134,8 +134,8 @@
   },
   "Draptor": {
     "fixedDaysFrequency": {
-      "min": 1,
-      "max": 9
+      "min": 0,
+      "max": 10
     }
   },
   "Dreadmaw (East)": {
@@ -160,8 +160,8 @@
   },
   "Ferumbras": {
     "fixedDaysFrequency": {
-      "min": 162,
-      "max": 174
+      "min": 161,
+      "max": 175
     }
   },
   "Flamecaller Zazrak (North)": {
@@ -180,22 +180,22 @@
   },
   "Fleabringer (North)": {
     "fixedDaysFrequency": {
-      "min": 3,
-      "max": 5
+      "min": 1,
+      "max": 3
     },
     "spawnCount": 3
   },
   "Fleabringer (Sul)": {
     "fixedDaysFrequency": {
-      "min": 3,
-      "max": 5
+      "min": 1,
+      "max": 3
     },
     "spawnCount": 3
   },
   "Fleabringer (Surface)": {
     "fixedDaysFrequency": {
-      "min": 3,
-      "max": 5
+      "min": 1,
+      "max": 3
     },
     "spawnCount": 3
   },
@@ -213,8 +213,8 @@
   },
   "Gaz'haragoth": {
     "fixedDaysFrequency": {
-      "min": 14,
-      "max": 27
+      "min": 13,
+      "max": 28
     }
   },
   "General Murius": {
@@ -225,14 +225,14 @@
   },
   "Ghazbaran": {
     "fixedDaysFrequency": {
-      "min": 162,
-      "max": 174
+      "min": 161,
+      "max": 175
     }
   },
   "Grand Mother Foulscale": {
     "fixedDaysFrequency": {
-      "min": 5,
-      "max": 9
+      "min": 4,
+      "max": 10
     }
   },
   "Grandfather Tridian": {
@@ -311,14 +311,14 @@
   },
   "Morgaroth": {
     "fixedDaysFrequency": {
-      "min": 168,
-      "max": 174
+      "min": 167,
+      "max": 175
     }
   },
   "Morshabaal": {
     "fixedDaysFrequency": {
-      "min": 154,
-      "max": 174
+      "min": 153,
+      "max": 175
     }
   },
   "Mr Punish": {
@@ -365,8 +365,8 @@
   },
   "Rotrender": {
     "fixedDaysFrequency": {
-      "min": 162,
-      "max": 174
+      "min": 161,
+      "max": 175
     }
   },
   "Rottie the Rotworm": {
@@ -436,8 +436,8 @@
   },
   "The Abomination": {
     "fixedDaysFrequency": {
-      "min": 154,
-      "max": 174
+      "min": 153,
+      "max": 175
     }
   },
   "The Big Bad One": {
@@ -448,8 +448,8 @@
   },
   "The Blightfather": {
     "fixedDaysFrequency": {
-      "min": 5,
-      "max": 9
+      "min": 4,
+      "max": 10
     }
   },
   "The Evil Eye": {
@@ -569,8 +569,8 @@
   },
   "Willi Wasp": {
     "fixedDaysFrequency": {
-      "min": 5,
-      "max": 9
+      "min": 4,
+      "max": 10
     }
   },
   "Xenia": {
@@ -611,14 +611,14 @@
   },
   "Zomba": {
     "fixedDaysFrequency": {
-      "min": 3,
-      "max": 8
+      "min": 2,
+      "max": 9
     }
   },
   "Zulazza the Corruptor": {
     "fixedDaysFrequency": {
-      "min": 7,
-      "max": 19
+      "min": 6,
+      "max": 20
     }
   },
   "Zushuka": {
