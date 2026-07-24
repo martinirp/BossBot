@@ -3,4 +3,3 @@ node_modules/
 auth_info_baileys/
 *.db
 *.log
-boss_intervals.json
