@@ -169,26 +169,29 @@ const formatBossInfo = async (bossName, intervalName, record) => {
   // 2. Build prediction line
   const predictionLine = `🔮 *Previsão:* ${predictionText}\n`;
 
-  // 3. Build seen line
+  // 3. Get history and TibiaData info
+  const recentTimes = await db.getBossRecentTimes(intervalName);
+  // getBossRecentTimes returns oldest to newest, so we reverse it to newest to oldest
+  recentTimes.reverse();
+  const maxHistory = 10; // Limit to 10 items to keep it readable
+  const historyList = recentTimes.slice(0, maxHistory);
+
   let seenLine = '';
-  if (record && record.seen_at) {
-    const confirmer = record.confirmed_by;
-    const isTibiaData = (confirmer === 'TibiaData_API');
-    if (isTibiaData) {
-      seenLine = `👁️ *Visto:* ${formatSeenAtBrt(record.seen_at, true)} (por TibiaData API)\n`;
-    } else {
-      seenLine = `👁️ *Visto:* ${formatSeenAtBrt(record.seen_at, false)}\n`;
-    }
-  } else {
+  const isTibiaData = record && record.seen_at && record.confirmed_by === 'TibiaData_API';
+
+  if (isTibiaData) {
+    seenLine = `👁️ *Visto:* ${formatSeenAtBrt(record.seen_at, true)} (por TibiaData API)\n`;
+  } else if (!isTibiaData && historyList.length === 0) {
     seenLine = `👁️ *Visto:* Nenhum avistamento registrado ainda\n`;
   }
 
   // 4. Build recent times line
   let recentTimesLine = '';
-  const recentTimes = await db.getBossRecentTimes(intervalName);
-  const slicedRecentTimes = recentTimes.slice(-3);
-  if (slicedRecentTimes && slicedRecentTimes.length > 0) {
-    recentTimesLine = `⏰ *Últimas aparições:* ${slicedRecentTimes.join(', ')}\n`;
+  if (historyList.length > 0) {
+    recentTimesLine = `\n⏰ *Histórico de Mortes:*\n`;
+    historyList.forEach(timeStr => {
+      recentTimesLine += `▪️ ${timeStr}\n`;
+    });
   }
 
   // 5. Combine in the requested order (map, prediction, seen, recentTimes)
