@@ -27,8 +27,9 @@ export function normalizeBossName(name) {
     .trim()
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // Removes accents/diacritics
-    .replace(/\s+/g, ' '); // Collapse multiple spaces to a single space
+    .replace(/[\u0300-\u036f]/g, '') // Remove accents/diacritics
+    .replace(/[.'`´]/g, '')          // Remove dots and apostrophes (Mr. Punish → mr punish, Gaz'haragoth → gazharagoth)
+    .replace(/\s+/g, ' ');           // Collapse multiple spaces
 }
 
 export function loadBosses() {
