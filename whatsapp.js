@@ -28,6 +28,8 @@ export async function sendGroupMessage(jid, text, mentions = []) {
   }
 }
 
+let reconnectAttempts = 0;
+
 export async function connectToWhatsApp() {
   await commandHandler.loadCommands(); // Carrega os comandos
 
@@ -67,7 +69,10 @@ export async function connectToWhatsApp() {
       console.log('[DEBUG] Status code:', lastDisconnect?.error?.output?.statusCode);
       console.log('[DEBUG] Error message:', lastDisconnect?.error?.message);
       if (shouldReconnect) {
-        connectToWhatsApp();
+        reconnectAttempts++;
+        const delay = Math.min(5000 * reconnectAttempts, 60000); // 5s, 10s, 15s... max 60s
+        console.log(`[whatsapp] Aguardando ${delay / 1000}s antes de reconectar (tentativa ${reconnectAttempts})...`);
+        setTimeout(() => connectToWhatsApp(), delay);
       } else {
         console.log('Logged out of WhatsApp. Deleting credentials and scanning again...');
         try {
@@ -75,9 +80,11 @@ export async function connectToWhatsApp() {
         } catch (e) {
           console.error('Failed to clear credentials folder:', e);
         }
-        connectToWhatsApp();
+        reconnectAttempts = 0;
+        setTimeout(() => connectToWhatsApp(), 3000);
       }
     } else if (connection === 'open') {
+      reconnectAttempts = 0;
       console.log('\n=========================================');
       console.log('WhatsApp connection opened successfully!');
       console.log('=========================================\n');
