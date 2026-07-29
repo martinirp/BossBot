@@ -1,0 +1,2 @@
+#!/bin/bash
+sshpass -p '123' ssh -p 8022 u0_a138@192.168.3.141 -o StrictHostKeyChecking=no "proot-distro login debian -- bash -c 'cd ~/BossBot && node -e \"const fs = require(\\\"fs\\\"); console.log(fs.existsSync(\\\"./assets/bosses/Ferumbras.webp\\\"));\"'"
