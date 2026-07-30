@@ -255,7 +255,13 @@ export default {
       const imunesText = filteredImmunities.length > 0
         ? filteredImmunities.join(', ')
         : 'Nenhuma';
-      statsLine = `❤️ *HP:* ${hpText}\n🛡️ *Imunidades:* ${imunesText}\n\n`;
+        
+      let extraInfoText = '';
+      if (stats.extra_info) {
+        extraInfoText = `💡 *Info Extra:* ${stats.extra_info}\n`;
+      }
+      
+      statsLine = `❤️ *HP:* ${hpText}\n🛡️ *Imunidades:* ${imunesText}\n${extraInfoText}\n`;
     }
 
     const bossIntervals = loadIntervals();
