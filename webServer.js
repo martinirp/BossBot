@@ -262,11 +262,11 @@ app.post('/api/admin/manual-record', authMiddleware, adminMiddleware, async (req
       return res.status(400).json({ error: 'Data inválida' });
     }
     
-    // Create UTC Date treating the input as BRT (UTC-3)
+    // Convert BRT (UTC-3) input → UTC
     const utcDate = new Date(Date.UTC(year, month - 1, day, Number(hour) + 3, minute));
-    const createdAtStr = utcDate.toISOString().replace('T', ' ').substring(0, 19);
     
-    // For boss_last_seen, Tibia operates in Europe/Berlin (German time).
+    // The entire system stores timestamps in German (CET/CEST) time.
+    // Both boss_reports.created_at and boss_last_seen.seen_at must use German time.
     const germanDate = utcToGerman(utcDate);
     const pad = (n) => String(n).padStart(2, '0');
     // We MUST use getUTC* methods because germanDate is an offset UTC timestamp
@@ -275,11 +275,11 @@ app.post('/api/admin/manual-record', authMiddleware, adminMiddleware, async (req
     const reportedBy = req.userSession.username;
     const extraText = type === 'flop' ? 'Flopado' : 'Morto (Manual)';
     
-    // Update boss_reports
+    // Update boss_reports — store in German time (same as confirm.js does)
     await new Promise((resolve, reject) => {
       db.run(
         `INSERT INTO boss_reports (boss_name, extra_text, reported_by_jid, notified_count, world, created_at) VALUES (?, ?, ?, 0, ?, ?)`,
-        [bossName, extraText, reportedBy, world, createdAtStr],
+        [bossName, extraText, reportedBy, world, seenAtGerman],
         (err) => err ? reject(err) : resolve()
       );
     });
@@ -366,10 +366,19 @@ app.put('/api/admin/edit-record/:id', authMiddleware, adminMiddleware, async (re
     });
     if (!record) return res.status(404).json({ error: 'Registro não encontrado' });
 
-    const localDate = new Date(datetime);
-    if (isNaN(localDate.getTime())) return res.status(400).json({ error: 'Data inválida' });
-    const utcDate = new Date(localDate.getTime());
-    const createdAtStr = utcDate.toISOString().replace('T', ' ').substring(0, 19);
+    // datetime comes as "YYYY-MM-DDTHH:mm" (BRT from the browser's datetime-local input).
+    // The system stores all timestamps in German (CET/CEST) time, so convert: BRT → UTC → German.
+    const [datePart, timePart] = datetime.split('T');
+    const [year, month, day] = datePart.split('-');
+    const [hour, minute] = (timePart || '00:00').split(':');
+    if (!year || !month || !day) return res.status(400).json({ error: 'Data inválida' });
+
+    const utcDate = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), Number(hour) + 3, Number(minute)));
+    if (isNaN(utcDate.getTime())) return res.status(400).json({ error: 'Data inválida' });
+
+    const germanDate = utcToGerman(utcDate);
+    const pad = (n) => String(n).padStart(2, '0');
+    const createdAtStr = `${germanDate.getUTCFullYear()}-${pad(germanDate.getUTCMonth() + 1)}-${pad(germanDate.getUTCDate())} ${pad(germanDate.getUTCHours())}:${pad(germanDate.getUTCMinutes())}`;
 
     const cityMatch = record.boss_name.match(/^(.+?)\s*\((.+?)\)$/);
     const baseName = cityMatch ? cityMatch[1].trim() : record.boss_name;
@@ -483,6 +492,7 @@ app.get('/api/bosses/:world', authMiddleware, async (req, res) => {
       const m = bossName.match(/^(.+?)\s*\((.+?)\)$/);
       const baseName = m ? m[1].trim() : bossName.trim();
       const statsInfo = bossStats[baseName] || { hp: '?', immunities: [] };
+      const extraInfo = statsInfo.extra_info || null;
       const mapLink = getBossMapLink(bossName, bossLocations);
       const intervalStats = bossIntervals[bossName];
       const minDays = (intervalStats?.fixedDaysFrequency) ? intervalStats.fixedDaysFrequency.min : null;
@@ -494,7 +504,7 @@ app.get('/api/bosses/:world', authMiddleware, async (req, res) => {
           city: null, days_since: null, min_days: minDays, max_days: maxDays,
           expected_days: maxDays, chance_percent: 0, status: 'Sem dados',
           total_kills: 0, kills_yesterday: 0, checked_at: null, checked_by: null,
-          hp: statsInfo.hp, immunities: statsInfo.immunities, map_link: mapLink,
+          hp: statsInfo.hp, immunities: statsInfo.immunities, extra_info: extraInfo, map_link: mapLink,
           tibiadata_seen_at: null, tibiadata_chance_percent: null, tibiadata_status: null,
           tibiadata_min_date: null, tibiadata_max_date: null
         };
@@ -570,7 +580,7 @@ app.get('/api/bosses/:world', authMiddleware, async (req, res) => {
         chance_percent: chancePercent, status,
         total_kills: totalKillsCount, kills_yesterday: killsYesterday,
         checked_at: checked_at ? formatBrt(checked_at) : null, checked_by,
-        hp: statsInfo.hp, immunities: statsInfo.immunities, map_link: mapLink,
+        hp: statsInfo.hp, immunities: statsInfo.immunities, extra_info: extraInfo, map_link: mapLink,
         tibiadata_seen_at: lastSeen.tibiadata_seen_at || null,
         tibiadata_chance_percent: tibiaChancePercent, tibiadata_status: tibiaStatus,
         tibiadata_min_date: tibiaMinDate, tibiadata_max_date: tibiaMaxDate

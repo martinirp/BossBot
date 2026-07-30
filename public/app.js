@@ -443,6 +443,14 @@ function populateModal(p) {
     const activeImm = (p.immunities || []).filter(i => i !== 'Paralisia' && i !== 'Invisibilidade');
     document.getElementById('modalImmunitiesVal').innerText = activeImm.length > 0 ? activeImm.join(', ') : 'Nenhuma';
 
+    const extraInfoBox = document.getElementById('modalExtraInfoBox');
+    if (p.extra_info) {
+        document.getElementById('modalExtraInfoVal').innerText = p.extra_info;
+        extraInfoBox.style.display = 'flex';
+    } else {
+        extraInfoBox.style.display = 'none';
+    }
+
     // Spawn range
     document.getElementById('modalFreqVal').innerText = formatSpawnRange(p.min_days, p.max_days);
     if (p.min_days && p.max_days) {
@@ -624,13 +632,11 @@ async function openEditHistoryModal(k) {
     currentEditingHistoryId = k.id;
     
     // Set date input
-    const [datePart, timePart] = k.raw_created_at.split(' ');
-    const utcDate = new Date(datePart + 'T' + timePart + 'Z');
-    
-    // Format to YYYY-MM-DDThh:mm
-    const tzOffset = utcDate.getTimezoneOffset() * 60000;
-    const localDate = new Date(utcDate.getTime() - tzOffset);
-    const localISO = localDate.toISOString().slice(0, 16);
+    // k.created_at is already in BRT format ("YYYY-MM-DD HH:mm:ss") as returned by the API's
+    // getKillHistory, which does the German → UTC → BRT conversion server-side.
+    // We just need to reformat it to "YYYY-MM-DDTHH:mm" for the datetime-local input.
+    const brtStr = k.created_at; // "YYYY-MM-DD HH:mm:ss"
+    const localISO = brtStr.replace(' ', 'T').slice(0, 16); // "YYYY-MM-DDTHH:mm"
     
     document.getElementById('editHistoryDate').value = localISO;
 

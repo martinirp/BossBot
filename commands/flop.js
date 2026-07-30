@@ -127,7 +127,10 @@ export default {
     }
 
     const world = await db.getGroupWorld(remoteJid);
-    const utcNow = new Date();
+    // Use the WhatsApp message timestamp (same as confirm.js) so the time is always
+    // anchored to when the user actually sent the message, not the server wall clock.
+    const messageTimestampMs = msg.messageTimestamp ? Number(msg.messageTimestamp) * 1000 : Date.now();
+    const utcNow = new Date(messageTimestampMs);
     const { seenAt, trackingDateStr, apiUpdatedTonight, brtTimeStr } = await calcTrackingDay(utcNow, world);
 
     // Salva o avistamento com o confirmador 'flop'
